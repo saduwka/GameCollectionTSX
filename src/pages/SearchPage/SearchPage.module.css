@@ -1,0 +1,104 @@
+.searchPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 150px 50px;
+  gap: 20px;
+}
+
+.gameList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+}
+.searchForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+  gap: 20px;
+}
+
+.searchInput {
+  padding: 20px 12px;
+  font-size: 26px;
+  border: none;
+  border-radius: 20px;
+  width: 400px;
+  height: auto;
+  background-color: transparent;
+  color: #fff;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  text-align: center;
+  border: 2px solid #fff;
+}
+
+input::placeholder {
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  font-size: 16px;
+  color: #777;
+}
+
+.searchInput::placeholder {
+  color: #fff;
+}
+
+.searchInput:focus {
+  border: 2px solid var(--secondary-color);
+}
+
+p {
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  font-size: 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.heading {
+  font-size: 24px;
+  margin-bottom: 20px;
+  margin-left: 100px;
+  color: #fff;
+}
+
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 100px;
+  margin-bottom: 20px;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  font-size: 18px;
+  color: #fff;
+}
+
+.sortContainer label {
+  user-select: none;
+}
+
+.sortContainer select {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.sortContainer select:hover,
+.sortContainer select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+}

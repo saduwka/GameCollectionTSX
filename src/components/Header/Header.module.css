@@ -1,0 +1,111 @@
+.header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    z-index: 2;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    background-color: rgba(18, 18, 18, 0.7);
+    transition: background-color 0.3s ease;
+    align-items: center;
+    color: #fff;
+  }
+  
+  .searchInput {
+    padding-left: 30px;
+    margin-top: 20px;
+    font-size: 12px;
+    border: none;
+    width: 400px;
+    height: 60px;
+    background-color: rgba(51, 51, 51, 0.5);
+    color: #fff;
+    display: flex;
+    align-items: center;
+  }
+  
+  .heading {
+    font-size: 38px;
+    color: #fff;
+  }
+  
+  .logoWrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+  }
+  
+  .searchInput:focus {
+    border: 2px solid var(--secondary-color);
+  }
+  
+  .searchForm {
+    position: relative;
+  }
+  
+  .searchIcon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 60%;
+    right: 30px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+  
+  .logoutButton {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+  }
+  
+  .logoutButton:hover {
+    text-decoration: underline;
+    background-color: transparent;
+    color: inherit;
+  }
+  
+  .logoutIcon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .userCard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-right: 20px;
+  }
+  
+  .favLink {
+   display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  
+  .favLink:hover {
+    text-decoration: underline;
+    background-color: transparent;
+    color: inherit;
+  }
+  
+  .favIcon {
+    width: 20px;
+    height: 20px;
+  }

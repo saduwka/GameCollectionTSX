@@ -1,0 +1,33 @@
+.platformPage {
+    display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 150px 50px;
+  gap: 20px;
+}
+
+.heading {
+    font-size: 1.2rem;
+    color: #FFF;
+    text-align: center;
+    font-family: 'Pixelated', 'Press Start 2P', cursive;
+  }
+
+  .plarformDescription {
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+    line-height: 1.5;
+    background-color: #646464;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .gameList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    align-items: flex-start; 
+  }

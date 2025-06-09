@@ -1,0 +1,208 @@
+
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gamePageContainer {
+  display: flex;
+  flex-direction: column;
+  margin: 150px 50px 0 50px;
+  gap: 20px;
+}
+
+.gameWrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.gamePageHeader {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.gamePageImageContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.gamePageImage {
+  width: 400px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+img:hover {
+  cursor: pointer;
+}
+
+.gamePageDetails {
+  background-color: #646464;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gamePageDetails p {
+  font-size: 16px;
+  margin: 10px 0;
+  color: #fff;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 400;
+  text-align: left;
+}
+
+.gamePageDetails strong {
+  font-weight: bold;
+  color: #fff;
+}
+
+.gamePageDetails a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.gamePageDetails a:hover {
+  text-decoration: underline;
+}
+
+.platforms {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.platformLink {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.platformLink:hover {
+  text-decoration: underline;
+}
+
+.backButton {
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  width: fit-content;
+}
+
+@media (max-width: 768px) {
+  .gamePageContainer {
+    padding: 15px;
+  }
+
+  .gamePageHeader {
+    font-size: 1.5rem;
+  }
+
+  .gamePageImage {
+    max-width: 100%;
+  }
+}
+
+.statusButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.statusButtons button {
+  padding: 8px 14px;
+  font-size: 16px;
+  font-family: 'Courier New', Courier, monospace;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.statusButtons button:active {
+  transform: scale(0.98);
+}
+
+.statusButtons button.active {
+  border: 2px solid white;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalContent {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.modalImage {
+  width: 800px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.modalImageAnimated {
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.modalNavButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 1000;
+  padding: 0 15px;
+}
+
+.modalNavButton:first-of-type {
+  left: -50px;
+}
+
+.modalNavButton:last-of-type {
+  right:-50px;
+}
+
+.modalNavButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

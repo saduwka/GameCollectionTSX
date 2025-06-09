@@ -1,0 +1,52 @@
+.platformsPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 150px 50px;
+  gap: 20px;
+}
+
+.platformList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+}
+
+.heading {
+    font-size: 24px;
+    color: #fff;
+  }
+  
+  .sortButtons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .sortButton {
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    font-family: 'Pixelated', 'Press Start 2P', cursive;
+  }
+  
+  
+  .sortButton.active {
+    border: 2px solid #fff;
+  }
+  
