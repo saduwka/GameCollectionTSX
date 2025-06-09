@@ -1,0 +1,84 @@
+.gamesPage {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100vh;
+  padding: 150px 50px 50px 50px;
+  gap: 20px;
+}
+
+.gamesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+}
+
+.gameCardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.heading {
+  font-size: 24px;
+  color: #fff;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.pageNumber {
+  font-size: 18px;
+  margin: 0 10px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.selectFilter {
+  background-color: #222; /* темный фон */
+  color: #eee; /* светлый текст */
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.selectFilter:hover,
+.selectFilter:focus {
+  border-color: #4b4b4b; /* синий акцент при наведении и фокусе */
+  outline: none;
+}
+
+.selectFilter option {
+  background-color: #222;
+  color: #eee;
+}
+
+.activeButton {
+  background-color: #4b4b4b;
+  color: white;
+  border: none;
+  box-shadow: 0 0 8px #1e90ff;
+}
