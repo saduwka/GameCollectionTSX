@@ -8,7 +8,11 @@ import favoritesIcon from "../../assets/icons/favorites.svg";
 import logoutIcon from "../../assets/icons/logout.svg";
 import logo from "../../assets/logo/logo.svg";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onBurgerClick?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onBurgerClick }) => {
   const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
 
@@ -37,35 +41,47 @@ const Header: React.FC = () => {
 
   return (
     <header className={styles.header}>
-      <div>
-        <Link to="/" className={styles.logoWrapper}>
-          <img src={logo} alt="Logo" className={styles.logo} />
-          <h1 className={styles.heading}>PlayHub</h1>
-        </Link>
+      {/* Бургер кнопка (показывается только на мобильных) */}
+      <button
+        className={styles.burger}
+        onClick={onBurgerClick}
+        aria-label="Open sidebar"
+      >
+        ☰
+      </button>
+      <div className={styles.headerContent}>
+        <div>
+          <Link to="/" className={styles.logoWrapper}>
+            <img src={logo} alt="Logo" className={styles.logo} />
+            <h1 className={styles.heading}>PlayHub</h1>
+          </Link>
+        </div>
+
+        <div className={styles.searchForm}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Search games..."
+            className={styles.searchInput}
+          />
+          <img
+            src={searchIcon}
+            alt="Search"
+            onClick={handleSearchSubmit}
+            className={styles.searchIcon}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                handleSearchSubmit();
+              }
+            }}
+          />
+        </div>
       </div>
-      <div className={styles.searchForm}>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Search games..."
-          className={styles.searchInput}
-        />
-        <img
-          src={searchIcon}
-          alt="Search"
-          onClick={handleSearchSubmit}
-          className={styles.searchIcon}
-          role="button"
-          tabIndex={0}
-          onKeyPress={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleSearchSubmit();
-            }
-          }}
-        />
-      </div>
+
       {isAuthenticated && (
         <div className={styles.userCard}>
           <Link to="/favorites" className={styles.favLink}>

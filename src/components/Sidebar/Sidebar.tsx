@@ -2,7 +2,12 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+  onClose?: () => void;
+  style?: React.CSSProperties;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
   const location = useLocation();
 
   const routes = [
@@ -13,8 +18,13 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className={styles.sidebar}>
-      <ul>
+    <div className={styles.sidebar} style={style}>
+      {onClose && (
+        <button className={styles.closeButton} onClick={onClose}>
+          ✕
+        </button>
+      )}
+      <ul className={styles.navList}>
         {routes.map(({ path, label }) => (
           <li key={path}>
             <Link

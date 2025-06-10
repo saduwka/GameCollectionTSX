@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage/HomePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import GamePage from "./pages/GamePage/GamePage";
@@ -10,6 +11,18 @@ import Header from "./components/Header/Header";
 import SearchPage from "./pages/SearchPage/SearchPage";
 
 const PageRoutes = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
     <div
       style={{
@@ -19,15 +32,28 @@ const PageRoutes = () => {
         overflow: "hidden"
       }}
     >
-      <Header />
-      <div style={{ display: "flex" }}>
-        <Sidebar />
+      <Header onBurgerClick={toggleSidebar} />
+      <div style={{ display: "flex", position: "relative" }}>
+        {(isSidebarOpen || !isMobile) && (
+          <div
+            style={{
+              position: isMobile ? "absolute" : "relative",
+              zIndex: 100,
+              width: 220,
+              height: "100%",
+              left: 0,
+              top: 0
+            }}
+          >
+            <Sidebar onClose={() => setIsSidebarOpen(false)} />
+          </div>
+        )}
         <div
           style={{
-            display: "flex",
-            marginLeft: "220px",
+            marginLeft: !isMobile ? "220px" : "0",
             flex: 1,
-            height: "100%"
+            height: "100%",
+            width: "100%"
           }}
         >
           <Routes>

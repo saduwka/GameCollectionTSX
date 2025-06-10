@@ -82,3 +82,39 @@
   border: none;
   box-shadow: 0 0 8px #1e90ff;
 }
+
+@media (max-width: 768px) {
+  .gamesPage {
+    padding: 200px 20px 30px 20px;
+    gap: 16px;
+  }
+
+  .gamesList {
+    justify-content: center;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pageNumber {
+    margin: 0;
+  }
+
+  .selectFilter {
+    width: 100%;
+  }
+
+  .heading {
+    font-size: 20px;
+    text-align: center;
+  }
+}

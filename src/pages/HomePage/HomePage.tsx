@@ -23,12 +23,16 @@ const HomePage: React.FC = () => {
   return (
     <div className={styles.homePage}>
       <div className={styles.hero}>
-        <h1 className={styles.title}>🎮 Game Collection</h1>
+        <h1 className={styles.title}>Game Collection</h1>
         <p className={styles.description}>
-          Храни и управляй своей коллекцией видеоигр. Поддержка поиска, фильтров и избранного.
+          Храни и управляй своей коллекцией видеоигр. Поддержка поиска, фильтров
+          и избранного.
         </p>
         <div className={styles.buttons}>
-          <button className={styles.btn} onClick={() => navigate("/collection")}>
+          <button
+            className={styles.btn}
+            onClick={() => navigate("/collection")}
+          >
             🔍 Перейти к коллекции
           </button>
           <button className={styles.btn} onClick={() => navigate("/add")}>
