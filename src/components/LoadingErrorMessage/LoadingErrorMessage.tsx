@@ -1,14 +1,18 @@
-import React from 'react';
-import styles from './LoadingErrorMessage.module.css';
+import React from "react";
+import styles from "./LoadingErrorMessage.module.css";
 
 interface LoadingErrorMessageProps {
   loading: boolean;
   error: string | null;
   noResults: boolean;
-  message: string;
+  message?: string;
 }
 
-const LoadingErrorMessage: React.FC<LoadingErrorMessageProps> = ({ loading, error, noResults }) => {
+const LoadingErrorMessage: React.FC<LoadingErrorMessageProps> = ({
+  loading,
+  error,
+  noResults
+}) => {
   if (loading) {
     return (
       <div className={styles.boxes}>

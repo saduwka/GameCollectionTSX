@@ -7,6 +7,33 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import styles from "./GamesPage.module.css";
 import type { Game, RawGame } from "../../types/game";
 
+// Функция преобразования RawGame в Game
+const mapRawGameToGame = (raw: RawGame): Game => {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description_raw,
+    background_image: raw.background_image,
+    background_image_additional: undefined,
+    coverUrl: raw.background_image, // можно заменить, если у вас есть отдельное поле с обложкой
+    rating: raw.rating,
+    platforms: raw.platforms.map((p) => ({
+      platform: {
+        id: p.platform.id,
+        name: p.platform.name,
+        slug: "" // Если slug отсутствует, оставляем пустую строку
+      },
+      released_at: undefined,
+      requirements: undefined
+    })),
+    released: raw.released,
+    genres: raw.genres.map((g) => g.name),
+    metacritic: raw.metacritic ?? null,
+    website: null,
+    added: raw.added
+  };
+};
+
 const GamesPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [filter, setFilter] = useState<"random" | "popular" | "rating">(
@@ -23,14 +50,6 @@ const GamesPage: React.FC = () => {
 
   const shuffleArray = (array: Game[]): Game[] => {
     return [...array].sort(() => Math.random() - 0.5);
-  };
-
-  const sortByPopularity = (array: Game[]): Game[] => {
-    return [...array].sort((a, b) => (b.added ?? 0) - (a.added ?? 0));
-  };
-
-  const sortByRating = (array: Game[]): Game[] => {
-    return [...array].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   };
 
   useEffect(() => {
@@ -65,7 +84,9 @@ const GamesPage: React.FC = () => {
           selectedYear,
           selectedGenreId
         );
-        let sortedGames: Game[] = gamesData.games;
+
+        // Преобразуем RawGame[] в Game[]
+        let sortedGames: Game[] = gamesData.games.map(mapRawGameToGame);
 
         if (filter === "random") {
           sortedGames = shuffleArray(sortedGames);
@@ -90,23 +111,23 @@ const GamesPage: React.FC = () => {
         {!loading && (
           <div className={styles.filters}>
             <button
-  className={filter === "random" ? styles.activeButton : ""}
-  onClick={() => setFilter("random")}
->
-  Random
-</button>
-<button
-  className={filter === "popular" ? styles.activeButton : ""}
-  onClick={() => setFilter("popular")}
->
-  Popular
-</button>
-<button
-  className={filter === "rating" ? styles.activeButton : ""}
-  onClick={() => setFilter("rating")}
->
-  Rating
-</button>
+              className={filter === "random" ? styles.activeButton : ""}
+              onClick={() => setFilter("random")}
+            >
+              Random
+            </button>
+            <button
+              className={filter === "popular" ? styles.activeButton : ""}
+              onClick={() => setFilter("popular")}
+            >
+              Popular
+            </button>
+            <button
+              className={filter === "rating" ? styles.activeButton : ""}
+              onClick={() => setFilter("rating")}
+            >
+              Rating
+            </button>
 
             <select
               className={styles.selectFilter}

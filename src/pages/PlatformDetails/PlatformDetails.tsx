@@ -1,4 +1,5 @@
-import React, { FC, useEffect, useState, useRef } from "react";
+import type { FC } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameCard from "../../components/GameCard/GameCard";
@@ -45,7 +46,10 @@ const PlatformPage: FC = () => {
       try {
         console.log("Fetching games for page:", page);
         const gamesData = await getGamesForPlatform(id!, page);
-        console.log("Games received:", gamesData.results.map((g: any) => g.id));
+        console.log(
+          "Games received:",
+          gamesData.results.map((g: any) => g.id)
+        );
         if (gamesData.results.length === 0) {
           setHasMore(false);
         } else {

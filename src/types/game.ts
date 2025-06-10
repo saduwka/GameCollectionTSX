@@ -12,14 +12,12 @@ export interface Platform {
 
 export interface GamePlatform {
   platform: {
-    platform: {
-      id: number;
-      name: string;
-      slug: string;
-    };
-    released_at?: string;
-    requirements?: any;
+    id: number;
+    name: string;
+    slug: string;
   };
+  released_at?: string;
+  requirements?: any;
 }
 
 export interface Game {
@@ -35,7 +33,7 @@ export interface Game {
   genres: string[];
   metacritic?: number | null;
   website?: string | null;
-  added?: number; 
+  added?: number;
 }
 
 export interface RawGame {

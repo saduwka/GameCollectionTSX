@@ -44,10 +44,6 @@ const GamePage: React.FC = () => {
 
   const handleClick = (newStatus: string) => {
     if (!gameDetails) return;
-    const images: string[] = [
-      gameDetails.background_image || (gameDetails as any).image_background,
-      (gameDetails as any).background_image_additional,
-    ];
     const updatedStatus = status === newStatus ? "" : newStatus;
     setStatus(updatedStatus);
 
@@ -65,17 +61,13 @@ const GamePage: React.FC = () => {
     localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
-  const images: string[] = [
-    gameDetails?.background_image,
-    gameDetails?.background_image_additional
-  ].filter(Boolean) as string[];
-
   return (
     <>
       <LoadingErrorMessage
         loading={loading}
         error={error}
         noResults={!loading && !error && !gameDetails}
+        message="No game found"
       />
       {!loading && !error && gameDetails && (
         <div className={styles.gamePageContainer}>
@@ -141,40 +133,30 @@ const GamePage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: gameDetails.description }}
                 />
               </div>
-             
 
               <p>
                 <strong>Platforms:</strong>{" "}
                 {gameDetails.platforms && gameDetails.platforms.length > 0
-                  ? gameDetails.platforms
-                      .filter(
-                        (p) =>
-                          p.platform &&
-                          (p.platform.name || (p.platform.platform && p.platform.platform.name))
-                      )
-                      .map((platformObj, index, arr) => {
-                        const platformName =
-                          platformObj.platform?.name ??
-                          platformObj.platform?.platform?.name ??
-                          "Unknown";
-                        const platformId =
-                          platformObj.platform?.id ??
-                          platformObj.platform?.platform?.id ??
-                          index;
-                        return (
-                          <span key={platformId}>
-                            <a href={`/platform/${platformId}`} className={styles.platformLink}>
-                              {platformName}
-                            </a>
-                            {index < arr.length - 1 && ", "}
-                          </span>
-                        );
-                      })
+                  ? gameDetails.platforms.map((platformObj, index, arr) => {
+                      const platformName = platformObj.platform.name;
+                      const platformId = platformObj.platform.id;
+                      return (
+                        <span key={platformId}>
+                          <a
+                            href={`/platform/${platformId}`}
+                            className={styles.platformLink}
+                          >
+                            {platformName}
+                          </a>
+                          {index < arr.length - 1 && ", "}
+                        </span>
+                      );
+                    })
                   : "N/A"}
               </p>
               {gameDetails.website && (
                 <p>
-                  <strong>Website:</strong>
+                  <strong>Website:</strong>{" "}
                   <a
                     href={gameDetails.website}
                     target="_blank"
@@ -186,46 +168,56 @@ const GamePage: React.FC = () => {
               )}
             </div>
           </div>
-          {modalIndex !== null && (
-            <div
-              className={styles.modalOverlay}
-              onClick={() => setModalIndex(null)}
-            >
-              <div
-                className={styles.modalContent}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  className={styles.modalNavButton}
-                  onClick={() => {
-                    setModalIndex((prev) =>
-                      prev !== null ? (prev - 1 + images.length) % images.length : 0
-                    );
-                    setImageAnimationKey((prev) => prev + 1);
-                  }}
+          {modalIndex !== null &&
+            (() => {
+              const images: string[] = [
+                gameDetails.background_image,
+                gameDetails.background_image_additional
+              ].filter(Boolean) as string[];
+
+              return (
+                <div
+                  className={styles.modalOverlay}
+                  onClick={() => setModalIndex(null)}
                 >
-                  ‹
-                </button>
-                <img
-                  key={imageAnimationKey}
-                  src={images[modalIndex ?? 0]}
-                  alt="Game Fullscreen"
-                  className={`${styles.modalImage} ${styles.modalImageAnimated}`}
-                />
-                <button
-                  className={styles.modalNavButton}
-                  onClick={() => {
-                    setModalIndex((prev) =>
-                      prev !== null ? (prev + 1) % images.length : 0
-                    );
-                    setImageAnimationKey((prev) => prev + 1);
-                  }}
-                >
-                  ›
-                </button>
-              </div>
-            </div>
-          )}
+                  <div
+                    className={styles.modalContent}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className={styles.modalNavButton}
+                      onClick={() => {
+                        setModalIndex((prev) =>
+                          prev !== null
+                            ? (prev - 1 + images.length) % images.length
+                            : 0
+                        );
+                        setImageAnimationKey((prev) => prev + 1);
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <img
+                      key={imageAnimationKey}
+                      src={images[modalIndex ?? 0]}
+                      alt="Game Fullscreen"
+                      className={`${styles.modalImage} ${styles.modalImageAnimated}`}
+                    />
+                    <button
+                      className={styles.modalNavButton}
+                      onClick={() => {
+                        setModalIndex((prev) =>
+                          prev !== null ? (prev + 1) % images.length : 0
+                        );
+                        setImageAnimationKey((prev) => prev + 1);
+                      }}
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
         </div>
       )}
     </>

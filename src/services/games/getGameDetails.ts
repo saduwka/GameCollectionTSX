@@ -12,7 +12,7 @@ export async function getGameDetails(id: string): Promise<Game> {
 
   return {
     id: game.id,
-    title: game.name,
+    name: game.name,
     description: game.description_raw || "",
     coverUrl: game.background_image || "",
     background_image: game.background_image || "",

@@ -1,50 +1,33 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
+
+  const routes = [
+    { path: "/platforms", label: "Platform" },
+    { path: "/games", label: "Games" },
+    { path: "/developers", label: "Developers" },
+    { path: "/genres", label: "Genres" }
+  ];
 
   return (
-    <div>
-      <div className={styles.sidebar}>
-        <ul>
-          <li>
+    <div className={styles.sidebar}>
+      <ul>
+        {routes.map(({ path, label }) => (
+          <li key={path}>
             <Link
-              to="/platforms"
-              className={`${styles.link} ${location.pathname === "/platforms" ? styles.activeLink : ""}`}
+              to={path}
+              className={`${styles.link} ${
+                location.pathname === path ? styles.activeLink : ""
+              }`}
             >
-              Platform
+              {label}
             </Link>
           </li>
-          <li>
-            <Link
-              to="/games"
-              className={`${styles.link} ${location.pathname === "/games" ? styles.activeLink : ""}`}
-            >
-              Games
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/developers"
-              className={`${styles.link} ${location.pathname === "/developers" ? styles.activeLink : ""}`}
-            >
-              Developers
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/genres"
-              className={`${styles.link} ${location.pathname === "/genres" ? styles.activeLink : ""}`}
-            >
-              Genres
-            </Link>
-          </li>
-        </ul>
-      </div>
+        ))}
+      </ul>
     </div>
   );
 };

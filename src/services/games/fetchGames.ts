@@ -12,10 +12,18 @@ const mapRawGameToGame = (raw: RawGame): Game => ({
   background_image: raw.background_image || "",
   rating: raw.rating ?? 0,
   added: raw.added ?? 0,
-  platforms: raw.platforms || [],
+  platforms: raw.platforms?.map(p => ({
+    platform: {
+      id: p.platform.id,
+      name: p.platform.name,
+      slug: "", // <- slug отсутствует в RawGame, ставим пустую строку или добавь fetch отдельного Platform
+    }
+  })) || [],
   released: raw.released || "Unknown",
-  genres: raw.genres || [],
+  genres: raw.genres?.map(g => g.name) || [],
+  coverUrl: "", // <- добавь заполнение, если нужно
 });
+
 
 export const fetchGames = async (
   page = 1,

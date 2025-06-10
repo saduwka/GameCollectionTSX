@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
 import PlatformCard from "../../components/PlatformCard/PlatformCard";
@@ -9,7 +9,9 @@ import type { Platform } from "../../types/game";
 
 function PlatformsPage() {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
-  const [sortType, setSortType] = useState<"alphabet" | "popularity">("alphabet");
+  const [sortType, setSortType] = useState<"alphabet" | "popularity">(
+    "alphabet"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +55,7 @@ function PlatformsPage() {
             <button
               onClick={() => handleSort("alphabet")}
               className={classNames(styles.sortButton, {
-                [styles.active]: sortType === "alphabet",
+                [styles.active]: sortType === "alphabet"
               })}
             >
               A–Z
@@ -61,7 +63,7 @@ function PlatformsPage() {
             <button
               onClick={() => handleSort("popularity")}
               className={classNames(styles.sortButton, {
-                [styles.active]: sortType === "popularity",
+                [styles.active]: sortType === "popularity"
               })}
             >
               Popular
@@ -75,7 +77,7 @@ function PlatformsPage() {
           noResults={platforms.length === 0}
         />
 
-        {(!loading && !error && platforms.length > 0) && (
+        {!loading && !error && platforms.length > 0 && (
           <div className={styles.platformList}>
             {sortedPlatforms.map((platform) => (
               <Link key={platform.id} to={`/platform/${platform.id}`}>

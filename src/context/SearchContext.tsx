@@ -14,7 +14,9 @@ interface SearchContextType {
   error: string | null;
 }
 
-export const SearchContext = createContext<SearchContextType | undefined>(undefined);
+export const SearchContext = createContext<SearchContextType | undefined>(
+  undefined
+);
 
 interface SearchProviderProps {
   children: ReactNode;
@@ -22,21 +24,62 @@ interface SearchProviderProps {
 
 export const SearchProvider = ({ children }: SearchProviderProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(searchQuery);
-  const [games, setGames] = useState<Game[]>([]);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] =
+    useState<string>(searchQuery);
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ...rest of the provider logic
+  // Дебаунс для searchQuery
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Фейковая логика загрузки и фильтрации игр
+  useEffect(() => {
+    const fetchGames = async () => {
+      setLoading(true);
+      try {
+        // Загружаем игры (замени на реальный API)
+        const fetchedGames: Game[] = [
+          { name: "Halo" },
+          { name: "God of War" },
+          { name: "Elden Ring" }
+        ];
+
+        // Фильтрация по debouncedSearchQuery
+        const filtered = fetchedGames.filter((game) =>
+          game.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+        );
+
+        setFilteredGames(filtered);
+        setError(null);
+      } catch {
+        setError("Failed to load games");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (debouncedSearchQuery.trim()) {
+      fetchGames();
+    } else {
+      setFilteredGames([]);
+    }
+  }, [debouncedSearchQuery]);
 
   return (
     <SearchContext.Provider
       value={{
         searchQuery,
         setSearchQuery,
-        filteredGames: games,
+        filteredGames,
         loading,
-        error,
+        error
       }}
     >
       {children}
