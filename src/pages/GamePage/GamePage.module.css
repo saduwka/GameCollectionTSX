@@ -110,55 +110,6 @@ img:hover {
   width: fit-content;
 }
 
-@media (max-width: 768px) {
-  .gamePageContainer {
-    margin: 200px 20px 20px 20px;
-    gap: 16px;
-  }
-
-  .gameWrapper {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .gamePageHeader {
-    font-size: 1.5rem;
-  }
-
-  .gamePageImage {
-    width: 100%;
-    height: auto;
-  }
-
-  .gamePageImageContainer {
-    align-items: center;
-    width: 100%;
-  }
-
-  .gamePageDetails {
-    width: 100%;
-    padding: 16px;
-  }
-
-  .statusButtons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .modalImage {
-    width: 100%;
-    max-width: 95vw;
-    height: auto;
-  }
-
-  .modalNavButton:first-of-type {
-    left: 5px;
-  }
-
-  .modalNavButton:last-of-type {
-    right: 5px;
-  }
-}
 
 .statusButtons {
   display: flex;
@@ -239,4 +190,64 @@ img:hover {
 
 .modalNavButton:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+@media (max-width: 768px) {
+  .gamePageContainer {
+    margin: 160px 20px 20px 20px;
+    gap: 16px;
+  }
+
+  .gameWrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gamePageHeader {
+    font-size: 14px;
+  }
+
+  .gamePageImage {
+    width: 100%;
+    height: auto;
+  }
+
+  .gamePageImageContainer {
+    align-items: center;
+    width: 100%;
+  }
+
+  .gamePageDetails {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .description {
+    font-size: 12px;
+    font-family: "Courier New", Courier, monospace;
+  }
+
+  .statusButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .modalImage {
+    width: 100%;
+    max-width: 95vw;
+    height: auto;
+  }
+
+  .modalNavButton:first-of-type {
+    left: 5px;
+  }
+
+  .modalNavButton:last-of-type {
+    right: 5px;
+  }
+
+  .backButton {
+    width: 100%;
+  }
 }
