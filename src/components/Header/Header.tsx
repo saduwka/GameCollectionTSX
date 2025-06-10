@@ -1,4 +1,5 @@
-import React, { useContext, ChangeEvent, KeyboardEvent } from "react";
+import React, { useContext } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchContext } from "../../context/SearchContext";
 import styles from "./Header.module.css";
@@ -9,10 +10,7 @@ import logo from "../../assets/logo/logo.svg";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { searchQuery, setSearchQuery } = useContext(SearchContext);
-
-  // Тип для функции setSearchQuery — React.Dispatch<React.SetStateAction<string>>
-  // Этот тип определён в контексте SearchContext, так что кастовать не нужно.
+  const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
 
   const isAuthenticated = Boolean(localStorage.getItem("token"));
 
@@ -79,11 +77,17 @@ const Header: React.FC = () => {
             <span className={styles.favHeading}>Favorites</span>
           </Link>
 
-          <span onClick={handleLogout} className={styles.logoutButton} role="button" tabIndex={0} onKeyPress={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleLogout();
-            }
-          }}>
+          <span
+            onClick={handleLogout}
+            className={styles.logoutButton}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                handleLogout();
+              }
+            }}
+          >
             <img src={logoutIcon} alt="logout" className={styles.logoutIcon} />
             Logout
           </span>
