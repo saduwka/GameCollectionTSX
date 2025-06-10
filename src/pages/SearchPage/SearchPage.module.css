@@ -105,7 +105,7 @@ p {
 
 @media (max-width: 768px) {
   .searchPage {
-    margin: 200px 20px 50px 20px;
+    margin: 160px 20px 20px 20px;
   }
 
   .searchInput {

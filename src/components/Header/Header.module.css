@@ -126,6 +126,8 @@
   font-size: 28px;
   color: white;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
@@ -143,6 +145,7 @@
     justify-content: center;
     width: 100%;
     gap: 10px;
+    margin-top: 10px;
   }
 
   .heading {
@@ -173,8 +176,13 @@
     font-size: 14px;
   }
 
+  .searchInput::placeholder {
+    font-size: 10px;
+  } 
+
   .searchIcon {
     right: 20px;
+    top: 50%;
   }
 
   .userCard {
@@ -182,7 +190,8 @@
   }
 
   .burger {
-    display: block;
-    margin-right: 10px;
+    display: flex;
+    align-self: flex-start;
+    justify-content: flex-start;
   }
 }

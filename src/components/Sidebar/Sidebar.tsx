@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
@@ -17,13 +17,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
     { path: "/genres", label: "Genres" }
   ];
 
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
   return (
-    <div className={styles.sidebar} style={style}>
-      {onClose && (
-        <button className={styles.closeButton} onClick={onClose}>
-          ✕
-        </button>
-      )}
+    <div className={styles.sidebar} style={style} ref={sidebarRef}>
       <ul className={styles.navList}>
         {routes.map(({ path, label }) => (
           <li key={path}>
@@ -32,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
               className={`${styles.link} ${
                 location.pathname === path ? styles.activeLink : ""
               }`}
+              onClick={onClose}
             >
               {label}
             </Link>

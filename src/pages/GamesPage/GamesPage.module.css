@@ -85,7 +85,7 @@
 
 @media (max-width: 768px) {
   .gamesPage {
-    padding: 200px 20px 30px 20px;
+    padding: 160px 20px 30px 20px;
     gap: 16px;
   }
 
@@ -116,5 +116,9 @@
   .heading {
     font-size: 20px;
     text-align: center;
+  }
+
+  button {
+    width: 100%;
   }
 }

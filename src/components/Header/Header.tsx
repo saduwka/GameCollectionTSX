@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ onBurgerClick }) => {
       <button
         className={styles.burger}
         onClick={onBurgerClick}
-        aria-label="Open sidebar"
+        aria-label="Toggle sidebar"
       >
         ☰
       </button>

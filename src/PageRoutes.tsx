@@ -50,7 +50,7 @@ const PageRoutes = () => {
         )}
         <div
           style={{
-            marginLeft: !isMobile ? "220px" : "0",
+            marginLeft: !isMobile ? "0" : "0",
             flex: 1,
             height: "100%",
             width: "100%"

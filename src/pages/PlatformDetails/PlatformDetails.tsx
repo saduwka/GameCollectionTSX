@@ -99,7 +99,7 @@ const PlatformPage: FC = () => {
       >
         Go Back
       </button>
-      <h1>{platformDetails.name}</h1>
+      <h1 className={styles.heading}>{platformDetails.name}</h1>
       <p className={styles.platformDescription}>
         {platformDetails.description}
       </p>
