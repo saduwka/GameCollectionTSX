@@ -1,4 +1,16 @@
 .notFoundPage {
+  margin-top: 200px;
+  margin-left: 100px;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 24px;
+  }
+  .notFoundPage {
     margin-top: 200px;
-    margin-left: 100px;
+    margin-left: 20px;
+    margin-right: 20px;
+    text-align: center;
+  }
 }

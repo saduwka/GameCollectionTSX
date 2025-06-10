@@ -102,3 +102,45 @@ p {
   outline: none;
   border-color: var(--secondary-color);
 }
+
+@media (max-width: 768px) {
+  .searchPage {
+    margin: 200px 20px 50px 20px;
+  }
+
+  .searchInput {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px 10px;
+  }
+
+  .searchForm {
+    flex-direction: column;
+    gap: 16px;
+    margin: 10px 0;
+  }
+
+  .heading {
+    font-size: 20px;
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .sortContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 0;
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .sortContainer select {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  p {
+    font-size: 16px;
+    padding: 0 10px;
+  }
+}
