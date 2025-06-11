@@ -1,0 +1,84 @@
+.collectionContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 150px 50px;
+  gap: 20px;
+  color: #fff;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+}
+
+.title {
+  font-size: 24px;
+  margin-left: 100px;
+  color: #fff;
+}
+
+.section {
+  margin-bottom: 2rem;
+  margin-left: 100px;
+}
+
+.link {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 18px;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.backButton {
+  margin: 20px 100px 0;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .collectionContainer {
+    margin: 160px 20px 20px 20px;
+  }
+
+  .title,
+  .section,
+  .backButton {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .link {
+    font-size: 16px;
+  }
+
+  .backButton {
+    margin: 10px auto;
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+ 
+.clearButton {
+  margin: 0 100px 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  font-family: "Pixelated", "Press Start 2P", cursive;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .clearButton {
+    margin: 10px auto;
+    font-size: 13px;
+  }
+}

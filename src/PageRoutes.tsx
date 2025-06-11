@@ -9,6 +9,7 @@ import PlatformsPage from "./pages/PlatformsPage/PlatformsPage";
 import PlatformDetails from "./pages/PlatformDetails/PlatformDetails";
 import Header from "./components/Header/Header";
 import SearchPage from "./pages/SearchPage/SearchPage";
+import CollectionPage from "./pages/CollectionPage/CollectionPage";
 
 const PageRoutes = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -64,6 +65,7 @@ const PageRoutes = () => {
             <Route path="/platforms" element={<PlatformsPage />} />
             <Route path="/platform/:id" element={<PlatformDetails />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/collection" element={<CollectionPage />} />
           </Routes>
         </div>
       </div>

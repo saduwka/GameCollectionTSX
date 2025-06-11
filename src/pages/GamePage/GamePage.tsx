@@ -4,6 +4,7 @@ import { getGameDetails } from "../../services/games/getGameDetails";
 import type { Game } from "../../types/game";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import styles from "./GamePage.module.css";
+import { addGameToCollection } from "../../services/collection/collectionService";
 
 const GamePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,23 +43,19 @@ const GamePage: React.FC = () => {
     fetchGameDetails();
   }, [id]);
 
-  const handleClick = (newStatus: string) => {
+  const handleClick = async (updatedStatus: string) => {
     if (!gameDetails) return;
-    const updatedStatus = status === newStatus ? "" : newStatus;
-    setStatus(updatedStatus);
-
-    const saved = localStorage.getItem("favorites");
-    const parsed = saved ? JSON.parse(saved) : {};
-    const updated = {
-      ...parsed,
-      [gameDetails.id]: { name: gameDetails.name, status: updatedStatus }
-    };
-
-    if (updatedStatus === "") {
-      delete updated[gameDetails.id];
+  
+    try {
+      await addGameToCollection({
+        ...gameDetails,
+        status: updatedStatus,
+      });
+  
+      alert("Игра добавлена в коллекцию!");
+    } catch (error) {
+      console.error("Ошибка добавления в Firebase:", error);
     }
-
-    localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
   return (
