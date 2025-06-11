@@ -20,7 +20,6 @@ const PlatformPage: FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Добавляем useRef для предотвращения параллельных fetch
   const isFetching = useRef(false);
 
   useEffect(() => {
