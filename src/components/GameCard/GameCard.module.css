@@ -17,7 +17,7 @@ h3 {
   color: #fff;
   margin-top: 10px;
   margin-bottom: 10px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--ui-font);
   word-wrap: break-word;
 }
 
@@ -38,6 +38,6 @@ h3 {
 
 .gameCardRating {
   font-size: 14px;
-  font-family: "Pixelated", "Press Start 2P", cursive;
+  font-family: var(--ui-font);
   color: #fff;
 }
