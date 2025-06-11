@@ -42,7 +42,7 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className={styles.trending}>
-        <h1>🔥 Популярные игры</h1>
+        <h1>Популярные игры</h1>
         <div className={styles.gameCards}>
           {games.map((game) => (
             <div key={game.id} className={styles.gameCardContainer}>

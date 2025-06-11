@@ -26,6 +26,7 @@
   font-size: 18px;
   color: #666;
   margin-bottom: 20px;
+  font-family: var(--ui-font);
 }
 
 .buttons {
