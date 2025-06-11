@@ -1,16 +1,150 @@
-.notFoundPage {
-  margin-top: 200px;
-  margin-left: 100px;
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #e63946;
+    --secondary-color: #457b9d;
+    --dark-background: #1a1a1a;
+    --light-text: #f1faee;
+    --accent-yellow: #feca57; 
+    --gradient-start: #1c0f33;
+    --gradient-end: #0a0a0a;  
 }
 
-@media (max-width: 768px) {
-  h1 {
-    font-size: 24px;
-  }
-  .notFoundPage {
-    margin-top: 200px;
-    margin-left: 20px;
-    margin-right: 20px;
+.notFoundContainer {
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--light-text);
+    font-family: 'Roboto', sans-serif;
     text-align: center;
-  }
+    overflow: hidden;
+    position: relative;
+}
+
+.notFoundContent {
+    z-index: 0;
+    padding: 2rem;
+    max-width: 700px;
+    /* No background, no borders, no shadows on the content block itself */
+}
+
+.notFoundTitle {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--accent-yellow);
+    margin-bottom: 1rem;
+    animation: glitchEffect 1.5s infinite alternate;
+}
+
+.notFoundSubtitle {
+    font-size: 2.5rem;
+    color: var(--light-text);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.notFoundMessage {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    color: var(--light-text);
+}
+
+.notFoundActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.notFoundButton {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Button shadows remain for depth */
+}
+
+.primary {
+    background-color: var(--primary-color);
+    color: var(--light-text);
+}
+
+.primary:hover {
+    background-color: var(--accent-yellow);
+    color: var(--dark-background);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.secondary {
+    background-color: transparent;
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color); /* Secondary button keeps its border */
+}
+
+.secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--dark-background);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Keyframe Animations */
+@keyframes glitchEffect {
+    0% { transform: translate(0); text-shadow: 0 0 15px var(--primary-color); }
+    20% { transform: translate(-2px, 2px); text-shadow: 0 0 15px var(--primary-color), 2px -2px 0 var(--accent-yellow); }
+    40% { transform: translate(-2px, -2px); text-shadow: 0 0 15px var(--primary-color), -2px 2px 0 var(--secondary-color); }
+    60% { transform: translate(2px, 2px); text-shadow: 0 0 15px var(--primary-color), 2px 2px 0 var(--accent-yellow); }
+    80% { transform: translate(2px, -2px); text-shadow: 0 0 15px var(--primary-color), -2px -2px 0 var(--secondary-color); }
+    100% { transform: translate(0); text-shadow: 0 0 15px var(--primary-color); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .notFoundTitle {
+        font-size: 6rem;
+    }
+
+    .notFoundSubtitle {
+        font-size: 1.8rem;
+    }
+
+    .notFoundMessage {
+        font-size: 1rem;
+    }
+
+    .notFoundActions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .notFoundButton {
+        width: 80%;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .notFoundTitle {
+        font-size: 4rem;
+    }
+
+    .notFoundSubtitle {
+        font-size: 1.5rem;
+    }
+
+    .notFoundButton {
+        width: 95%;
+        padding: 0.8rem 2rem;
+    }
 }
