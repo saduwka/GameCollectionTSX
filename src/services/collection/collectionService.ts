@@ -8,8 +8,9 @@ import {
     query,
     where,
   } from "firebase/firestore";
-  import { db } from "../firebase";
-  import type { Game } from "../types/game";
+  import { db } from "../../firebase";
+import type { Game } from "../../types/game";
+
   
   // Коллекция Firestore
   const COLLECTION_NAME = "games";

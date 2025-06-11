@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "test-d39f6"
-  }
+    "default": "test-d39f6",
+    "gamecollection-v2": "gamecollection-ff71a",
+    "game": "gamecollection-efa31"
+  },
+  "targets": {},
+  "etags": {}
 }
