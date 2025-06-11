@@ -39,7 +39,7 @@ const PlatformPage: FC = () => {
 
   useEffect(() => {
     const fetchGames = async () => {
-      if (isFetching.current) return; // Если уже идет загрузка — не запускаем снова
+      if (isFetching.current) return;
       isFetching.current = true;
       setLoadingMore(true);
       try {
