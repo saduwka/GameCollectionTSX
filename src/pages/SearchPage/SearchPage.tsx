@@ -6,7 +6,7 @@ import styles from "./SearchPage.module.css";
 import { useNavigate } from "react-router-dom";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import type { Game } from "../../types/game";
-import { fetchGames } from "../../services/search/seatchServices";
+import { fetchGames } from "../../services/search/searchServices";
 
 const SearchPage: React.FC = () => {
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);

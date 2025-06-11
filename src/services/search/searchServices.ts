@@ -14,12 +14,12 @@ export const fetchGames = async (searchQuery: string = ""): Promise<any[]> => {
   let nextUrl: string | null = `${API_URL}?key=${API_KEY}&page_size=100&search=${encodeURIComponent(searchQuery)}`;
 
   while (nextUrl && allGames.length < 120) {
-    const response = await fetch(nextUrl);
+    const response: Response = await fetch(nextUrl);
     if (!response.ok) {
       throw new Error("Failed to load data");
     }
 
-    const data = await response.json();
+    const data: { results: any[]; next: string | null } = await response.json();
     console.log("API response:", data);
 
     if (Array.isArray(data.results)) {

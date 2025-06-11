@@ -3,8 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./CollectionPage.module.css";
 import GameCard from "../../components/GameCard/GameCard";
 import type { Game } from "../../types/game";
-import { getUserCollection } from "../../services/collectionService";
-
+import { getUserCollection } from "../../services/collection/collectionService";
 
 interface FavoriteGame extends Partial<Game> {
   status: string;
@@ -20,7 +19,7 @@ const CollectionPage: React.FC = () => {
     const fetchCollection = async () => {
       const data = await getUserCollection();
       const mapped: Record<string, FavoriteGame> = {};
-      data.forEach((game) => {
+      data.forEach((game: FavoriteGame) => {
         if (game.id) mapped[game.id.toString()] = game;
       });
       setFavorites(mapped);
@@ -54,25 +53,30 @@ const CollectionPage: React.FC = () => {
             </h2>
             {games.length > 0 ? (
               <ul>
-              {games.map(([id, game]) => {
-  if (!game.name) return null;
-  return (
-    <li key={id}>
-      <GameCard
-        game={{
-          id: Number(id),
-          name: game.name,
-          background_image: game.background_image || "/fallback.jpg",
-          released: game.released || "Unknown",
-          rating: game.rating || 0,
-          platforms: game.platforms || [],
-        }}
-        onClick={() => navigate(`/game/${id}`)}
-      />
-    </li>
-  );
-})}
-            </ul>
+                {games.map(([id, game]) => {
+                  if (!game.name) return null;
+                  return (
+                    <li key={id}>
+                      <Link to={`/game/${id}`} className={styles.link}>
+                        <GameCard
+                          game={{
+                            id: Number(id),
+                            name: game.name,
+                            background_image:
+                              game.background_image || "/fallback.jpg",
+                            released: game.released || "Unknown",
+                            rating: game.rating || 0,
+                            platforms: game.platforms || [],
+                            description: game.description || "",
+                            coverUrl: game.coverUrl || "",
+                            genres: game.genres || []
+                          }}
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             ) : (
               <p>No games in this category.</p>
             )}
