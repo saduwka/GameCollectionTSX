@@ -55,14 +55,15 @@
 }
 
 .selectFilter {
-  background-color: #222; /* темный фон */
-  color: #eee; /* светлый текст */
+  background-color: #222;
+  color: #eee;
   border: 1px solid #555;
   border-radius: 4px;
   padding: 6px 12px;
   font-size: 16px;
   cursor: pointer;
   transition: border-color 0.3s ease;
+  font-family: var(--ui-font);
 }
 
 .selectFilter:hover,
