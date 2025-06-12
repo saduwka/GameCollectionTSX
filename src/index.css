@@ -14,7 +14,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
   --ui-font: "Inter", sans-serif;
   --ui-font-pxl: "Pixelated", "Press Start 2P", cursive;
 }

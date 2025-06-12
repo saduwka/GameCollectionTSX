@@ -2,83 +2,142 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin: 150px 50px;
-  gap: 20px;
+  padding: 150px 50px 50px;
+  background-color: #111;
   color: #fff;
   font-family: "Pixelated", "Press Start 2P", cursive;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .title {
-  font-size: 24px;
-  margin-left: 100px;
+  font-size: 28px;
+  text-align: center;
   color: #fff;
 }
 
 .section {
-  margin-bottom: 2rem;
-  margin-left: 100px;
+  margin-bottom: 40px;
+  background-color: rgba(255, 255, 255, 0.05); /* полупрозрачный белый */
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.section h2 {
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.cardsRow {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 0;
+  scrollbar-width: thin;
+}
+
+.cardsRow::-webkit-scrollbar {
+  height: 6px;
+}
+
+.cardsRow::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.cardWrapper {
+  flex: 0 0 auto;
+  width: 250px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .link {
   text-decoration: none;
-  color: #007bff;
-  font-size: 18px;
+  color: inherit;
+  transition: transform 0.2s ease;
 }
 
 .link:hover {
-  text-decoration: underline;
+  transform: scale(1.02);
 }
 
-.backButton {
-  margin: 20px 100px 0;
-  padding: 12px 24px;
-  font-size: 16px;
-  background-color: transparent;
-  color: #fff;
-  border: 2px solid #fff;
-  border-radius: 12px;
-  font-family: "Pixelated", "Press Start 2P", cursive;
+.removeButton {
+  padding: 6px 12px;
+  font-size: 12px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--ui-font);
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.removeButton:hover {
+  background-color: #d9363e;
+}
+
+.loginWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  height: 100%;
 }
 
 @media (max-width: 768px) {
   .collectionContainer {
-    margin: 160px 20px 20px 20px;
+    padding: 180px 20px 20px;
   }
 
-  .title,
-  .section,
-  .backButton {
-    margin-left: 0;
+  .header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .section h2 {
+    font-size: 18px;
     text-align: center;
   }
 
-  .link {
-    font-size: 16px;
+  .cardsRow {
+    flex-direction: column;
+    overflow-x: unset;
+    overflow-y: visible;
+    gap: 20px;
+    padding: 0;
+  }
+
+  .cardWrapper {
+    width: 100%;
+    align-items: center;
+  }
+
+  .removeButton {
+    font-size: 11px;
+    padding: 5px 10px;
   }
 
   .backButton {
-    margin: 10px auto;
-    padding: 10px 20px;
     font-size: 14px;
-  }
-}
- 
-.clearButton {
-  margin: 0 100px 20px;
-  padding: 10px 20px;
-  font-size: 14px;
-  background-color: transparent;
-  color: #fff;
-  border: 2px solid #fff;
-  border-radius: 12px;
-  font-family: "Pixelated", "Press Start 2P", cursive;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .clearButton {
-    margin: 10px auto;
-    font-size: 13px;
+    padding: 10px 20px;
   }
 }

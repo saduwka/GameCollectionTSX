@@ -1,5 +1,6 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "./context/AuthContext"; // поправь путь под себя
 import HomePage from "./pages/HomePage/HomePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import GamePage from "./pages/GamePage/GamePage";
@@ -10,8 +11,13 @@ import PlatformDetails from "./pages/PlatformDetails/PlatformDetails";
 import Header from "./components/Header/Header";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import CollectionPage from "./pages/CollectionPage/CollectionPage";
+import LoginPage from "./pages/LoginPage/LoginPage";
+import PrivateRoute from "./routes/PrivateRoute";
 
 const PageRoutes = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [isMobile, setIsMobile] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -21,6 +27,13 @@ const PageRoutes = () => {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Редирект после успешной аутентификации
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/collection");
+    }
+  }, [user, loading, navigate]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -59,13 +72,21 @@ const PageRoutes = () => {
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="*" element={<NotFoundPage />} />
             <Route path="/game/:id" element={<GamePage />} />
             <Route path="/games" element={<GamesPage />} />
+            <Route
+              path="/collection"
+              element={
+                <PrivateRoute>
+                  <CollectionPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/platforms" element={<PlatformsPage />} />
             <Route path="/platform/:id" element={<PlatformDetails />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/collection" element={<CollectionPage />} />
           </Routes>
         </div>
       </div>

@@ -14,14 +14,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
     { path: "/platforms", label: "Platform" },
     { path: "/games", label: "Games" },
     { path: "/developers", label: "Developers" },
-    { path: "/genres", label: "Genres" }
+    { path: "/genres", label: "Genres" },
+    { path: "/collection", label: "Collection" }
   ];
 
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
         onClose?.();
       }
     };

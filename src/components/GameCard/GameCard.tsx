@@ -14,8 +14,8 @@ const GameCard = ({ game }: GameCardProps) => {
         className={styles.gameCardImg}
       />
       <div className={styles.description}>
-      <h3 className={styles.heading}>{game.name}</h3>
-      <p className={styles.gameCardRating}>Оценка: {game.rating}</p>
+        <h3 className={styles.heading}>{game.name}</h3>
+        <p className={styles.gameCardRating}>Rating: {game.rating}</p>
       </div>
     </div>
   );

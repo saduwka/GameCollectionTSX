@@ -126,4 +126,14 @@ li {
   .closeButton {
     display: block;
   }
+
+  .sidebar {
+    background: rgba(0, 0, 0, 0.5);
+    margin-top: 0;
+    padding-top: 100px;
+  }
+
+  .sidebar ul li a {
+    font-size: 10px;
+  }
 }
