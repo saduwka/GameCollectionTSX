@@ -25,24 +25,21 @@ const HomePage: React.FC = () => {
       <div className={styles.hero}>
         <h1 className={styles.title}>Game Collection</h1>
         <p className={styles.description}>
-          Храни и управляй своей коллекцией видеоигр. Поддержка поиска, фильтров
-          и избранного.
+          Store and manage your video game collection. Supports search, filters,
+          and favorites.
         </p>
         <div className={styles.buttons}>
           <button
             className={styles.btn}
             onClick={() => navigate("/collection")}
           >
-            🔍 Перейти к коллекции
-          </button>
-          <button className={styles.btn} onClick={() => navigate("/add")}>
-            ➕ Добавить игру
+            🔍 Go to Collection
           </button>
         </div>
       </div>
 
       <div className={styles.trending}>
-        <h1>Популярные игры</h1>
+        <h1>Trending Games</h1>
         <div className={styles.gameCards}>
           {games.map((game) => (
             <div key={game.id} className={styles.gameCardContainer}>

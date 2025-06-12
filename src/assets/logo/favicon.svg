@@ -1,0 +1,11 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="110" height="110">
+	<title>logo</title>
+	<defs>
+		<image  width="110" height="110" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG4AAABuAQMAAAD8lbS4AAAAAXNSR0IB2cksfwAAAANQTFRFAAAAp3o92gAAABpJREFUeJxjZEABjKPcUe4od5Q7yh3l0oYLAGw4AG9aodzXAAAAAElFTkSuQmCC"/>
+	</defs>
+	<style>
+		.s0 { fill: #ffffff } 
+	</style>
+	<use id="Слой 1" href="#img1" x="0" y="0"/>
+	<path class="s0" d="m66.5 19v3.6h3.6v18.3h18.2v3.6h3.7v22h-3.7v3.6h-18.2v18.2h-3.6v3.7h-22v-3.7h-3.6v-18.2h-18.3v-3.6h-3.6v-22h3.6v-3.6h18.3v-18.3h3.6v-3.6zm-25.5 29.2h-14.6v14.6h14.6zm7.3 21.9v14.6h14.6v-14.6z"/>
+</svg>

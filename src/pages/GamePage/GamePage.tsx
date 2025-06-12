@@ -4,17 +4,25 @@ import { getGameDetails } from "../../services/games/getGameDetails";
 import type { Game } from "../../types/game";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import styles from "./GamePage.module.css";
-import { addGameToCollection } from "../../services/collection/collectionService";
+import {
+  addGameToCollection,
+  removeGameFromCollection
+} from "../../services/collection/collectionService";
+import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 const GamePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [gameDetails, setGameDetails] = useState<Game | null>(null);
   const [status, setStatus] = useState<string>("");
   const [modalIndex, setModalIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [imageAnimationKey, setImageAnimationKey] = useState<number>(0);
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchGameDetails = async () => {
@@ -43,18 +51,32 @@ const GamePage: React.FC = () => {
     fetchGameDetails();
   }, [id]);
 
-  const handleClick = async (updatedStatus: string) => {
-    if (!gameDetails) return;
-  
+  const handleClick = async (clickedStatus: string) => {
+    if (!gameDetails || !user) return;
+
+    setSaving(true);
+
     try {
-      await addGameToCollection({
-        ...gameDetails,
-        status: updatedStatus,
-      });
-  
-      alert("Игра добавлена в коллекцию!");
+      if (status === clickedStatus) {
+        await removeGameFromCollection(gameDetails.id, user.uid);
+        setStatus("");
+        toast.success("Game removed from collection");
+      } else {
+        await addGameToCollection(
+          {
+            ...gameDetails,
+            status: clickedStatus
+          },
+          user.uid
+        );
+        setStatus(clickedStatus);
+        toast.success("Game status updated");
+      }
     } catch (error) {
-      console.error("Ошибка добавления в Firebase:", error);
+      console.error("Error updating status:", error);
+      toast.error("An error occurred");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -94,22 +116,26 @@ const GamePage: React.FC = () => {
               </div>
               <div className={styles.statusButtons}>
                 <button
+                  disabled={saving}
                   className={status === "played" ? styles.active : ""}
                   onClick={() => handleClick("played")}
                 >
-                  ✅ Played
+                  ✅ {saving && status === "played" ? "Saving…" : "Played"}
                 </button>
                 <button
+                  disabled={saving}
                   className={status === "playing" ? styles.active : ""}
                   onClick={() => handleClick("playing")}
                 >
-                  🕹️ Playing
+                  🕹️ {saving && status === "playing" ? "Saving…" : "Playing"}
                 </button>
                 <button
+                  disabled={saving}
                   className={status === "wishlist" ? styles.active : ""}
                   onClick={() => handleClick("wishlist")}
                 >
-                  📌 Want to Play
+                  📌{" "}
+                  {saving && status === "wishlist" ? "Saving…" : "Want to Play"}
                 </button>
               </div>
             </div>
@@ -130,25 +156,20 @@ const GamePage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: gameDetails.description }}
                 />
               </div>
-
               <p>
                 <strong>Platforms:</strong>{" "}
-                {gameDetails.platforms && gameDetails.platforms.length > 0
-                  ? gameDetails.platforms.map((platformObj, index, arr) => {
-                      const platformName = platformObj.platform.name;
-                      const platformId = platformObj.platform.id;
-                      return (
-                        <span key={platformId}>
-                          <a
-                            href={`/platform/${platformId}`}
-                            className={styles.platformLink}
-                          >
-                            {platformName}
-                          </a>
-                          {index < arr.length - 1 && ", "}
-                        </span>
-                      );
-                    })
+                {gameDetails.platforms?.length
+                  ? gameDetails.platforms.map((platformObj, index, arr) => (
+                      <span key={platformObj.platform.id}>
+                        <a
+                          href={`/platform/${platformObj.platform.id}`}
+                          className={styles.platformLink}
+                        >
+                          {platformObj.platform.name}
+                        </a>
+                        {index < arr.length - 1 && ", "}
+                      </span>
+                    ))
                   : "N/A"}
               </p>
               {gameDetails.website && (
@@ -165,9 +186,10 @@ const GamePage: React.FC = () => {
               )}
             </div>
           </div>
+
           {modalIndex !== null &&
             (() => {
-              const images: string[] = [
+              const images = [
                 gameDetails.background_image,
                 gameDetails.background_image_additional
               ].filter(Boolean) as string[];
@@ -196,7 +218,7 @@ const GamePage: React.FC = () => {
                     </button>
                     <img
                       key={imageAnimationKey}
-                      src={images[modalIndex ?? 0]}
+                      src={images[modalIndex]}
                       alt="Game Fullscreen"
                       className={`${styles.modalImage} ${styles.modalImageAnimated}`}
                     />
