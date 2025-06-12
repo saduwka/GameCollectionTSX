@@ -18,7 +18,7 @@ const LogoutButton: React.FC = () => {
 
   return (
     <button onClick={handleLogout} className={styles.button}>
-      Log out
+      Logout
     </button>
   );
 };

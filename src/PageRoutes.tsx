@@ -1,6 +1,5 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "./context/AuthContext"; // поправь путь под себя
 import HomePage from "./pages/HomePage/HomePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import GamePage from "./pages/GamePage/GamePage";
@@ -15,8 +14,6 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import PrivateRoute from "./routes/PrivateRoute";
 
 const PageRoutes = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
 
   const [isMobile, setIsMobile] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,12 +25,6 @@ const PageRoutes = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Редирект после успешной аутентификации
-  useEffect(() => {
-    if (!loading && user) {
-      navigate("/collection");
-    }
-  }, [user, loading, navigate]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 

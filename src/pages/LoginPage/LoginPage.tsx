@@ -3,6 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import LoginButton from "../../components/LoginButton/LoginButton";
 import styles from "./LoginPage.module.css";
+import { getRedirectResult } from "firebase/auth";
+import { auth } from "../../firebase";
+import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 
 const LoginPage = () => {
   const { user, loading } = useAuth();
@@ -11,7 +14,7 @@ const LoginPage = () => {
 
   const from =
     (location.state as { from?: { pathname: string } })?.from?.pathname ||
-    "/collection";
+    "/";
 
   useEffect(() => {
     if (!loading && user) {
@@ -19,7 +22,22 @@ const LoginPage = () => {
     }
   }, [user, loading, from, navigate]);
 
-  if (loading) return <div>Загрузка...</div>;
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        console.log("🌟 getRedirectResult result.user:", result?.user);
+        console.log("🔥 auth.currentUser:", auth.currentUser);
+      })
+      .catch((error) => {
+        console.error("Redirect auth error:", error);
+      });
+  }, []);
+
+  if (loading)
+    return (
+      <LoadingErrorMessage
+        loading={loading} error={null} noResults={false}        />
+    );
 
   return (
     <div className={styles.container}>

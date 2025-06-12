@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   type ReactNode
 } from "react";
 
@@ -13,7 +14,7 @@ import {
 } from "firebase/auth";
 
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: User | null;
@@ -31,12 +32,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const hasRedirectHandled = useRef(false);
+
   useEffect(() => {
+    if (hasRedirectHandled.current) return;
+    hasRedirectHandled.current = true;
+
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user) {
           console.log("✅ Redirect result user:", result.user);
           setUser(result.user);
+          navigate(location.pathname, { replace: true });
         }
       })
       .catch((error) => {
