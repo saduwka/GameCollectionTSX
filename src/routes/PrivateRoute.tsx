@@ -1,27 +1,25 @@
+import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import type { ReactElement } from "react";
+import LoadingErrorMessage from "../components/LoadingErrorMessage/LoadingErrorMessage";
 
-interface PrivateRouteProps {
-  children: ReactElement;
-}
 
-const PrivateRoute = ({ children }: PrivateRouteProps): ReactElement | null => {
+const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  console.log("user", user);
-  console.log("loading", loading);
-
   if (loading) {
-    return <div>Загрузка...</div>; // Ждём пока Firebase ответит
+    return (
+      <LoadingErrorMessage
+        loading={loading} error={null} noResults={false}        />
+    );
   }
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

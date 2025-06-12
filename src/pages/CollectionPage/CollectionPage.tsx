@@ -15,6 +15,8 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 
+
+
 interface FavoriteGame extends Partial<Game> {
   status: string;
 }
@@ -47,7 +49,8 @@ const CollectionPage: React.FC = () => {
 
   if (loading)
     return (
-      <LoadingErrorMessage loading={true} error={null} noResults={false} />
+      <LoadingErrorMessage
+        loading={loading} error={null} noResults={false}        />
     );
 
   if (!user) {
