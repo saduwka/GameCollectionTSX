@@ -84,6 +84,8 @@
   box-shadow: 0 0 8px #1e90ff;
 }
 
+
+
 @media (max-width: 768px) {
   .gamesPage {
     padding: 160px 20px 30px 20px;

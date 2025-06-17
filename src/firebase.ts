@@ -4,7 +4,9 @@ import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } 
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCHBomkD-I4E-NbGXy97EoEWPNVIo-HmCY',
-  authDomain:"gamecollection-ff71a.firebaseapp.com",
+  authDomain: import.meta.env.MODE === "development"
+    ? "localhost"
+    : "gamecollection-ff71a.firebaseapp.com",
   projectId: 'gamecollection-ff71a',
   storageBucket: 'gamecollection-ff71a.appspot.com', 
   messagingSenderId: '295175847930',

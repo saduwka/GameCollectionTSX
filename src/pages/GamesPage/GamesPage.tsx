@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
+import { getPlatforms } from "../../services/platforms/getPlatformsList";
 import GameCard from "../../components/GameCard/GameCard";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import styles from "./GamesPage.module.css";
@@ -46,7 +47,9 @@ const GamesPage: React.FC = () => {
 
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedGenreId, setSelectedGenreId] = useState<string>("");
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string>("");
   const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
+  const [platforms, setPlatforms] = useState<{ id: string; name: string }[]>([]);
 
   const shuffleArray = (array: Game[]): Game[] => {
     return [...array].sort(() => Math.random() - 0.5);
@@ -62,6 +65,17 @@ const GamesPage: React.FC = () => {
       }
     };
     fetchGenres();
+
+    const fetchPlatforms = async () => {
+      try {
+        const platformsList = await getPlatforms();
+        const sortedPlatforms = platformsList.sort((a, b) => a.name.localeCompare(b.name));
+        setPlatforms(sortedPlatforms);
+      } catch (error) {
+        console.error("Failed to load platforms", error);
+      }
+    };
+    fetchPlatforms();
   }, []);
 
   useEffect(() => {
@@ -82,7 +96,8 @@ const GamesPage: React.FC = () => {
           currentPage,
           ordering,
           selectedYear,
-          selectedGenreId
+          selectedGenreId,
+          selectedPlatformId
         );
 
         // Преобразуем RawGame[] в Game[]
@@ -102,7 +117,7 @@ const GamesPage: React.FC = () => {
     };
 
     getGames();
-  }, [filter, currentPage, selectedYear, selectedGenreId]);
+  }, [filter, currentPage, selectedYear, selectedGenreId, selectedPlatformId]);
 
   return (
     <div className={styles.gamesPage}>
@@ -156,6 +171,19 @@ const GamesPage: React.FC = () => {
               {genres.map((genre) => (
                 <option key={genre.id} value={genre.id}>
                   {genre.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className={styles.selectFilter}
+              value={selectedPlatformId}
+              onChange={(e) => setSelectedPlatformId(e.target.value)}
+            >
+              <option value="">All Platforms</option>
+              {platforms.map((platform) => (
+                <option key={platform.id} value={platform.id}>
+                  {platform.name}
                 </option>
               ))}
             </select>

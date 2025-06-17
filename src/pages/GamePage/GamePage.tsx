@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getGameDetails } from "../../services/games/getGameDetails";
 import type { Game } from "../../types/game";
+import type { Review } from "../../services/reviews/reviewsService";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import styles from "./GamePage.module.css";
 import {
@@ -10,6 +11,8 @@ import {
 } from "../../services/collection/collectionService";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import { addReview, getReviews } from "../../services/reviews/reviewsService"; 
+import LoginButton from "../../components/LoginButton/LoginButton";
 
 const GamePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +27,10 @@ const GamePage: React.FC = () => {
   const [imageAnimationKey, setImageAnimationKey] = useState<number>(0);
   const [saving, setSaving] = useState<boolean>(false);
 
+  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
   useEffect(() => {
     const fetchGameDetails = async () => {
       try {
@@ -35,6 +42,10 @@ const GamePage: React.FC = () => {
         }
         const data: Game = await getGameDetails(id);
         setGameDetails(data);
+
+        const fetchedReviews = await getReviews(data.id.toString());
+        setReviews(fetchedReviews);
+
         setLoading(false);
 
         const saved = localStorage.getItem("favorites");
@@ -185,6 +196,60 @@ const GamePage: React.FC = () => {
                 </p>
               )}
             </div>
+          </div>
+
+          {user ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!gameDetails) return;
+                const newReview = {
+                  userId: user.uid,
+                  username: user.displayName || "Anonymous",
+                  comment,
+                  rating,
+                };
+                const id = await addReview(gameDetails.id.toString(), newReview);
+                setReviews((prev) => [...prev, { ...newReview, id }]);
+                setComment("");
+                setRating(0);
+              }}
+              className={styles.reviewForm}
+            >
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Write your review..."
+              />
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+              />
+              <button type="submit">Submit Review</button>
+            </form>
+          ) : (
+            <>
+            <p>Please log in to leave a review.</p>
+            <LoginButton />
+            </>
+          )}
+
+          <div className={styles.reviewsSection}>
+            <h3>Reviews</h3>
+            {reviews.length > 0 ? (
+              <ul>
+                {reviews.map((review) => (
+                  <li key={review.id}>
+                    <strong>{review.username}:</strong> {review.comment} (Rating: {review.rating})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No reviews yet.</p>
+            )}
           </div>
 
           {modalIndex !== null &&
