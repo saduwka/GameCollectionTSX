@@ -7,6 +7,8 @@
   color: #fff;
   font-family: "Pixelated", "Press Start 2P", cursive;
   gap: 20px;
+  max-width: 90%;
+  margin-left: 200px;
 }
 
 .header {

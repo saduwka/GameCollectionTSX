@@ -13,12 +13,14 @@ const LoginPage = () => {
   const location = useLocation();
 
   const from =
+    localStorage.getItem("redirectPath") ||
     (location.state as { from?: { pathname: string } })?.from?.pathname ||
     "/";
 
   useEffect(() => {
     if (!loading && user) {
       navigate(from, { replace: true });
+      localStorage.removeItem("redirectPath");
     }
   }, [user, loading, from, navigate]);
 

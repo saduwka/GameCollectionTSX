@@ -1,5 +1,3 @@
-
-
 const API_URL = "https://api.rawg.io/api/games";
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY as string;
 
@@ -30,6 +28,8 @@ export const fetchGames = async (searchQuery: string = ""): Promise<any[]> => {
     }
   }
 
-  searchCache[searchQuery] = allGames;
-  return allGames;
+  searchCache[searchQuery] = allGames.filter(game =>
+    game.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  return searchCache[searchQuery];
 };

@@ -6,6 +6,7 @@ const provider = new GoogleAuthProvider();
 
 const LoginButton = () => {
   const handleLogin = () => {
+    localStorage.setItem("redirectPath", window.location.pathname);
     signInWithRedirect(auth, provider).catch((error) => {
       console.error("Ошибка авторизации через Google:", error);
     });

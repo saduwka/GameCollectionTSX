@@ -29,9 +29,10 @@ export const fetchGames = async (
   page = 1,
   ordering = "-rating",
   year?: string,
-  genreId?: string
+  genreId?: string,
+  platformId?: string
 ): Promise<FetchGamesResponse> => {
-  const cacheKey = `${page}-${ordering}-${year ?? "all"}-${genreId ?? "all"}`;
+  const cacheKey = `${page}-${ordering}-${year ?? "all"}-${genreId ?? "all"}-${platformId ?? "all"}`;
   if (gameListCache[cacheKey]) {
     return gameListCache[cacheKey];
   }
@@ -43,6 +44,9 @@ export const fetchGames = async (
     }
     if (genreId) {
       url += `&genres=${genreId}`;
+    }
+    if (platformId) {
+      url += `&platforms=${platformId}`;
     }
 
     const response = await fetch(url);
