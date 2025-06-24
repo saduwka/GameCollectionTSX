@@ -1,0 +1,76 @@
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.image {
+  width: 800px;
+  max-width: 95vw;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 1000;
+  padding: 0 15px;
+}
+
+.navButton:first-of-type {
+  left: -50px;
+}
+
+.navButton:last-of-type {
+  right: -50px;
+}
+
+.navButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .image {
+    width: 100%;
+    height: auto;
+  }
+  .navButton:first-of-type {
+    left: 5px;
+  }
+  .navButton:last-of-type {
+    right: 5px;
+  }
+}

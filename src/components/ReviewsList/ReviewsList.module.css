@@ -1,0 +1,27 @@
+.section {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.section h3 {
+  margin-bottom: 10px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.item {
+  background-color: #222;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  text-align: left;
+  color: white;
+  font-family: var(--ui-font);
+}
+
+.item strong {
+  color: #1c86ee;
+}
