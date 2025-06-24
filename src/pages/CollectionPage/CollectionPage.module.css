@@ -8,7 +8,7 @@
   font-family: "Pixelated", "Press Start 2P", cursive;
   gap: 20px;
   max-width: 90%;
-  margin-left: 200px;
+  margin-left: 200px; /* для десктопа под сайдбар */
 }
 
 .header {
@@ -28,7 +28,7 @@
 
 .section {
   margin-bottom: 40px;
-  background-color: rgba(255, 255, 255, 0.05); /* полупрозрачный белый */
+  background-color: rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
@@ -103,6 +103,8 @@
 @media (max-width: 768px) {
   .collectionContainer {
     padding: 180px 20px 20px;
+    margin-left: 0; /* убрали под мобильный сайдбар */
+    max-width: 100%;
   }
 
   .header {
@@ -113,6 +115,7 @@
 
   .title {
     font-size: 22px;
+    text-align: center;
   }
 
   .section h2 {
@@ -122,10 +125,12 @@
 
   .cardsRow {
     flex-direction: column;
-    overflow-x: unset;
-    overflow-y: visible;
-    gap: 20px;
-    padding: 0;
+    overflow: visible; /* убрали скролл */
+    scrollbar-width: none; /* отключили кастомный скроллбар */
+  }
+
+  .cardsRow::-webkit-scrollbar {
+    display: none;
   }
 
   .cardWrapper {

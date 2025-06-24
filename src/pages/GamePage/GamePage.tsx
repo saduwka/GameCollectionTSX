@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getGameDetails } from "../../services/games/getGameDetails";
-import type { Game } from "../../types/game";
-import type { Review } from "../../services/reviews/reviewsService";
-import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
-import styles from "./GamePage.module.css";
 import {
   addGameToCollection,
   removeGameFromCollection
 } from "../../services/collection/collectionService";
+import {
+  addReview,
+  getReviews,
+  updateReview,
+  deleteReview
+} from "../../services/reviews/reviewsService";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
-import { addReview, getReviews } from "../../services/reviews/reviewsService"; 
+
+import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
+import ReviewForm from "../../components/ReviewForm/ReviewForm";
+import ReviewsList from "../../components/ReviewsList/ReviewsList";
+import ImageModal from "../../components/ImageModal/ImageModal";
 import LoginButton from "../../components/LoginButton/LoginButton";
+
+import type { Game } from "../../types/game";
+import type { Review } from "../../types/review";
+
+import styles from "./GamePage.module.css";
 
 const GamePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,17 +33,18 @@ const GamePage: React.FC = () => {
   const [gameDetails, setGameDetails] = useState<Game | null>(null);
   const [status, setStatus] = useState<string>("");
   const [modalIndex, setModalIndex] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [imageAnimationKey, setImageAnimationKey] = useState<number>(0);
   const [saving, setSaving] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [comment, setComment] = useState("");
-  const [rating, setRating] = useState(0);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
 
+  // Получаем данные игры и отзывы
   useEffect(() => {
-    const fetchGameDetails = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         if (!id) {
@@ -40,31 +52,48 @@ const GamePage: React.FC = () => {
           setLoading(false);
           return;
         }
-        const data: Game = await getGameDetails(id);
-        setGameDetails(data);
 
-        const fetchedReviews = await getReviews(data.id.toString());
+        const game = await getGameDetails(id);
+        const fetchedReviews = await getReviews(game.id.toString());
+
+        setGameDetails(game);
         setReviews(fetchedReviews);
 
-        setLoading(false);
+        // Пользовательский отзыв
+        if (user) {
+          const ownReview =
+            fetchedReviews.find((r) => r.userId === user.uid) || null;
+          setUserReview(ownReview);
+        }
 
+        // Средняя оценка
+        if (fetchedReviews.length > 0) {
+          const sum = fetchedReviews.reduce((acc, r) => acc + r.rating, 0);
+          setAverageRating(sum / fetchedReviews.length);
+        } else {
+          setAverageRating(null);
+        }
+
+        // Статус коллекции
         const saved = localStorage.getItem("favorites");
         const parsed = saved ? JSON.parse(saved) : {};
         if (parsed[id]) {
           setStatus(parsed[id].status);
         }
-      } catch (error) {
+
+        setLoading(false);
+      } catch {
         setError("Failed to fetch game details");
         setLoading(false);
       }
     };
 
-    fetchGameDetails();
-  }, [id]);
+    fetchData();
+  }, [id, user]);
 
-  const handleClick = async (clickedStatus: string) => {
+  // Обновление статуса игры
+  const handleStatusClick = async (clickedStatus: string) => {
     if (!gameDetails || !user) return;
-
     setSaving(true);
 
     try {
@@ -74,22 +103,76 @@ const GamePage: React.FC = () => {
         toast.success("Game removed from collection");
       } else {
         await addGameToCollection(
-          {
-            ...gameDetails,
-            status: clickedStatus
-          },
+          { ...gameDetails, status: clickedStatus },
           user.uid
         );
         setStatus(clickedStatus);
         toast.success("Game status updated");
       }
-    } catch (error) {
-      console.error("Error updating status:", error);
+    } catch {
       toast.error("An error occurred");
     } finally {
       setSaving(false);
     }
   };
+
+  // Сохранить отзыв
+  const handleReviewSubmit = async (comment: string, rating: number) => {
+    if (!gameDetails || !user) return;
+
+    const newReview: Review = {
+      userId: user.uid,
+      username: user.displayName || "Anonymous",
+      comment,
+      rating
+    };
+
+    if (userReview) {
+      // Обновить
+      await updateReview(gameDetails.id.toString(), userReview.id!, newReview);
+      const updated = reviews.map((r) =>
+        r.id === userReview.id ? { ...newReview, id: r.id } : r
+      );
+      setReviews(updated);
+      setUserReview({ ...newReview, id: userReview.id });
+      toast.success("Review updated");
+      const sum = updated.reduce((acc, r) => acc + r.rating, 0);
+      setAverageRating(sum / updated.length);
+    } else {
+      // Добавить новый
+      const id = await addReview(gameDetails.id.toString(), newReview);
+      const updated = [...reviews, { ...newReview, id }];
+      setReviews(updated);
+      setUserReview({ ...newReview, id });
+      toast.success("Review added");
+      const sum = updated.reduce((acc, r) => acc + r.rating, 0);
+      setAverageRating(sum / updated.length);
+    }
+  };
+
+  // Удалить отзыв
+  const handleReviewDelete = async () => {
+    if (!gameDetails || !userReview) return;
+
+    await deleteReview(gameDetails.id.toString(), userReview.id!);
+    const updated = reviews.filter((r) => r.id !== userReview.id);
+    setReviews(updated);
+    setUserReview(null);
+    toast.success("Review deleted");
+
+    if (updated.length > 0) {
+      const sum = updated.reduce((acc, r) => acc + r.rating, 0);
+      setAverageRating(sum / updated.length);
+    } else {
+      setAverageRating(null);
+    }
+  };
+
+  // Модальное окно
+  const images = [
+    gameDetails?.background_image,
+    gameDetails?.background_image_additional
+  ].filter(Boolean) as string[];
 
   return (
     <>
@@ -99,67 +182,65 @@ const GamePage: React.FC = () => {
         noResults={!loading && !error && !gameDetails}
         message="No game found"
       />
+
       {!loading && !error && gameDetails && (
         <div className={styles.gamePageContainer}>
           <button onClick={() => navigate(-1)} className={styles.backButton}>
             ← Back
           </button>
+
           <h1 className={styles.gamePageHeader}>{gameDetails.name}</h1>
+
           <div className={styles.gameWrapper}>
             <div className={styles.gameImgWrapper}>
               <div className={styles.gamePageImageContainer}>
-                {gameDetails.background_image && (
+                {images.map((src, index) => (
                   <img
+                    key={index}
                     className={styles.gamePageImage}
-                    src={gameDetails.background_image}
+                    src={src}
                     alt={gameDetails.name}
-                    onClick={() => setModalIndex(0)}
+                    onClick={() => setModalIndex(index)}
                   />
-                )}
-                {gameDetails.background_image_additional && (
-                  <img
-                    className={styles.gamePageImage}
-                    src={gameDetails.background_image_additional}
-                    alt={gameDetails.name}
-                    onClick={() => setModalIndex(1)}
-                  />
-                )}
+                ))}
               </div>
+
               <div className={styles.statusButtons}>
-                <button
-                  disabled={saving}
-                  className={status === "played" ? styles.active : ""}
-                  onClick={() => handleClick("played")}
-                >
-                  ✅ {saving && status === "played" ? "Saving…" : "Played"}
-                </button>
-                <button
-                  disabled={saving}
-                  className={status === "playing" ? styles.active : ""}
-                  onClick={() => handleClick("playing")}
-                >
-                  🕹️ {saving && status === "playing" ? "Saving…" : "Playing"}
-                </button>
-                <button
-                  disabled={saving}
-                  className={status === "wishlist" ? styles.active : ""}
-                  onClick={() => handleClick("wishlist")}
-                >
-                  📌{" "}
-                  {saving && status === "wishlist" ? "Saving…" : "Want to Play"}
-                </button>
+                {["played", "playing", "wishlist"].map((s) => (
+                  <button
+                    key={s}
+                    disabled={saving}
+                    className={status === s ? styles.active : ""}
+                    onClick={() => handleStatusClick(s)}
+                  >
+                    {s === "played" && "✅ "}
+                    {s === "playing" && "🕹️ "}
+                    {s === "wishlist" && "📌 "}
+                    {saving && status === s
+                      ? "Saving…"
+                      : s[0].toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
+
             <div className={styles.gamePageDetails}>
               <p>
                 <strong>Release Date:</strong> {gameDetails.released}
               </p>
               <p>
-                <strong>Rating:</strong> {gameDetails.rating}
+                <strong>RAWG Rating:</strong> {gameDetails.rating}
+              </p>
+              <p>
+                <strong>User Rating:</strong>{" "}
+                {averageRating
+                  ? averageRating.toFixed(1)
+                  : "No user rating yet"}
               </p>
               <p>
                 <strong>Metacritic:</strong> {gameDetails.metacritic || "N/A"}
               </p>
+
               <div>
                 <strong>Description:</strong>
                 <div
@@ -167,22 +248,24 @@ const GamePage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: gameDetails.description }}
                 />
               </div>
+
               <p>
                 <strong>Platforms:</strong>{" "}
                 {gameDetails.platforms?.length
-                  ? gameDetails.platforms.map((platformObj, index, arr) => (
-                      <span key={platformObj.platform.id}>
+                  ? gameDetails.platforms.map((p, i, arr) => (
+                      <span key={p.platform.id}>
                         <a
-                          href={`/platform/${platformObj.platform.id}`}
+                          href={`/platform/${p.platform.id}`}
                           className={styles.platformLink}
                         >
-                          {platformObj.platform.name}
+                          {p.platform.name}
                         </a>
-                        {index < arr.length - 1 && ", "}
+                        {i < arr.length - 1 && ", "}
                       </span>
                     ))
                   : "N/A"}
               </p>
+
               {gameDetails.website && (
                 <p>
                   <strong>Website:</strong>{" "}
@@ -199,109 +282,40 @@ const GamePage: React.FC = () => {
           </div>
 
           {user ? (
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!gameDetails) return;
-                const newReview = {
-                  userId: user.uid,
-                  username: user.displayName || "Anonymous",
-                  comment,
-                  rating,
-                };
-                const id = await addReview(gameDetails.id.toString(), newReview);
-                setReviews((prev) => [...prev, { ...newReview, id }]);
-                setComment("");
-                setRating(0);
-              }}
-              className={styles.reviewForm}
-            >
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Write your review..."
-              />
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-              />
-              <button type="submit">Submit Review</button>
-            </form>
+            <ReviewForm
+              userReview={userReview}
+              onSubmit={handleReviewSubmit}
+              onDelete={handleReviewDelete}
+            />
           ) : (
             <>
-            <p>Please log in to leave a review.</p>
-            <LoginButton />
+              <p>Please log in to leave a review.</p>
+              <LoginButton />
             </>
           )}
 
-          <div className={styles.reviewsSection}>
-            <h3>Reviews</h3>
-            {reviews.length > 0 ? (
-              <ul>
-                {reviews.map((review) => (
-                  <li key={review.id}>
-                    <strong>{review.username}:</strong> {review.comment} (Rating: {review.rating})
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No reviews yet.</p>
-            )}
-          </div>
+          <ReviewsList reviews={reviews} />
 
-          {modalIndex !== null &&
-            (() => {
-              const images = [
-                gameDetails.background_image,
-                gameDetails.background_image_additional
-              ].filter(Boolean) as string[];
-
-              return (
-                <div
-                  className={styles.modalOverlay}
-                  onClick={() => setModalIndex(null)}
-                >
-                  <div
-                    className={styles.modalContent}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      className={styles.modalNavButton}
-                      onClick={() => {
-                        setModalIndex((prev) =>
-                          prev !== null
-                            ? (prev - 1 + images.length) % images.length
-                            : 0
-                        );
-                        setImageAnimationKey((prev) => prev + 1);
-                      }}
-                    >
-                      ‹
-                    </button>
-                    <img
-                      key={imageAnimationKey}
-                      src={images[modalIndex]}
-                      alt="Game Fullscreen"
-                      className={`${styles.modalImage} ${styles.modalImageAnimated}`}
-                    />
-                    <button
-                      className={styles.modalNavButton}
-                      onClick={() => {
-                        setModalIndex((prev) =>
-                          prev !== null ? (prev + 1) % images.length : 0
-                        );
-                        setImageAnimationKey((prev) => prev + 1);
-                      }}
-                    >
-                      ›
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
+          {modalIndex !== null && (
+            <ImageModal
+              images={images}
+              currentIndex={modalIndex}
+              onClose={() => setModalIndex(null)}
+              onPrev={() => {
+                setModalIndex((prev) =>
+                  prev !== null ? (prev - 1 + images.length) % images.length : 0
+                );
+                setImageAnimationKey((prev) => prev + 1);
+              }}
+              onNext={() => {
+                setModalIndex((prev) =>
+                  prev !== null ? (prev + 1) % images.length : 0
+                );
+                setImageAnimationKey((prev) => prev + 1);
+              }}
+              animationKey={imageAnimationKey}
+            />
+          )}
         </div>
       )}
     </>
