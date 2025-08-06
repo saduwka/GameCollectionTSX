@@ -280,21 +280,22 @@ const GamePage: React.FC = () => {
               )}
             </div>
           </div>
+          <div className={styles.reviewsSection}>
+            {user ? (
+              <ReviewForm
+                userReview={userReview}
+                onSubmit={handleReviewSubmit}
+                onDelete={handleReviewDelete}
+              />
+            ) : (
+              <>
+                <p>Please log in to leave a review.</p>
+                <LoginButton />
+              </>
+            )}
 
-          {user ? (
-            <ReviewForm
-              userReview={userReview}
-              onSubmit={handleReviewSubmit}
-              onDelete={handleReviewDelete}
-            />
-          ) : (
-            <>
-              <p>Please log in to leave a review.</p>
-              <LoginButton />
-            </>
-          )}
-
-          <ReviewsList reviews={reviews} />
+            <ReviewsList reviews={reviews} />
+          </div>
 
           {modalIndex !== null && (
             <ImageModal

@@ -8,7 +8,7 @@
   font-family: "Pixelated", "Press Start 2P", cursive;
   gap: 20px;
   max-width: 90%;
-  margin-left: 200px; /* для десктопа под сайдбар */
+  margin-left: 220px;
 }
 
 .header {

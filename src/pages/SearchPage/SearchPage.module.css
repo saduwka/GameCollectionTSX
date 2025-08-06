@@ -10,7 +10,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
 }
 
@@ -66,7 +66,6 @@ p {
 .heading {
   font-size: 24px;
   margin-bottom: 20px;
-  margin-left: 100px;
   color: #fff;
 }
 
@@ -74,7 +73,6 @@ p {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-left: 100px;
   margin-bottom: 20px;
   font-family: "Pixelated", "Press Start 2P", cursive;
   font-size: 18px;

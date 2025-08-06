@@ -12,7 +12,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
 }
 
@@ -68,7 +68,7 @@
 
 .selectFilter:hover,
 .selectFilter:focus {
-  border-color: #4b4b4b; /* синий акцент при наведении и фокусе */
+  border-color: #4b4b4b;
   outline: none;
 }
 
@@ -83,8 +83,6 @@
   border: none;
   box-shadow: 0 0 8px #1e90ff;
 }
-
-
 
 @media (max-width: 768px) {
   .gamesPage {
