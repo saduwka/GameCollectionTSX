@@ -36,31 +36,37 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.reviewForm}>
-      <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="Write your review..."
-      />
-      <input
-        type="number"
-        min="1"
-        max="5"
-        value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
-        placeholder="Rating (1-5)"
-      />
-      <div className={styles.reviewFormButtons}>
-        <button type="submit">
-          {userReview ? "Update Review" : "Submit Review"}
-        </button>
-        {userReview && (
-          <button type="button" onClick={onDelete}>
-            Delete Review
+    <div className={styles.reviewFormContainer}>
+      <h3>Add Review</h3>
+      <form onSubmit={handleSubmit} className={styles.reviewForm}>
+        <div className={styles.textareaContainer}>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Write your review..."
+          />
+
+          <input
+            type="number"
+            min="1"
+            max="5"
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+            placeholder="Rating (1-5)"
+          />
+        </div>
+        <div className={styles.reviewFormButtons}>
+          <button type="submit">
+            {userReview ? "Update Review" : "Submit Review"}
           </button>
-        )}
-      </div>
-    </form>
+          {userReview && (
+            <button type="button" onClick={onDelete}>
+              Delete Review
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 };
 

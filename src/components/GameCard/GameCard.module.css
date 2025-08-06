@@ -12,6 +12,10 @@
   justify-content: flex-start;
 }
 
+.gameCard:hover {
+  cursor: pointer;
+}
+
 h3 {
   font-size: 1.2rem;
   color: #fff;

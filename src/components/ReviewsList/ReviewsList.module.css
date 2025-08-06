@@ -1,15 +1,23 @@
-.section {
+.reviewsSection {
   margin-top: 30px;
-  text-align: center;
 }
 
-.section h3 {
+.reviewsSection h3 {
   margin-bottom: 10px;
+  text-align: center;
+  font-family: "Pixelated", "Press Start 2P", cursive;
 }
 
-.list {
+.reviewsSection li {
   list-style: none;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  background-color: #333;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
 }
 
 .item {

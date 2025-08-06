@@ -1,15 +1,20 @@
 import styles from "./LoginButton.module.css";
-import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
-import { auth } from "../../firebase";
-
-const provider = new GoogleAuthProvider();
+import { signInWithPopup, signInWithRedirect } from "firebase/auth";
+import { auth, googleProvider } from "../../firebase";
 
 const LoginButton = () => {
   const handleLogin = () => {
     localStorage.setItem("redirectPath", window.location.pathname);
-    signInWithRedirect(auth, provider).catch((error) => {
-      console.error("Ошибка авторизации через Google:", error);
-    });
+
+    if (import.meta.env.MODE === "development") {
+      signInWithPopup(auth, googleProvider).catch((error) => {
+        console.error("Ошибка авторизации через Google (popup):", error);
+      });
+    } else {
+      signInWithRedirect(auth, googleProvider).catch((error) => {
+        console.error("Ошибка авторизации через Google (redirect):", error);
+      });
+    }
   };
 
   return (

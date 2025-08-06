@@ -13,8 +13,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
   const routes = [
     { path: "/platforms", label: "Platform" },
     { path: "/games", label: "Games" },
-    { path: "/developers", label: "Developers" },
-    { path: "/genres", label: "Genres" },
+    // { path: "/developers", label: "Developers" },
+    // { path: "/genres", label: "Genres" },
     { path: "/collection", label: "Collection" }
   ];
 
