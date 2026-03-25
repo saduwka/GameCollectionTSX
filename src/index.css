@@ -14,15 +14,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  --ui-font: "Inter", sans-serif;
-  --ui-font-pxl: "Pixelated", "Press Start 2P", cursive;
+  --ui-font: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Pixelated", "Press Start 2P", cursive;
 }
 
 a {
@@ -66,13 +64,33 @@ button:hover {
   border-color: #646cff;
 }
 
-@media (prefers-color-scheme: light) {
-}
-
-main {
-  padding-top: 100px;
+.main-content {
+  flex: 1;
+  padding-top: 0;
+  width: 100%;
   height: auto;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 0; 
+  }
+  
+  h1 {
+    font-size: 1.8em;
+  }
+
+  body,
+  p,
+  span,
+  li,
+  a,
+  input,
+  button {
+    font-size: 14px;
+    line-height: 1.4;
+  }
 }
 
 body,

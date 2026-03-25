@@ -10,6 +10,24 @@
     transition: transform 0.2s ease-in-out;
     text-align: center;
     justify-content: flex-start;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .platformCard {
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+  }
+
+  .platformCardImg {
+    height: 120px;
+  }
+
+  .platformName {
+    font-size: 0.9rem;
+    padding: 5px;
+  }
 }
 
 .platformCard:hover {

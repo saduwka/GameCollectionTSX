@@ -21,7 +21,10 @@ const mapRawGameToGame = (raw: RawGame): Game => ({
   })) || [],
   released: raw.released || "Unknown",
   genres: raw.genres?.map(g => g.name) || [],
-  coverUrl: "", // <- добавь заполнение, если нужно
+  coverUrl: raw.background_image || "",
+  screenshots: [], // Added
+  trailers: [], // Added
+  stores: [] // Added
 });
 
 
@@ -38,7 +41,10 @@ export const fetchGames = async (
   }
 
   try {
-    let url = `${API_URL}?key=${API_KEY}&page=${page}&ordering=${ordering}`;
+    let url = `${API_URL}?key=${API_KEY}&page=${page}`;
+    if (ordering) {
+      url += `&ordering=${ordering}`;
+    }
     if (year) {
       url += `&dates=${year}-01-01,${year}-12-31`;
     }

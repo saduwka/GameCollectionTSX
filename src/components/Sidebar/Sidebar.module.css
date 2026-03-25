@@ -1,139 +1,129 @@
-.link {
-  color: white;
-  text-decoration: none;
-  font-size: 18px;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
 .sidebar {
-  margin-top: 120px;
   position: fixed;
   top: 0;
-  width: 220px;
-  height: 100%;
-  color: white;
-  padding: 20px;
+  left: -280px;
+  width: 280px;
+  height: 100vh;
+  background-color: #121212;
+  color: #fff;
+  z-index: 2000;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  z-index: 1;
-  transition: left 0.5s ease;
-  gap: 20px;
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 18, 18, 0.3),
-    rgba(0, 0, 0, 0.9)
-  );
 }
 
-.sidebar h3 {
-  font-size: 24px;
-  margin-bottom: 20px;
+.sidebarOpen {
+  transform: translateX(280px);
 }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-.sidebar ul li {
-  margin-bottom: 15px;
+.overlayOpen {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.sidebar ul li a {
-  color: white;
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
-  font-size: 18px;
-  font-family: var(--ui-font-pxl);
-}
-
-.sidebar ul li a:hover {
-  text-decoration: underline;
+  color: #fff;
 }
 
 .logo {
-  width: 70px;
-  height: 70px;
+  width: 30px;
+  height: 30px;
 }
 
-li {
-  list-style: none;
-}
-
-.logoutButton {
-  background-color: transparent;
-  color: white;
-  border: 1px solid white;
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.logoutButton:hover {
-  background-color: white;
-  color: #2c2c2c;
-}
-
-.userCard {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  background-color: #2c2c2c;
-  padding: 10px 16px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  z-index: 99;
-}
-
-.favLink {
-  color: #fff;
-  font-size: 16px;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.favLink:hover {
-  text-decoration: underline;
-}
-
-.activeLink {
-  text-decoration: underline !important;
+.brandName {
+  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .closeButton {
-  display: none;
   background: none;
   border: none;
-  font-size: 26px;
-  color: white;
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  color: #fff;
+  font-size: 2rem;
   cursor: pointer;
-  z-index: 10;
+  line-height: 1;
+  padding: 0;
 }
 
-@media (max-width: 768px) {
-  .closeButton {
-    display: block;
-  }
+.sidebarContent {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
 
+.searchForm {
+  width: 100%;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #242424;
+  color: #fff;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.navLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.navLink {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.navLink:hover {
+  background-color: #242424;
+  color: #646cff;
+}
+
+@media (max-width: 480px) {
   .sidebar {
-    background: rgba(0, 0, 0, 0.5);
-    margin-top: 0;
-    padding-top: 100px;
+    width: 240px;
+    left: -240px;
   }
-
-  .sidebar ul li a {
-    font-size: 10px;
+  .sidebarOpen {
+    transform: translateX(240px);
   }
 }

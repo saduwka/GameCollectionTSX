@@ -14,6 +14,16 @@ export const getPlatforms = async (): Promise<any[]> => {
   }
 };
 
+export const getParentPlatforms = async (): Promise<any[]> => {
+  try {
+    const response = await axios.get(`https://api.rawg.io/api/platforms/lists/parents?key=${API_KEY}`);
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching parent platforms:", error);
+    return [];
+  }
+};
+
 export const getPlatformDetails = async (id: string): Promise<any | null> => {
   if (platformsCache[id]) {
     return platformsCache[id];

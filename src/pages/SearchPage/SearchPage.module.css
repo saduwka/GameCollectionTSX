@@ -2,16 +2,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin: 150px 50px;
+  margin: 20px 50px;
   gap: 20px;
 }
 
 .gameList {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
-  justify-content: space-between;
-  align-items: flex-start;
+  width: 100%;
 }
 
 .content {
@@ -37,13 +36,11 @@
   height: auto;
   background-color: transparent;
   color: #fff;
-  font-family: "Pixelated", "Press Start 2P", cursive;
   text-align: center;
   border: 2px solid #fff;
 }
 
 input::placeholder {
-  font-family: "Pixelated", "Press Start 2P", cursive;
   font-size: 16px;
   color: #777;
 }
@@ -57,7 +54,6 @@ input::placeholder {
 }
 
 p {
-  font-family: "Pixelated", "Press Start 2P", cursive;
   font-size: 20px;
   color: #fff;
   text-align: center;
@@ -74,7 +70,6 @@ p {
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
-  font-family: "Pixelated", "Press Start 2P", cursive;
   font-size: 18px;
   color: #fff;
 }
@@ -89,7 +84,6 @@ p {
   border: 2px solid #fff;
   border-radius: 12px;
   padding: 8px 16px;
-  font-family: "Pixelated", "Press Start 2P", cursive;
   font-size: 16px;
   cursor: pointer;
   transition: border-color 0.3s ease;
@@ -103,7 +97,8 @@ p {
 
 @media (max-width: 768px) {
   .searchPage {
-    margin: 160px 20px 20px 20px;
+    gap: 10px;
+    margin: 20px;
   }
 
   .searchInput {
@@ -124,6 +119,17 @@ p {
     text-align: center;
   }
 
+  .gameList {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .gameList > a {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
   .sortContainer {
     flex-direction: column;
     align-items: flex-start;
@@ -142,3 +148,4 @@ p {
     padding: 0 10px;
   }
 }
+.gameList > a { width: calc(50% - 5px); display: flex; justify-content: center; }
