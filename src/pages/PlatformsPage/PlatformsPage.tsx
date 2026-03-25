@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPlatforms } from "../../services/platforms/getPlatformsList";
+import { getParentPlatforms } from "../../services/platforms/getPlatformsList";
 import PlatformCard from "../../components/PlatformCard/PlatformCard";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import styles from "./PlatformsPage.module.css";
-import classNames from "classnames";
 import type { Platform } from "../../types/game";
 
+interface ParentPlatform {
+  id: number;
+  name: string;
+  slug: string;
+  platforms: Platform[];
+}
+
 function PlatformsPage() {
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
-  const [sortType, setSortType] = useState<"alphabet" | "popularity">(
-    "alphabet"
-  );
+  const [parentPlatforms, setParentPlatforms] = useState<ParentPlatform[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,8 +23,8 @@ function PlatformsPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getPlatforms();
-        setPlatforms(data);
+        const data = await getParentPlatforms();
+        setParentPlatforms(data);
       } catch (err: any) {
         setError(err.message || "Failed to fetch platforms");
       } finally {
@@ -32,60 +35,29 @@ function PlatformsPage() {
     fetchPlatforms();
   }, []);
 
-  const handleSort = (type: "alphabet" | "popularity") => {
-    setSortType(type);
-  };
-
-  const sortedPlatforms = [...platforms].sort((a, b) => {
-    if (sortType === "alphabet") {
-      return a.name.localeCompare(b.name);
-    } else if (sortType === "popularity") {
-      return (b.games_count || 0) - (a.games_count || 0);
-    }
-    return 0;
-  });
-
   return (
     <div className={styles.platformsPage}>
       <div className={styles.content}>
         <h1 className={styles.heading}>Gaming Platforms</h1>
 
-        {!loading && (
-          <div className={styles.sortButtons}>
-            <button
-              onClick={() => handleSort("alphabet")}
-              className={classNames(styles.sortButton, {
-                [styles.active]: sortType === "alphabet"
-              })}
-            >
-              A–Z
-            </button>
-            <button
-              onClick={() => handleSort("popularity")}
-              className={classNames(styles.sortButton, {
-                [styles.active]: sortType === "popularity"
-              })}
-            >
-              Popular
-            </button>
-          </div>
-        )}
-
         <LoadingErrorMessage
           loading={loading}
           error={error}
-          noResults={platforms.length === 0}
+          noResults={parentPlatforms.length === 0}
         />
 
-        {!loading && !error && platforms.length > 0 && (
-          <div className={styles.platformList}>
-            {sortedPlatforms.map((platform) => (
-              <Link key={platform.id} to={`/platform/${platform.id}`}>
-                <PlatformCard platform={platform} />
-              </Link>
-            ))}
+        {!loading && !error && parentPlatforms.map((group) => (
+          <div key={group.id} className={styles.platformGroup}>
+            <h2 className={styles.groupTitle}>{group.name}</h2>
+            <div className={styles.platformList}>
+              {group.platforms.map((platform) => (
+                <Link key={platform.id} to={`/platform/${platform.id}`}>
+                  <PlatformCard platform={platform} />
+                </Link>
+              ))}
+            </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

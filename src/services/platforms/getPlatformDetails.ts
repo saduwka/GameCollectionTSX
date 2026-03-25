@@ -10,8 +10,18 @@ export const getPlatformDetails = async (id: string) => {
   return response.json();
 };
 
-export const getGamesForPlatform = async (id: string, page: number = 1) => {
-  const response = await fetch(`https://api.rawg.io/api/games?platforms=${id}&page=${page}&key=${API_KEY}`);
+export const getGamesForPlatform = async (id: string, page: number = 1, genreId?: string, ordering?: string) => {
+  const url = new URL(`https://api.rawg.io/api/games`);
+  url.searchParams.append('platforms', id);
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('key', API_KEY);
+  if (genreId) {
+    url.searchParams.append('genres', genreId);
+  }
+  if (ordering) {
+    url.searchParams.append('ordering', ordering);
+  }
+  const response = await fetch(url.toString());
   if (!response.ok) {
     throw new Error('Failed to fetch games');
   }

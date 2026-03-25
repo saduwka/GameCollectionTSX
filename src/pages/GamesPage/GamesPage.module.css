@@ -4,16 +4,15 @@
   justify-content: flex-start;
   align-items: center;
   min-height: 100vh;
-  padding: 150px 50px 50px 50px;
+  padding: 20px 50px;
   gap: 20px;
 }
 
 .gamesList {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
-  justify-content: space-between;
-  align-items: flex-start;
+  width: 100%;
 }
 
 .content {
@@ -21,105 +20,75 @@
   flex-direction: column;
   flex: 1;
   gap: 20px;
+  width: 100%;
 }
 
 .gameCardContainer {
   display: flex;
   justify-content: center;
   align-items: stretch;
+  width: 100%;
+  text-decoration: none;
 }
 
 .heading {
   font-size: 24px;
   color: #fff;
-}
-
-.filters {
-  display: flex;
-  gap: 10px;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  margin-bottom: 40px;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  gap: 20px;
 }
 
 .pageNumber {
   font-size: 18px;
-  margin: 0 10px;
   font-weight: bold;
   color: #fff;
 }
 
-.selectFilter {
-  background-color: #222;
-  color: #eee;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  font-family: var(--ui-font);
-}
-
-.selectFilter:hover,
-.selectFilter:focus {
-  border-color: #4b4b4b;
-  outline: none;
-}
-
-.selectFilter option {
-  background-color: #222;
-  color: #eee;
-}
-
-.activeButton {
+.paginationButton {
   background-color: #4b4b4b;
   color: white;
   border: none;
-  box-shadow: 0 0 8px #1e90ff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #646cff;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
   .gamesPage {
-    padding: 160px 20px 30px 20px;
-    gap: 16px;
+    padding: 10px;
+    gap: 15px;
   }
 
   .gamesList {
-    justify-content: center;
-  }
-
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .pagination {
-    flex-direction: column;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
-  }
-
-  .pageNumber {
-    margin: 0;
-  }
-
-  .selectFilter {
-    width: 100%;
   }
 
   .heading {
     font-size: 20px;
-    text-align: center;
   }
-
-  button {
-    width: 100%;
+  
+  .pagination {
+    margin-top: 20px;
+    gap: 10px;
   }
 }

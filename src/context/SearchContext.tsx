@@ -1,17 +1,12 @@
 import { createContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-
-interface Game {
-  name: string;
-  [key: string]: any;
-}
+import type { Game } from "../types/game";
 
 interface SearchContextType {
   searchQuery: string;
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   filteredGames: Game[];
   loading: boolean;
-  error: string | null;
 }
 
 export const SearchContext = createContext<SearchContextType | undefined>(
@@ -28,7 +23,6 @@ export const SearchProvider = ({ children }: SearchProviderProps) => {
     useState<string>(searchQuery);
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Дебаунс для searchQuery
   useEffect(() => {
@@ -39,34 +33,15 @@ export const SearchProvider = ({ children }: SearchProviderProps) => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  // Фейковая логика загрузки и фильтрации игр
+  // The actual search logic is handled on the SearchPage.
+  // This context is primarily for sharing the search query string.
   useEffect(() => {
-    const fetchGames = async () => {
-      setLoading(true);
-      try {
-        // Загружаем игры (замени на реальный API)
-        const fetchedGames: Game[] = [
-          { name: "Halo" },
-          { name: "God of War" },
-          { name: "Elden Ring" }
-        ];
-
-        // Фильтрация по debouncedSearchQuery
-        const filtered = fetchedGames.filter((game) =>
-          game.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-        );
-
-        setFilteredGames(filtered);
-        setError(null);
-      } catch {
-        setError("Failed to load games");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (debouncedSearchQuery.trim()) {
-      fetchGames();
+      setLoading(true);
+      // In a real app, you would fetch here.
+      // For now, we clear games as the SearchPage will handle the display.
+      setFilteredGames([]);
+      setLoading(false);
     } else {
       setFilteredGames([]);
     }
@@ -78,8 +53,7 @@ export const SearchProvider = ({ children }: SearchProviderProps) => {
         searchQuery,
         setSearchQuery,
         filteredGames,
-        loading,
-        error
+        loading
       }}
     >
       {children}

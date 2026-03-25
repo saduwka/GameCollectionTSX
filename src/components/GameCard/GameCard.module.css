@@ -10,6 +10,31 @@
   transition: transform 0.2s ease-in-out;
   text-align: center;
   justify-content: flex-start;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .gameCard {
+    width: 100%;
+    height: auto;
+    min-height: 140px;
+    border-radius: 4px;
+  }
+
+  h3 {
+    font-size: 0.7rem;
+    margin: 3px;
+    line-height: 1.1;
+  }
+
+  .gameCardImg {
+    height: 80px;
+  }
+
+  .gameCardRating {
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
 }
 
 .gameCard:hover {

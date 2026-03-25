@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 200px;
+  padding-top: 50px;
 }
 
 .hero {
@@ -62,48 +62,58 @@
 }
 
 .gameCards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
   .homePage {
-    padding-top: 200px;
+    padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
   }
 
   .title {
-    font-size: 32px;
-    margin-bottom: 8px;
+    font-size: 24px;
+    margin-bottom: 6px;
   }
 
   .description {
-    font-size: 16px;
-    margin-bottom: 16px;
+    font-size: 14px;
+    margin-bottom: 12px;
   }
 
   .buttons {
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .btn {
     width: 90%;
-    font-size: 15px;
-    padding: 12px;
+    font-size: 14px;
+    padding: 10px;
   }
 
   .trending h1 {
-    font-size: 24px;
-    margin-top: 30px;
+    font-size: 20px;
+    margin-top: 20px;
   }
 
   .gameCards {
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .gameCards > div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .carouselFullWidth {

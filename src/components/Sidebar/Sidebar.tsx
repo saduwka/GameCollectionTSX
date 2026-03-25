@@ -1,60 +1,71 @@
-import React, { useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { SearchContext } from "../../context/SearchContext";
 import styles from "./Sidebar.module.css";
+import logo from "../../assets/logo/logo.svg";
 
-type SidebarProps = {
-  onClose?: () => void;
-  style?: React.CSSProperties;
-};
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-const Sidebar: React.FC<SidebarProps> = ({ onClose, style }) => {
-  const location = useLocation();
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
+  const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
 
-  const routes = [
-    { path: "/platforms", label: "Platform" },
-    { path: "/games", label: "Games" },
-    // { path: "/developers", label: "Developers" },
-    // { path: "/genres", label: "Genres" },
-    { path: "/collection", label: "Collection" }
-  ];
+  const handleSearchSubmit = (e?: React.FormEvent): void => {
+    e?.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+      onClose();
+    }
+  };
 
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearchQuery(e.target.value);
+  };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
-        onClose?.();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
 
   return (
-    <div className={styles.sidebar} style={style} ref={sidebarRef}>
-      <ul className={styles.navList}>
-        {routes.map(({ path, label }) => (
-          <li key={path}>
-            <Link
-              to={path}
-              className={`${styles.link} ${
-                location.pathname === path ? styles.activeLink : ""
-              }`}
-              onClick={onClose}
-            >
-              {label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <div 
+        className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ""}`} 
+        onClick={onClose}
+      />
+      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
+        <div className={styles.sidebarHeader}>
+          <Link to="/" className={styles.logoWrapper} onClick={onClose}>
+            <img src={logo} alt="Logo" className={styles.logo} />
+            <span className={styles.brandName}>PlayHub</span>
+          </Link>
+          <button className={styles.closeButton} onClick={onClose}>&times;</button>
+        </div>
+
+        <div className={styles.sidebarContent}>
+          <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Search games..."
+              className={styles.searchInput}
+            />
+          </form>
+
+          <nav className={styles.navLinks}>
+            <Link to="/" className={styles.navLink} onClick={onClose}>Home</Link>
+            <Link to="/platforms" className={styles.navLink} onClick={onClose}>Platforms</Link>
+            <Link to="/games" className={styles.navLink} onClick={onClose}>Games</Link>
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 };
 
