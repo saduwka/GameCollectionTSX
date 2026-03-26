@@ -33,21 +33,23 @@ const Header: React.FC = () => {
             <img src={logo} alt="Logo" className={styles.logo} />
             <h1 className={styles.heading}>PlayHub</h1>
           </Link>
+        </div>
+
+        <div className={styles.rightSection}>
           <nav className={styles.navLinks}>
             <Link to="/platforms" className={styles.navLink}>Platforms</Link>
             <Link to="/games" className={styles.navLink}>Games</Link>
           </nav>
-        </div>
-
-        <div className={styles.searchForm}>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Search games..."
-            className={styles.searchInput}
-          />
+          <div className={styles.searchForm}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Search games..."
+              className={styles.searchInput}
+            />
+          </div>
         </div>
       </div>
     </header>

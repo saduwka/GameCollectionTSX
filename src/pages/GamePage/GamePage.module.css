@@ -20,6 +20,33 @@
   text-align: center;
 }
 
+.subscriptionBadges {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.gamePassBadge {
+  background-color: #107c10;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.psPlusBadge {
+  background-color: #003791;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 .platformBadge {
   font-size: 1.2rem;
   color: #646cff;
@@ -66,6 +93,184 @@
   min-width: 300px;
 }
 
+.statusSection {
+  background-color: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #444;
+}
+
+.statusLabel {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statusButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statusButton {
+  background-color: #3d3d3d;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 80px;
+}
+
+.statusButton:hover:not(:disabled) {
+  background-color: #4d4d4d;
+  border-color: #646cff;
+}
+
+.activeStatus {
+  background-color: #646cff !important;
+  border-color: #646cff !important;
+  font-weight: bold;
+}
+
+.personalSection {
+  background-color: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid #444;
+}
+
+.progressTracker {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #444;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.statusSelect, .hoursInput, .dateInput {
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.statusSelect:focus, .hoursInput:focus, .dateInput:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.hoursInput {
+  width: 100px;
+}
+
+.ratingBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 1.2rem;
+}
+
+.star {
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.star:hover {
+  transform: scale(1.2);
+  color: #ffcc00;
+}
+
+.starActive {
+  color: #ffcc00;
+}
+
+.ratingNumber {
+  margin-left: 10px;
+  font-weight: bold;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.noteBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noteInput {
+  width: 100%;
+  min-height: 80px;
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.noteInput:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.saveNoteButton {
+  align-self: flex-end;
+  padding: 6px 15px;
+  font-size: 0.8rem;
+  background-color: #444;
+}
+
+.saveNoteButton:hover:not(:disabled) {
+  background-color: #646cff;
+}
+
+.removeButton {
+  margin-top: 5px;
+  background-color: transparent;
+  color: #ff4b4b;
+  border: 1px solid #ff4b4b;
+  padding: 8px;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.removeButton:hover:not(:disabled) {
+  background-color: #ff4b4b;
+  color: white;
+}
+
 .gamePageDetails p {
   font-size: 1rem;
   margin: 0;
@@ -104,21 +309,104 @@
   margin-top: 8px;
 }
 
-.storeButton {
-  background-color: #4b4b4b;
+.retroBadge {
+  background-color: #d35400;
   color: #fff !important;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.9rem;
   text-decoration: none;
-  transition: background-color 0.2s;
-  border: 1px solid #555;
+  transition: all 0.2s ease;
+  border: 1px solid #e67e22;
+  display: inline-block;
 }
 
-.storeButton:hover {
+.retroBadge:hover {
+  background-color: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4);
+  text-decoration: none !important;
+}
+
+.dealsSection {
+  margin-top: 25px;
+  background-color: rgba(46, 204, 113, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.dealsLoader {
+  color: #2ecc71;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+.dealsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dealItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a2a2a;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid #444;
+  transition: all 0.2s;
+}
+
+.dealItem:hover {
+  border-color: #2ecc71;
+  transform: translateX(5px);
+  background-color: #333;
+}
+
+.storeName {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.dealPrice {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.dealSavings {
+  background-color: #2ecc71;
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.storeBadge {
+  background-color: #4b4b4b;
+  color: #fff !important;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid #555;
+  display: inline-block;
+}
+
+.storeBadge:hover {
   background-color: #646cff;
   border-color: #646cff;
   text-decoration: none !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(100, 108, 255, 0.3);
 }
 
 .backButton {

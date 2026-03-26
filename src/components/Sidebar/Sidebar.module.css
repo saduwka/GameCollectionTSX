@@ -1,20 +1,20 @@
 .sidebar {
   position: fixed;
   top: 0;
-  left: -280px;
+  right: -280px;
   width: 280px;
   height: 100vh;
   background-color: #121212;
   color: #fff;
   z-index: 2000;
   transition: transform 0.3s ease-in-out;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
 }
 
 .sidebarOpen {
-  transform: translateX(280px);
+  transform: translateX(-280px);
 }
 
 .overlay {
@@ -78,6 +78,47 @@
   gap: 30px;
 }
 
+.userSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.profileLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s;
+}
+
+.profileLink:hover {
+  opacity: 0.8;
+}
+
+.userAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid #646cff;
+}
+
+.userName {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
 .searchForm {
   width: 100%;
 }
@@ -121,9 +162,10 @@
 @media (max-width: 480px) {
   .sidebar {
     width: 240px;
-    left: -240px;
+    right: -240px;
+    left: auto;
   }
   .sidebarOpen {
-    transform: translateX(240px);
+    transform: translateX(-240px);
   }
 }

@@ -4,19 +4,25 @@ import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
 import GameCard from "../../components/GameCard/GameCard";
+import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
 import styles from "./GamesPage.module.css";
 import type { Game } from "../../types/game";
 
+const STORAGE_KEY = "playhub_filters";
+
 const GamesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const filter = (searchParams.get("filter") as "random" | "popular" | "rating") || "random";
+  const filter = (searchParams.get("filter") as "random" | "popular" | "rating") || "popular";
   const currentPage = parseInt(searchParams.get("page") || "1");
   const selectedYear = searchParams.get("year") || "";
   const selectedGenreId = searchParams.get("genre") || "";
   const selectedPlatformId = searchParams.get("platform") || "";
+  const selectedDeveloperId = searchParams.get("developer") || "";
+  const selectedTagId = searchParams.get("tag") || "";
+  const selectedPlaytime = searchParams.get("playtime") || "";
 
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -39,6 +45,35 @@ const GamesPage: React.FC = () => {
       return params;
     }, { replace: true });
   }, [setSearchParams]);
+
+  // Сохранение фильтров в localStorage
+  useEffect(() => {
+    const filters = {
+      year: selectedYear,
+      genre: selectedGenreId,
+      platform: selectedPlatformId,
+      playtime: selectedPlaytime
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+  }, [selectedYear, selectedGenreId, selectedPlatformId, selectedPlaytime]);
+
+  // Восстановление фильтров при первом входе (если URL пустой)
+  useEffect(() => {
+    if (searchParams.toString() === "") {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const newParams: any = {};
+        if (parsed.year) newParams.year = parsed.year;
+        if (parsed.genre) newParams.genre = parsed.genre;
+        if (parsed.platform) newParams.platform = parsed.platform;
+        if (parsed.playtime) newParams.playtime = parsed.playtime;
+        if (Object.keys(newParams).length > 0) {
+          setSearchParams(newParams);
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -72,24 +107,20 @@ const GamesPage: React.FC = () => {
         ordering,
         selectedYear,
         selectedGenreId,
-        selectedPlatformId
+        selectedPlatformId,
+        selectedDeveloperId,
+        selectedTagId,
+        selectedPlaytime
       );
 
-      let resultGames = gamesData.games;
-      if (filter === "random") {
-        // Note: RAWG doesn't have a true 'random' ordering, so we shuffle on client side
-        // but it will reshuffle on every page change/filter change.
-        resultGames = [...resultGames].sort(() => Math.random() - 0.5);
-      }
-
-      setGames(resultGames);
+      setGames(gamesData.games);
       setHasMore(gamesData.nextPageUrl !== null);
     } catch (err) {
       setError("Failed to fetch games. Please try again later.");
     } finally {
       setLoading(false);
     }
-  }, [filter, currentPage, selectedYear, selectedGenreId, selectedPlatformId]);
+  }, [filter, currentPage, selectedYear, selectedGenreId, selectedPlatformId, selectedDeveloperId, selectedTagId, selectedPlaytime]);
 
   useEffect(() => {
     getGames();
@@ -100,10 +131,24 @@ const GamesPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleClearFilters = () => {
+    setSearchParams({ filter: "popular" });
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
+  const hasAnyFilter = selectedYear || selectedGenreId || selectedPlatformId || selectedDeveloperId || selectedTagId || selectedPlaytime;
+
   return (
     <div className={styles.gamesPage}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>Games List</h1>
+        <div className={styles.headerRow}>
+          <h1 className={styles.heading}>Discover Games</h1>
+          {hasAnyFilter && (
+            <button className={styles.clearButton} onClick={handleClearFilters}>
+              Clear All Filters
+            </button>
+          )}
+        </div>
         
         <GameFilters
           filter={filter}
@@ -114,15 +159,25 @@ const GamesPage: React.FC = () => {
           setSelectedGenreId={(g) => updateParams({ genre: g, page: 1 })}
           selectedPlatformId={selectedPlatformId}
           setSelectedPlatformId={(p) => updateParams({ platform: p, page: 1 })}
+          selectedPlaytime={selectedPlaytime}
+          setSelectedPlaytime={(range) => updateParams({ playtime: range, page: 1 })}
           genres={genres}
           platforms={platforms}
         />
 
         <LoadingErrorMessage
-          loading={loading}
+          loading={loading && games.length === 0}
           error={error}
           noResults={!loading && !error && games.length === 0}
         />
+
+        {loading && games.length === 0 && (
+          <div className={styles.gamesList}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <GameCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
 
         {!loading && !error && games.length > 0 && (
           <div className={styles.gamesList}>
