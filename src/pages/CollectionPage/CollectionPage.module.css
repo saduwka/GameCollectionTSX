@@ -1,0 +1,145 @@
+.collectionPage {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.statusFilters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 20px;
+}
+
+.filterTab {
+  background: #2a2a2a;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.filterTab:hover {
+  background: #333;
+  border-color: #646cff;
+}
+
+.activeTab {
+  background: #646cff;
+  color: white;
+  border-color: #646cff;
+}
+
+.count {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.subtitle {
+  font-size: 2rem;
+  margin-top: 60px;
+  margin-bottom: 10px;
+}
+
+.recReason {
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.gamesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 25px;
+}
+
+.gameCardContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.gameCardWrapper {
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.gameCardWrapper:hover {
+  transform: translateY(-5px);
+}
+
+.statusBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.personalRatingBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 204, 0, 0.9);
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.playing { background-color: #4caf50; color: white; }
+.completed { background-color: #2196f3; color: white; }
+.backlog { background-color: #ff9800; color: white; }
+.wishlist { background-color: #e91e63; color: white; }
+.dropped { background-color: #f44336; color: white; }
+
+.recommendationsSection {
+  border-top: 1px solid #333;
+  margin-top: 60px;
+  padding-top: 40px;
+}
+
+@media (max-width: 768px) {
+  .collectionPage {
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .statusFilters {
+    gap: 8px;
+    padding-bottom: 15px;
+  }
+  
+  .filterTab {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}

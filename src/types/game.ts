@@ -43,6 +43,7 @@ export interface Game {
   background_image_additional?: string;
   coverUrl: string;
   rating: number;
+  playtime?: number;
   platforms: GamePlatform[];
   released: string;
   genres: string[];
@@ -52,9 +53,9 @@ export interface Game {
   screenshots: string[];
   trailers: string[];
   stores: GameStore[];
-  developers?: string[];
+  developers?: { id: number; name: string }[];
   publishers?: string[];
-  tags?: string[];
+  tags?: { id: number; name: string }[];
   esrb_rating?: string | null;
   game_series?: { id: number; name: string; background_image: string }[];
   additions?: { id: number; name: string; background_image: string }[];
@@ -66,6 +67,7 @@ export interface RawGame {
   description_raw: string;
   background_image: string;
   rating: number;
+  playtime?: number;
   released: string;
   metacritic?: number | null;
   added?: number;
@@ -73,6 +75,7 @@ export interface RawGame {
     platform: {
       id: number;
       name: string;
+      slug?: string;
     };
   }[];
   genres: {

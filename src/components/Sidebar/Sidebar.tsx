@@ -1,6 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchContext } from "../../context/SearchContext";
+import { auth } from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
+import LoginButton from "../LoginButton/LoginButton";
+import LogoutButton from "../LogoutButton/LogoutButton";
 import styles from "./Sidebar.module.css";
 import logo from "../../assets/logo/logo.svg";
 
@@ -12,6 +17,14 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSearchSubmit = (e?: React.FormEvent): void => {
     e?.preventDefault();
@@ -47,6 +60,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className={styles.sidebarContent}>
+          <div className={styles.userSection}>
+            {user ? (
+              <div className={styles.userInfo}>
+                <Link to="/profile" className={styles.profileLink} onClick={onClose}>
+                  <img src={user.photoURL || ""} alt={user.displayName || ""} className={styles.userAvatar} />
+                  <span className={styles.userName}>{user.displayName}</span>
+                </Link>
+                <LogoutButton />
+              </div>
+            ) : (
+              <LoginButton />
+            )}
+          </div>
+
           <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
             <input
               type="text"
@@ -60,6 +87,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           <nav className={styles.navLinks}>
             <Link to="/" className={styles.navLink} onClick={onClose}>Home</Link>
+            {user && (
+              <>
+                <Link to="/collection" className={styles.navLink} onClick={onClose}>My Collection</Link>
+                <Link to="/recommendations" className={styles.navLink} onClick={onClose}>Recommendations</Link>
+              </>
+            )}
             <Link to="/platforms" className={styles.navLink} onClick={onClose}>Platforms</Link>
             <Link to="/games" className={styles.navLink} onClick={onClose}>Games</Link>
           </nav>

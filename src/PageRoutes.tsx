@@ -7,6 +7,9 @@ import GamesPage from "./pages/GamesPage/GamesPage";
 import PlatformsPage from "./pages/PlatformsPage/PlatformsPage";
 import PlatformDetails from "./pages/PlatformDetails/PlatformDetails";
 import SearchPage from "./pages/SearchPage/SearchPage";
+import CollectionPage from "./pages/CollectionPage/CollectionPage";
+import RecommendationsPage from "./pages/RecommendationsPage/RecommendationsPage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import BurgerMenu from "./components/BurgerMenu/BurgerMenu";
 import Sidebar from "./components/Sidebar/Sidebar";
 
@@ -32,6 +35,9 @@ const PageRoutes = () => {
             <Route path="/platforms" element={<PlatformsPage />} />
             <Route path="/platform/:id" element={<PlatformDetails />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/collection" element={<CollectionPage />} />
+            <Route path="/recommendations" element={<RecommendationsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </main>
       </div>

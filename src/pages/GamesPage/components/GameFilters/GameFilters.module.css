@@ -1,72 +1,132 @@
 .filters {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  background-color: #2a2a2a;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #333;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 15px;
-  width: 100%;
-  margin-bottom: 20px;
 }
 
 .buttonGroup {
   display: flex;
   gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.selectGroup {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.selectFilter {
-  background-color: #222;
-  color: #eee;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  font-family: var(--ui-font);
-  min-width: 150px;
-}
-
-.selectFilter:hover,
-.selectFilter:focus {
-  border-color: #646cff;
-  outline: none;
 }
 
 .activeButton {
-  background-color: #4f46e5;
+  background-color: #646cff !important;
+  color: white !important;
+}
+
+.surpriseButton {
+  background: linear-gradient(45deg, #646cff, #9c27b0);
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 25px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+}
+
+.surpriseButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.5);
+}
+
+.rolling {
+  animation: pulse 0.5s infinite alternate;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.selectGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filterItem label {
+  font-size: 0.8rem;
+  color: #aaa;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.selectFilter {
+  background-color: #1a1a1a;
   color: white;
-  border: none;
-  box-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.genreSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.genreLabel {
+  font-size: 0.8rem;
+  color: #aaa;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.genreChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.genreChip {
+  background-color: #333;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.genreChip:hover {
+  border-color: #646cff;
+  color: white;
+}
+
+.activeChip {
+  background-color: #646cff;
+  color: white;
+  border-color: #646cff;
 }
 
 @media (max-width: 768px) {
-  .filters {
-    gap: 10px;
-  }
-
-  .buttonGroup, .selectGroup {
+  .topRow {
     flex-direction: column;
     align-items: stretch;
-    width: 100%;
-    gap: 8px;
   }
-
-  .selectFilter {
+  
+  .surpriseButton {
     width: 100%;
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  button {
-    width: 100%;
-    font-size: 14px;
-    padding: 10px;
   }
 }

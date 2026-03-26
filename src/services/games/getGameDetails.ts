@@ -37,6 +37,7 @@ export async function getGameDetails(id: string): Promise<Game> {
     background_image: gameData.background_image || "",
     background_image_additional: gameData.background_image_additional || "",
     rating: gameData.rating ?? 0,
+    playtime: gameData.playtime || 0,
     metacritic: gameData.metacritic || null,
     platforms: (gameData.platforms || []).map((p: any) => ({
       platform: p.platform,
@@ -58,9 +59,9 @@ export async function getGameDetails(id: string): Promise<Game> {
         domain: s.store?.domain || ""
       }
     })),
-    developers: (gameData.developers || []).map((d: any) => d.name),
+    developers: (gameData.developers || []).map((d: any) => ({ id: d.id, name: d.name })),
     publishers: (gameData.publishers || []).map((p: any) => p.name),
-    tags: (gameData.tags || []).map((t: any) => t.name),
+    tags: (gameData.tags || []).map((t: any) => ({ id: t.id, name: t.name })),
     esrb_rating: gameData.esrb_rating?.name || null,
     game_series: seriesData.results.map((s: any) => ({
       id: s.id,

@@ -15,7 +15,7 @@ const GameCard = ({ game }: GameCardProps) => {
       />
       <div className={styles.description}>
         <h3 className={styles.heading}>{game.name}</h3>
-        <p className={styles.gameCardRating}>Rating: {game.rating}</p>
+        {game.rating > 0 && <p className={styles.gameCardRating}>Rating: {game.rating}</p>}
       </div>
     </div>
   );

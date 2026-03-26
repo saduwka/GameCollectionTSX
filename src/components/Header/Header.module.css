@@ -83,6 +83,12 @@
   font-size: 14px;
 }
 
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
 @media (max-width: 768px) {
   .header {
     height: auto;
@@ -98,9 +104,19 @@
 
   .leftSection {
     width: 100%;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 5px;
+  }
+
+  .rightSection {
+    width: 100%;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .navLinks {
+    display: none; /* Скрываем навигацию в шапке на мобилках, так как она есть в бургере */
   }
 
   .logoWrapper {

@@ -1,0 +1,241 @@
+.profilePage {
+  padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 50px;
+  background-color: #2a2a2a;
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid #333;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #646cff;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.username {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.email {
+  color: #aaa;
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 60px;
+}
+
+.statCard {
+  background-color: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #333;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #646cff;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.devicesSection {
+  background-color: #2a2a2a;
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid #333;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.sectionDesc {
+  color: #aaa;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+}
+
+.searchBarWrapper {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.browseAllButton {
+  background-color: #333;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.browseAllButton:hover {
+  background-color: #444;
+  color: white;
+  border-color: #646cff;
+}
+
+.platformsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 15px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid #333;
+  margin-bottom: 30px;
+}
+
+.platformCard {
+  background-color: #2a2a2a;
+  padding: 12px 10px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid #333;
+  transition: all 0.2s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  line-height: 1.2;
+}
+
+.platformCard:hover {
+  border-color: #646cff;
+  background-color: #333;
+  transform: translateY(-2px);
+}
+
+.platformSelected {
+  background-color: rgba(100, 108, 255, 0.15);
+  border-color: #646cff;
+  color: #8f95ff;
+  font-weight: 600;
+}
+
+.searchWrapper {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.selectedDevices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+  min-height: 40px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.deviceTag {
+  background-color: #646cff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.removeDevice {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.removeDevice:hover {
+  color: #ff4b4b;
+}
+
+.noDevices {
+  color: #666;
+  font-style: italic;
+}
+
+.saveButton {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .profilePage {
+    padding: 20px;
+  }
+  
+  .header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+}
