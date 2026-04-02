@@ -41,51 +41,97 @@ const RecommendationsPage: React.FC = () => {
           getUserDevices()
         ]);
 
-        if (collection.length === 0) {
-          setRecommendations([]);
-          setLoading(false);
-          return;
-        }
-
         const collectionIds = new Set(collection.map(g => g.id));
+        const notInterestedIds = new Set(collection.filter(g => g.status === "Not Interested").map(g => g.id));
         const platformIds = devices.length > 0 ? devices.join(",") : "";
-        
-        // Алгоритм:
-        // 1. Берем игры с самым высоким личным рейтингом
-        const topRated = collection.filter(g => (g.rating || 0) >= 8);
-        const sourceGames = topRated.length > 0 ? topRated : collection.slice(0, 5);
-
-        // 2. Собираем жанры и теги из этих игр
-        const genres = new Set<string>();
-        sourceGames.forEach(g => (g.genres || []).forEach(genre => genres.add(genre)));
-        
-        // 3. Делаем несколько запросов для разнообразия
         const recsMap = new Map<number, RecommendedGame>();
         
-        // Запрос по топовому жанру + фильтр по платформам
-        const topGenre = collection[0].genres[0]?.toLowerCase().replace(/ /g, "-") || "";
-        if (topGenre) {
-          const data = await fetchGames(1, "-rating", "", topGenre, platformIds);
-          data.games.forEach(g => {
-            if (!collectionIds.has(g.id)) {
-              recsMap.set(g.id, { ...g, reason: `Because you enjoyed ${collection[0].name}` });
+        if (collection.length === 0) {
+          // If no games, but has platforms, recommend popular games for those platforms
+          if (devices.length > 0) {
+            const data = await fetchGames(1, "-rating", "", "", platformIds);
+            data.games.forEach(g => {
+              if (!notInterestedIds.has(g.id)) {
+                recsMap.set(g.id, { ...g, reason: "Popular on your hardware" });
+              }
+            });
+          } else {
+            // No games, no platforms -> just general popular
+            const data = await fetchGames(1, "-rating");
+            data.games.forEach(g => {
+              recsMap.set(g.id, { ...g, reason: "Community favorite" });
+            });
+          }
+        } else {
+          // 1. Analyze genre preferences weighted by user rating
+          const genreStats: Record<string, { weight: number, name: string }> = {};
+          const meaningfulGames = collection.filter(g => g.status !== "Not Interested");
+          
+          if (meaningfulGames.length === 0 && collection.length > 0) {
+            // All games are 'Not Interested' - fallback to popular
+            const data = await fetchGames(1, "-rating", "", "", platformIds);
+            data.games.forEach(g => {
+              if (!notInterestedIds.has(g.id)) {
+                recsMap.set(g.id, { ...g, reason: "Popular on your hardware" });
+              }
+            });
+          } else {
+            meaningfulGames.forEach(game => {
+              const weight = (game.rating || 5) / 5;
+              (game.genres || []).forEach(genreName => {
+                const slug = genreName.toLowerCase().replace(/ /g, "-");
+                if (!genreStats[slug]) {
+                  genreStats[slug] = { weight: 0, name: genreName };
+                }
+                genreStats[slug].weight += weight;
+              });
+            });
+
+            const sortedGenres = Object.entries(genreStats)
+              .sort((a, b) => b[1].weight - a[1].weight)
+              .slice(0, 3);
+
+            // 2. Fetch recommendations for each top genre
+            for (const [slug, info] of sortedGenres) {
+              const data = await fetchGames(1, "-metacritic", "", slug, platformIds);
+              data.games.forEach(g => {
+                if (!collectionIds.has(g.id) && !recsMap.has(g.id)) {
+                  recsMap.set(g.id, { ...g, reason: `Top rated ${info.name} game` });
+                }
+              });
             }
-          });
+
+            // 3. Add recommendations based on a high-rated game
+            const topGame = [...meaningfulGames].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+            const topGameGenre = topGame?.genres?.[0]?.toLowerCase().replace(/ /g, "-");
+            
+            if (topGame && topGameGenre) {
+              const data = await fetchGames(1, "-relevance", "", topGameGenre, platformIds);
+              data.games.forEach(g => {
+                if (!collectionIds.has(g.id) && !recsMap.has(g.id)) {
+                  recsMap.set(g.id, { ...g, reason: `Because you liked ${topGame.name}` });
+                }
+              });
+            }
+          }
+          
+          // 4. If we still don't have many, add some general popular games on user platforms
+          if (recsMap.size < 10 && platformIds) {
+            const data = await fetchGames(1, "-added", "", "", platformIds);
+            data.games.forEach(g => {
+              if (!collectionIds.has(g.id) && !recsMap.has(g.id)) {
+                recsMap.set(g.id, { ...g, reason: "Trending on your platforms" });
+              }
+            });
+          }
         }
 
-        // Запрос по случайной игре из коллекции + фильтр по платформам
-        const randomGame = collection[Math.floor(Math.random() * collection.length)];
-        const randomGenre = randomGame.genres[0]?.toLowerCase().replace(/ /g, "-") || "";
-        if (randomGenre) {
-          const data = await fetchGames(1, "-relevance", "", randomGenre, platformIds);
-          data.games.forEach(g => {
-            if (!collectionIds.has(g.id) && !recsMap.has(g.id)) {
-              recsMap.set(g.id, { ...g, reason: `Similar to ${randomGame.name}` });
-            }
-          });
-        }
+        // Shuffle and take top 15-20
+        const finalRecs = Array.from(recsMap.values())
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 18);
 
-        setRecommendations(Array.from(recsMap.values()).slice(0, 15));
+        setRecommendations(finalRecs);
       } catch (err) {
         console.error("Error generating recommendations:", err);
       } finally {
@@ -96,12 +142,14 @@ const RecommendationsPage: React.FC = () => {
     generateRecommendations();
   }, [user]);
 
-  if (!user && !loading) return null;
-
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Personalized for You</h1>
-      <p className={styles.subtitle}>Based on your collection, ratings and owned hardware</p>
+      <h1 className={styles.title}>{user ? "Personalized for You" : "Recommended Games"}</h1>
+      <p className={styles.subtitle}>
+        {user 
+          ? "Based on your collection, ratings and owned hardware" 
+          : "Sign in to get personalized recommendations based on your collection"}
+      </p>
 
       <LoadingErrorMessage 
         loading={loading} 

@@ -21,7 +21,7 @@ import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkS
 import type { Deal } from "../../services/stores/cheapSharkService";
 import styles from "./GamePage.module.css";
 
-const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist"];
+const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Not Interested"];
 
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();

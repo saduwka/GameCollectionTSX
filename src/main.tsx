@@ -4,15 +4,18 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import { SearchProvider } from "./context/SearchContext.tsx";
+import { ComparisonProvider } from "./context/ComparisonContext.tsx";
 import { Toaster } from "react-hot-toast";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <SearchProvider>
-        <App />
-        <Toaster position="top-center" />
-      </SearchProvider>
+      <ComparisonProvider>
+        <SearchProvider>
+          <App />
+          <Toaster position="top-center" />
+        </SearchProvider>
+      </ComparisonProvider>
     </BrowserRouter>
   </StrictMode>
 );
