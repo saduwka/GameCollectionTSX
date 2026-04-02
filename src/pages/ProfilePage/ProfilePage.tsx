@@ -11,6 +11,7 @@ import {
 import type { CollectedGame } from "../../services/collection/collectionService";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
 import styles from "./ProfilePage.module.css";
+import { toast } from "react-hot-toast";
 
 interface PlatformInfo {
   id: number;
@@ -103,11 +104,19 @@ const ProfilePage: React.FC = () => {
     setSaving(true);
     try {
       await saveUserDevices(myDevices.map(d => d.id));
-      alert("Settings saved!");
+      toast.success("Settings saved!");
     } catch (err) {
-      alert("Failed to save settings.");
+      toast.error("Failed to save settings.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleShareCollection = () => {
+    if (user) {
+      const url = `${window.location.origin}/collection/${user.uid}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Public link copied to clipboard!");
     }
   };
 
@@ -213,13 +222,22 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
         
-        <button 
-          className={styles.saveButton} 
-          onClick={handleSaveDevices}
-          disabled={saving || isSearching}
-        >
-          {saving ? "Saving..." : "Save Hardware Settings"}
-        </button>
+        <div className={styles.actionButtons}>
+          <button 
+            className={styles.saveButton} 
+            onClick={handleSaveDevices}
+            disabled={saving || isSearching}
+          >
+            {saving ? "Saving..." : "Save Hardware Settings"}
+          </button>
+          
+          <button 
+            className={styles.shareButton}
+            onClick={handleShareCollection}
+          >
+            🔗 Share Public Collection
+          </button>
+        </div>
       </section>
     </div>
   );

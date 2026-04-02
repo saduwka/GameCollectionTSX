@@ -9,7 +9,7 @@ import {
   getDoc
 } from "firebase/firestore";
 
-export type GameStatus = "Backlog" | "Playing" | "Completed" | "Dropped" | "Wishlist";
+export type GameStatus = "Backlog" | "Playing" | "Completed" | "Dropped" | "Wishlist" | "Not Interested";
 
 export interface CollectedGame {
   id: number;
@@ -94,11 +94,11 @@ export const isInCollection = async (gameId: number): Promise<CollectedGame | nu
   return null;
 };
 
-export const getUserDevices = async (): Promise<number[]> => {
-  const user = auth.currentUser;
-  if (!user) return [];
+export const getUserDevices = async (uid?: string): Promise<number[]> => {
+  const effectiveUid = uid || auth.currentUser?.uid;
+  if (!effectiveUid) return [];
 
-  const settingsRef = doc(db, "user_settings", user.uid);
+  const settingsRef = doc(db, "user_settings", effectiveUid);
   const docSnap = await getDoc(settingsRef);
   if (docSnap.exists()) {
     return docSnap.data().my_devices || [];
@@ -114,11 +114,11 @@ export const saveUserDevices = async (deviceIds: number[]) => {
   await setDoc(settingsRef, { my_devices: deviceIds }, { merge: true });
 };
 
-export const getUserCollection = async (): Promise<CollectedGame[]> => {
-  const user = auth.currentUser;
-  if (!user) return [];
+export const getUserCollection = async (uid?: string): Promise<CollectedGame[]> => {
+  const effectiveUid = uid || auth.currentUser?.uid;
+  if (!effectiveUid) return [];
 
-  const gamesRef = collection(db, COLLECTION_NAME, user.uid, "games");
+  const gamesRef = collection(db, COLLECTION_NAME, effectiveUid, "games");
   const q = query(gamesRef);
   const querySnapshot = await getDocs(q);
   

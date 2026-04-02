@@ -86,11 +86,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </form>
 
           <nav className={styles.navLinks}>
-            <Link to="/" className={styles.navLink} onClick={onClose}>Home</Link>
+            <Link to="/" className={styles.navLink} onClick={onClose}>Recommendations</Link>
             {user && (
               <>
                 <Link to="/collection" className={styles.navLink} onClick={onClose}>My Collection</Link>
-                <Link to="/recommendations" className={styles.navLink} onClick={onClose}>Recommendations</Link>
               </>
             )}
             <Link to="/platforms" className={styles.navLink} onClick={onClose}>Platforms</Link>
