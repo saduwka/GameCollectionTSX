@@ -1,15 +1,17 @@
+// FILE: src/services/platforms/getPlatformsList.ts
 import axios from "axios";
+import type { Platform } from "../../types/game";
 
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 const API_URL = "https://api.rawg.io/api/platforms";
-const platformsCache: Record<string, any> = {};
-let allPlatformsCached: any[] | null = null;
+const platformsCache: Record<string, Platform> = {};
+let allPlatformsCached: Platform[] | null = null;
 
 /**
  * Получает список всех доступных платформ.
  * Использует кеширование и увеличенный размер страницы, чтобы получить полный список за один раз.
  */
-export const getPlatforms = async (): Promise<any[]> => {
+export const getPlatforms = async (): Promise<Platform[]> => {
   if (allPlatformsCached) return allPlatformsCached;
   
   try {
@@ -37,7 +39,7 @@ export const getParentPlatforms = async (): Promise<any[]> => {
  * Ищет платформы по названию.
  * Если список всех платформ уже загружен, поиск выполняется локально.
  */
-export const searchPlatforms = async (query: string): Promise<any[]> => {
+export const searchPlatforms = async (query: string): Promise<Platform[]> => {
   try {
     if (allPlatformsCached) {
       const q = query.toLowerCase();
@@ -51,7 +53,7 @@ export const searchPlatforms = async (query: string): Promise<any[]> => {
   }
 };
 
-export const getPlatformDetails = async (id: string): Promise<any | null> => {
+export const getPlatformDetails = async (id: string): Promise<Platform | null> => {
   if (platformsCache[id]) {
     return platformsCache[id];
   }

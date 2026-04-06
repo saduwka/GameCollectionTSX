@@ -1,14 +1,17 @@
+// FILE: src/services/search/searchServices.ts
+import type { RawGame } from "../../types/game";
+
 const API_URL = "https://api.rawg.io/api/games";
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY as string;
 
-const searchCache: Record<string, any[]> = {};
+const searchCache: Record<string, RawGame[]> = {};
 
-export const fetchGames = async (searchQuery: string = ""): Promise<any[]> => {
+export const fetchGames = async (searchQuery: string = ""): Promise<RawGame[]> => {
   if (searchCache[searchQuery]) {
     return searchCache[searchQuery];
   }
 
-  const allGames: any[] = [];
+  const allGames: RawGame[] = [];
   let nextUrl: string | null = `${API_URL}?key=${API_KEY}&page_size=100&search=${encodeURIComponent(searchQuery)}`;
 
   while (nextUrl && allGames.length < 120) {
@@ -17,8 +20,7 @@ export const fetchGames = async (searchQuery: string = ""): Promise<any[]> => {
       throw new Error("Failed to load data");
     }
 
-    const data: { results: any[]; next: string | null } = await response.json();
-    console.log("API response:", data);
+    const data: { results: RawGame[]; next: string | null } = await response.json();
 
     if (Array.isArray(data.results)) {
       allGames.push(...data.results);

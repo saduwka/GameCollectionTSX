@@ -1,3 +1,4 @@
+// FILE: src/types/game.ts
 export interface Platform {
   id: number;
   name: string;
@@ -66,6 +67,7 @@ export interface RawGame {
   name: string;
   description_raw: string;
   background_image: string;
+  background_image_additional?: string;
   rating: number;
   playtime?: number;
   released: string;
@@ -77,11 +79,42 @@ export interface RawGame {
       name: string;
       slug?: string;
     };
+    released_at?: string;
+    requirements?: {
+      minimum?: string;
+      recommended?: string;
+    };
   }[];
   genres: {
     id: number;
     name: string;
   }[];
+  website?: string | null;
+  developers?: { id: number; name: string }[];
+  publishers?: { name: string }[];
+  tags?: { id: number; name: string }[];
+  esrb_rating?: { name: string } | null;
+}
+
+export interface RawScreenshot {
+  image: string;
+}
+
+export interface RawMovie {
+  data: {
+    max: string;
+  };
+}
+
+export interface RawStore {
+  id: number;
+  url: string;
+  store_id: number;
+  store: {
+    name: string;
+    slug: string;
+    domain: string;
+  };
 }
 
 export interface FetchGamesResponse {
