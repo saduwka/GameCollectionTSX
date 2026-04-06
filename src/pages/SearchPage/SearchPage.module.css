@@ -1,151 +1,200 @@
 .searchPage {
+  --secondary-color: #457b9d;
+  padding: 32px 50px;
   display: flex;
   flex-direction: column;
+  gap: 32px;
   min-height: 100vh;
-  margin: 20px 50px;
-  gap: 20px;
+  background-color: transparent;
 }
 
-.gameList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  width: 100%;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 20px;
-}
 .searchForm {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px;
-  gap: 20px;
+  gap: 12px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #888;
+  pointer-events: none;
 }
 
 .searchInput {
-  padding: 20px 12px;
-  font-size: 26px;
-  border: none;
-  border-radius: 20px;
-  width: 400px;
-  height: auto;
-  background-color: transparent;
-  color: #fff;
-  text-align: center;
-  border: 2px solid #fff;
-}
-
-input::placeholder {
+  width: 100%;
+  padding: 12px 42px;
   font-size: 16px;
-  color: #777;
-}
-
-.searchInput::placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   color: #fff;
+  transition: border-color 0.2s;
 }
 
 .searchInput:focus {
-  border: 2px solid var(--secondary-color);
+  outline: none;
+  border-color: var(--secondary-color);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-p {
-  font-size: 20px;
+.clearButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.clearButton:hover {
   color: #fff;
+}
+
+.submitButton {
+  padding: 12px 24px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.submitButton:hover {
+  opacity: 0.9;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.resultsCount {
+  font-size: 18px;
+  color: #eee;
+}
+
+.queryText {
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+.sortControls {
+  display: flex;
+  gap: 8px;
+}
+
+.sortBtn {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sortBtn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.sortBtnActive {
+  background: rgba(69, 123, 157, 0.15);
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.gameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.gameLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.gameLink:hover {
+  transform: translateY(-5px);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
   text-align: center;
 }
 
-.heading {
+.emptyTitle {
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   color: #fff;
 }
 
-.sortContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  font-size: 18px;
-  color: #fff;
-}
-
-.sortContainer label {
-  user-select: none;
-}
-
-.sortContainer select {
-  background-color: transparent;
-  color: #fff;
-  border: 2px solid #fff;
-  border-radius: 12px;
-  padding: 8px 16px;
+.emptyHint {
   font-size: 16px;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-
-.sortContainer select:hover,
-.sortContainer select:focus {
-  outline: none;
-  border-color: var(--secondary-color);
+  color: #888;
 }
 
 @media (max-width: 768px) {
   .searchPage {
-    gap: 10px;
-    margin: 20px;
-  }
-
-  .searchInput {
-    width: 100%;
-    font-size: 18px;
-    padding: 14px 10px;
+    padding: 20px;
+    gap: 20px;
   }
 
   .searchForm {
     flex-direction: column;
-    gap: 16px;
-    margin: 10px 0;
-  }
-
-  .heading {
-    font-size: 20px;
-    margin-left: 0;
-    text-align: center;
-  }
-
-  .gameList {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-  }
-
-  .gameList > a {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .sortContainer {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-left: 0;
-    font-size: 16px;
+    max-width: none;
     gap: 8px;
   }
 
-  .sortContainer select {
+  .submitButton {
     width: 100%;
-    font-size: 14px;
   }
 
-  p {
-    font-size: 16px;
-    padding: 0 10px;
+  .headerRow {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .gameGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .emptyTitle {
+    font-size: 20px;
   }
 }
-.gameList > a { width: calc(50% - 5px); display: flex; justify-content: center; }

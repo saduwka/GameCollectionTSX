@@ -1,92 +1,175 @@
-import React, { useEffect, useState } from "react";
-import type { ChangeEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+// FILE: src/pages/SearchPage/SearchPage.tsx
+import React, { useEffect, useState, useRef, useContext } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { SearchContext } from "../../context/SearchContext";
 import GameCard from "../../components/GameCard/GameCard";
-import styles from "./SearchPage.module.css";
-import { useNavigate } from "react-router-dom";
+import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
-import type { Game } from "../../types/game";
 import { fetchGames } from "../../services/search/searchServices";
+import type { Game, RawGame } from "../../types/game";
+import styles from "./SearchPage.module.css";
+
+type SortOption = "relevance" | "name" | "rating";
 
 const SearchPage: React.FC = () => {
-  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
+  const [params, setParams] = useSearchParams();
+  const searchContext = useContext(SearchContext);
+  const setSearchQuery = searchContext?.setSearchQuery;
+  
+  const urlQuery = params.get("query") || "";
+
+  const [inputValue, setInputValue] = useState(urlQuery);
+  const [games, setGames] = useState<RawGame[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sortOption, setSortOption] = useState<string>("name");
+  const [sortOption, setSortOption] = useState<SortOption>("relevance");
 
-  const [params] = useSearchParams();
-  const searchQuery = params.get("query") || "";
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const sortGames = (games: Game[], option: string): Game[] => {
-    switch (option) {
-      case "name":
-        return [...games].sort((a, b) => a.name.localeCompare(b.name));
-      case "rating":
-        return [...games].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      default:
-        return games;
-    }
-  };
-
+  // Sync with URL query on mount and when it changes
   useEffect(() => {
-    const loadGames = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const results = await fetchGames(searchQuery);
-        const sortedResults = sortGames(results, sortOption);
-        setFilteredGames(sortedResults);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (searchQuery) {
-      loadGames();
+    setInputValue(urlQuery);
+    if (urlQuery) {
+      loadGames(urlQuery);
+    } else {
+      setGames([]);
     }
-  }, [searchQuery, sortOption]);
+  }, [urlQuery]);
 
-  const navigate = useNavigate();
+  // Auto-focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  const handleGameClick = (gameId: string | number) => {
-    navigate(`/game/${gameId}`);
+  const loadGames = async (query: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const results = await fetchGames(query);
+      setGames(results);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSortOption(e.target.value);
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const trimmed = inputValue.trim();
+    
+    // Update URL param
+    setParams(trimmed ? { query: trimmed } : {});
+    
+    // Update Global Search Context if it exists
+    if (setSearchQuery) {
+      setSearchQuery(trimmed);
+    }
   };
+
+  const clearSearch = () => {
+    setInputValue("");
+    inputRef.current?.focus();
+  };
+
+  const sortGames = (gamesList: RawGame[]): RawGame[] => {
+    const list = [...gamesList];
+    if (sortOption === "name") {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (sortOption === "rating") {
+      return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+    return list; // relevance is default order from service (which keeps API order)
+  };
+
+  const sortedGames = sortGames(games);
 
   return (
     <div className={styles.searchPage}>
-      <div className={styles.content}>
-        <h1 className={styles.heading}>Results</h1>
+      <form className={styles.searchForm} onSubmit={handleSearch}>
+        <div className={styles.inputWrapper}>
+          <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            ref={inputRef}
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search games..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          {inputValue && (
+            <button type="button" className={styles.clearButton} onClick={clearSearch} aria-label="Clear search">
+              ✕
+            </button>
+          )}
+        </div>
+        <button type="submit" className={styles.submitButton}>Search</button>
+      </form>
 
-        <LoadingErrorMessage
-          loading={loading}
-          error={error}
-          noResults={filteredGames.length === 0 && !loading}
-        />
+      {error && <LoadingErrorMessage loading={false} error={error} noResults={false} />}
 
-        {!loading && !error && filteredGames.length > 0 && (
-          <>
-            <div className={styles.sortContainer}>
-              <label htmlFor="sort">Sort by: </label>
-              <select id="sort" value={sortOption} onChange={handleSortChange}>
-                <option value="name">Name (A-Z)</option>
-                <option value="rating">Rating (Highest)</option>
-              </select>
+      {!urlQuery ? (
+        <div className={styles.emptyState}>
+          <h2 className={styles.emptyTitle}>What are you looking for?</h2>
+          <p className={styles.emptyHint}>Type a game title to start searching</p>
+        </div>
+      ) : (
+        <>
+          <div className={styles.headerRow}>
+            <div className={styles.resultsCount}>
+              {loading ? (
+                <span>Searching...</span>
+              ) : (
+                <span>
+                  {games.length > 0 ? (
+                    <>
+                      <span className={styles.queryText}>"{urlQuery}"</span> — {games.length} results
+                    </>
+                  ) : (
+                    <span>Searching for <span className={styles.queryText}>"{urlQuery}"</span>...</span>
+                  )}
+                </span>
+              )}
             </div>
-            <div className={styles.gameList}>
-              {filteredGames.map((game: Game) => (
-                <div key={game.id} onClick={() => handleGameClick(game.id)}>
-                  <GameCard game={game} />
-                </div>
+
+            <div className={styles.sortControls}>
+              {(["relevance", "rating", "name"] as SortOption[]).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`${styles.sortBtn} ${sortOption === option ? styles.sortBtnActive : ""}`}
+                  onClick={() => setSortOption(option)}
+                >
+                  {option === "relevance" && "Relevance"}
+                  {option === "rating" && "Rating ↓"}
+                  {option === "name" && "A–Z"}
+                </button>
               ))}
             </div>
-          </>
-        )}
-      </div>
+          </div>
+
+          <div className={styles.gameGrid}>
+            {loading ? (
+              Array.from({ length: 12 }).map((_, i) => <GameCardSkeleton key={i} />)
+            ) : games.length > 0 ? (
+              sortedGames.map((game) => (
+                <Link key={game.id} to={`/game/${game.id}`} className={styles.gameLink}>
+                  <GameCard game={game as unknown as Game} />
+                </Link>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <h2 className={styles.emptyTitle}>No games found for "{urlQuery}"</h2>
+                <p className={styles.emptyHint}>Try a different spelling or a shorter query</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
