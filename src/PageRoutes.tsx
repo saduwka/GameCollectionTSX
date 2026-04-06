@@ -1,3 +1,4 @@
+// FILE: src/PageRoutes.tsx
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
@@ -30,7 +31,6 @@ const PageRoutes = () => {
         <main className="main-content" style={{ flex: 1, width: "100%", paddingTop: "0" }}>
           <Routes>
             <Route path="/" element={<RecommendationsPage />} />
-            <Route path="*" element={<NotFoundPage />} />
             <Route path="/game/:id" element={<GamePage />} />
             <Route path="/game/:id/:platformId" element={<GamePage />} />
             <Route path="/games" element={<GamesPage />} />
@@ -40,6 +40,8 @@ const PageRoutes = () => {
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/collection/:uid" element={<PublicCollectionPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            {/* path="*" must be the LAST route */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

@@ -1,8 +1,7 @@
+// FILE: src/pages/RecommendationsPage/RecommendationsPage.tsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
   getUserDevices,
@@ -20,17 +19,10 @@ interface RecommendedGame extends Game {
 }
 
 const RecommendationsPage: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<RecommendedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const generateRecommendations = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);

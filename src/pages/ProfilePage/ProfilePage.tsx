@@ -1,8 +1,7 @@
+// FILE: src/pages/ProfilePage/ProfilePage.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
   getUserDevices, 
@@ -19,7 +18,7 @@ interface PlatformInfo {
 }
 
 const ProfilePage: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, authLoading } = useAuth();
   const [collection, setCollection] = useState<CollectedGame[]>([]);
   const [myDevices, setMyDevices] = useState<PlatformInfo[]>([]);
   const [allPlatforms, setAllPlatforms] = useState<PlatformInfo[]>([]);
@@ -35,12 +34,10 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser && !loading) navigate("/");
-    });
-    return () => unsubscribe();
-  }, [navigate, loading]);
+    if (!authLoading && !user) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +51,7 @@ const ProfilePage: React.FC = () => {
           ]);
           setCollection(userCollection);
           
-          const platformList = rawPlatforms.map((p: any) => ({ id: p.id, name: p.name }));
+          const platformList: PlatformInfo[] = rawPlatforms.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }));
           setAllPlatforms(platformList);
           
           if (deviceIds.length > 0) {
@@ -131,7 +128,7 @@ const ProfilePage: React.FC = () => {
     totalHours: collection.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0)
   };
 
-  if (!user && !loading) return null;
+  if (authLoading || (!user && !loading)) return null;
 
   return (
     <div className={styles.profilePage}>

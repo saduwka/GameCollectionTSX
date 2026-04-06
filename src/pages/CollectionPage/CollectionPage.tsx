@@ -1,8 +1,7 @@
+// FILE: src/pages/CollectionPage/CollectionPage.tsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext";
 import { getUserCollection } from "../../services/collection/collectionService";
 import type { CollectedGame, GameStatus } from "../../services/collection/collectionService";
 import { fetchGames } from "../../services/games/fetchGames";
@@ -15,7 +14,7 @@ import type { Game } from "../../types/game";
 const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Dropped"];
 
 const CollectionPage: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, authLoading } = useAuth();
   const [fullCollection, setFullCollection] = useState<CollectedGame[]>([]);
   const [filteredCollection, setFilteredCollection] = useState<CollectedGame[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
@@ -26,14 +25,10 @@ const CollectionPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser && !loading) {
-        navigate("/");
-      }
-    });
-    return () => unsubscribe();
-  }, [navigate, loading]);
+    if (!authLoading && !user) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     const loadCollection = async () => {
@@ -102,7 +97,7 @@ const CollectionPage: React.FC = () => {
     return fullCollection.filter(g => g.status === status).length;
   };
 
-  if (!user && !loading) return null;
+  if (authLoading || (!user && !loading)) return null;
 
   return (
     <div className={styles.collectionPage}>
@@ -138,21 +133,39 @@ const CollectionPage: React.FC = () => {
       {!loading && (
         <>
           <div className={styles.gamesGrid}>
-            {filteredCollection.map((game) => (
-              <div key={game.id} className={styles.gameCardContainer}>
-                <Link to={`/game/${game.id}`} className={styles.gameCardWrapper}>
-                  <GameCard game={{ ...game, coverUrl: game.background_image, rating: game.rating || 0, platforms: [], released: "", screenshots: [], trailers: [], stores: [] } as any} />
-                  {game.rating && game.rating > 0 ? (
-                    <div className={styles.personalRatingBadge}>
-                      ★ {game.rating}
-                    </div>
-                  ) : null}
-                </Link>
-                <div className={`${styles.statusBadge} ${styles[(game.status || "Backlog").toLowerCase()]}`}>
-                  {game.status}
+            {filteredCollection.map((game) => {
+              const gameObj: Game = {
+                id: game.id,
+                name: game.name,
+                background_image: game.background_image,
+                genres: game.genres,
+                coverUrl: game.background_image,
+                rating: game.rating || 0,
+                platforms: [],
+                released: "",
+                screenshots: [],
+                trailers: [],
+                stores: [],
+                playtime: 0,
+                added: 0,
+                description: ""
+              };
+              return (
+                <div key={game.id} className={styles.gameCardContainer}>
+                  <Link to={`/game/${game.id}`} className={styles.gameCardWrapper}>
+                    <GameCard game={gameObj} />
+                    {game.rating && game.rating > 0 ? (
+                      <div className={styles.personalRatingBadge}>
+                        ★ {game.rating}
+                      </div>
+                    ) : null}
+                  </Link>
+                  <div className={`${styles.statusBadge} ${styles[(game.status || "Backlog").toLowerCase()]}`}>
+                    {game.status}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {selectedStatus === "All" && recommendations.length > 0 && (
