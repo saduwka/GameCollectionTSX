@@ -1,3 +1,4 @@
+// FILE: src/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import {
@@ -7,14 +8,14 @@ import {
   browserLocalPersistence
 } from "firebase/auth";
 
-// ✅ Конфигурация Firebase
+// ✅ Конфигурация Firebase через переменные окружения
 const firebaseConfig = {
-  apiKey: "AIzaSyCHBomkD-I4E-NbGXy97EoEWPNVIo-HmCY",
-  authDomain: "gamecollection-ff71a.firebaseapp.com", // Всегда полный домен проекта!
-  projectId: "gamecollection-ff71a",
-  storageBucket: "gamecollection-ff71a.appspot.com",
-  messagingSenderId: "295175847930",
-  appId: "1:295175847930:web:9ca24dd6d40e1c05f56e43"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // ✅ Инициализация

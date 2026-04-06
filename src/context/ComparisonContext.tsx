@@ -1,4 +1,6 @@
+// FILE: src/context/ComparisonContext.tsx
 import React, { createContext, useState, useContext, type ReactNode } from "react";
+import { toast } from "react-hot-toast";
 import type { Game } from "../types/game";
 
 interface ComparisonContextType {
@@ -16,7 +18,7 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const addToComparison = (game: Game) => {
     if (comparisonList.length >= 4) {
-      alert("You can compare up to 4 games at a time.");
+      toast.error("You can compare up to 4 games at a time.");
       return;
     }
     if (!comparisonList.some((g) => g.id === game.id)) {

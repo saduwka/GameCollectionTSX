@@ -1,6 +1,8 @@
+// FILE: src/pages/GamePage/GamePage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import DOMPurify from "dompurify";
 import { getGameDetails } from "../../services/games/getGameDetails";
 import { 
   addToCollection, 
@@ -9,9 +11,7 @@ import {
   updateGameMetadata
 } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
-import { auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext";
 
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import ImageModal from "../../components/ImageModal/ImageModal";
@@ -26,6 +26,7 @@ const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Droppe
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [gameDetails, setGameDetails] = useState<Game | null>(null);
   const [modalIndex, setModalIndex] = useState<number | null>(null);
@@ -33,7 +34,6 @@ const GamePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [user, setUser] = useState<User | null>(null);
   const [collectionStatus, setCollectionStatus] = useState<GameStatus | null>(null);
   const [personalRating, setPersonalRating] = useState<number>(0);
   const [personalNote, setPersonalNote] = useState<string>("");
@@ -43,13 +43,6 @@ const GamePage: React.FC = () => {
   const [isCollectionLoading, setIsCollectionLoading] = useState<boolean>(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [dealsLoading, setDealsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const checkCollection = async () => {
@@ -90,7 +83,7 @@ const GamePage: React.FC = () => {
     setIsCollectionLoading(true);
     try {
       if (collectionStatus) {
-        const updates: any = { status: newStatus };
+        const updates: Parameters<typeof updateGameMetadata>[1] = { status: newStatus };
         if (newStatus === "Completed" && !completedAt) {
           const now = Date.now();
           updates.completedAt = now;
@@ -124,7 +117,7 @@ const GamePage: React.FC = () => {
     }
   };
 
-  const handleMetadataUpdate = async (updates: any) => {
+  const handleMetadataUpdate = async (updates: Parameters<typeof updateGameMetadata>[1]) => {
     if (!user || !collectionStatus) return;
     try {
       await updateGameMetadata(parseInt(id!), updates);
@@ -353,6 +346,7 @@ const GamePage: React.FC = () => {
                       placeholder="Write your personal thoughts or progress..."
                       value={personalNote}
                       onChange={(e) => setPersonalNote(e.target.value)}
+                      onBlur={handleNoteSave}
                     />
                     <button 
                       className={styles.saveNoteButton}
@@ -433,7 +427,7 @@ const GamePage: React.FC = () => {
                 <strong>Description:</strong>
                 <div
                   className={styles.description}
-                  dangerouslySetInnerHTML={{ __html: gameDetails.description }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(gameDetails.description) }}
                 />
               </div>
 

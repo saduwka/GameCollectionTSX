@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+// FILE: src/components/Sidebar/Sidebar.tsx
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchContext } from "../../context/SearchContext";
-import { auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext";
 import LoginButton from "../LoginButton/LoginButton";
 import LogoutButton from "../LogoutButton/LogoutButton";
 import styles from "./Sidebar.module.css";
@@ -17,14 +16,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  const { user } = useAuth();
 
   const handleSearchSubmit = (e?: React.FormEvent): void => {
     e?.preventDefault();

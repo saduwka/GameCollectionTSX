@@ -1,3 +1,4 @@
+// FILE: src/pages/GamesPage/GamesPage.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { fetchGames } from "../../services/games/fetchGames";
@@ -63,7 +64,7 @@ const GamesPage: React.FC = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        const newParams: any = {};
+        const newParams: Record<string, string> = {};
         if (parsed.year) newParams.year = parsed.year;
         if (parsed.genre) newParams.genre = parsed.genre;
         if (parsed.platform) newParams.platform = parsed.platform;

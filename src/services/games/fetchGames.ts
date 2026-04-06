@@ -1,9 +1,11 @@
+// FILE: src/services/games/fetchGames.ts
 const API_URL = "https://api.rawg.io/api/games";
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 
 import type { RawGame, Game, FetchGamesResponse } from "../../types/game";
 
-const gameListCache: Record<string, FetchGamesResponse> = {};
+const gameListCache: Record<string, { data: FetchGamesResponse; ts: number }> = {};
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const mapRawGameToGame = (raw: RawGame): Game => ({
   id: raw.id,
@@ -39,8 +41,10 @@ export const fetchGames = async (
   playtimeRange?: string // "0,10", "10,30", "30,100"
 ): Promise<FetchGamesResponse> => {
   const cacheKey = `${page}-${ordering}-${year ?? "all"}-${genreId ?? "all"}-${platformId ?? "all"}-${developerId ?? "all"}-${tagId ?? "all"}-${playtimeRange ?? "all"}`;
-  if (gameListCache[cacheKey]) {
-    return gameListCache[cacheKey];
+  
+  const cachedEntry = gameListCache[cacheKey];
+  if (cachedEntry && (Date.now() - cachedEntry.ts < CACHE_TTL_MS)) {
+    return cachedEntry.data;
   }
 
   try {
@@ -68,7 +72,7 @@ export const fetchGames = async (
       prevPageUrl: data.previous,
     };
 
-    gameListCache[cacheKey] = result;
+    gameListCache[cacheKey] = { data: result, ts: Date.now() };
     return result;
   } catch (error) {
     console.error("Error fetching games:", error);
@@ -76,7 +80,13 @@ export const fetchGames = async (
   }
 };
 
-export const fetchRandomGame = async (filters: any): Promise<Game | null> => {
+interface GameFilters {
+  year?: string;
+  genre?: string;
+  platform?: string;
+}
+
+export const fetchRandomGame = async (filters: GameFilters): Promise<Game | null> => {
   // Получаем первую страницу с учетом фильтров, чтобы узнать общее кол-во
   const data = await fetchGames(1, "-rating", filters.year, filters.genre, filters.platform);
   if (data.games.length === 0) return null;
