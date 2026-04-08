@@ -24,6 +24,10 @@ const RecommendationsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  useEffect(() => {
+    if (authLoading) setLoading(true);
+  }, [authLoading]);
+
   const generateRecommendations = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     else setLoading(true);
