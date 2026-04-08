@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "gamecollection-ff71a",
     "public": "dist",
     "ignore": [
       "firebase.json",

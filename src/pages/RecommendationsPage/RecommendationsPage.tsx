@@ -19,7 +19,7 @@ interface RecommendedGame extends Game {
 }
 
 const RecommendationsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const [recommendations, setRecommendations] = useState<RecommendedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -174,9 +174,9 @@ const RecommendationsPage: React.FC = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.titleWrapper}>
-          <h1 className={styles.title}>{user ? "Personalized for You" : "Recommended Games"}</h1>
+          <h1 className={styles.title}>{!authLoading && user ? "Personalized for You" : "Recommended Games"}</h1>
           <p className={styles.subtitle}>
-            {user 
+            {!authLoading && user 
               ? "Based on your collection, ratings and owned hardware" 
               : "Sign in to get personalized recommendations based on your collection"}
           </p>

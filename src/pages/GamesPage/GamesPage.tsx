@@ -31,7 +31,7 @@ const GamesPage: React.FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
-  const [platforms, setPlatforms] = useState<{ id: string; name: string }[]>([]);
+  const [platforms, setPlatforms] = useState<{ id: string | number; name: string }[]>([]);
 
   const updateParams = useCallback((newParams: Record<string, string | number>) => {
     setSearchParams(prev => {

@@ -16,7 +16,7 @@ interface GameFiltersProps {
   selectedPlaytime: string;
   setSelectedPlaytime: (range: string) => void;
   genres: { id: string; name: string }[];
-  platforms: { id: string; name: string }[];
+  platforms: { id: string | number; name: string }[];
 }
 
 const PLAYTIME_OPTIONS = [
