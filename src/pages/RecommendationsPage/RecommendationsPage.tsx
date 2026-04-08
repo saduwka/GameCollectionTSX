@@ -142,8 +142,9 @@ const RecommendationsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     generateRecommendations();
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleNotInterested = async (e: React.MouseEvent, game: Game) => {
     e.preventDefault();
