@@ -196,9 +196,9 @@ const RecommendationsPage: React.FC = () => {
       </header>
 
       <LoadingErrorMessage 
-        loading={loading} 
+        loading={loading || authLoading} 
         error={null} 
-        noResults={!loading && recommendations.length === 0} 
+        noResults={!loading && !authLoading && recommendations.length === 0} 
         message="Add more games to your collection to get better recommendations!" 
       />
 

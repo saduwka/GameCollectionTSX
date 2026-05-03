@@ -15,10 +15,12 @@ import { useAuth } from "../../context/AuthContext";
 
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import ImageModal from "../../components/ImageModal/ImageModal";
+import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 
 import type { Game } from "../../types/game";
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import type { Deal } from "../../services/stores/cheapSharkService";
+import { getGameMedia, type YouTubeVideo } from "../../services/media/youtubeService";
 import styles from "./GamePage.module.css";
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Not Interested"];
@@ -43,6 +45,9 @@ const GamePage: React.FC = () => {
   const [isCollectionLoading, setIsCollectionLoading] = useState<boolean>(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [dealsLoading, setDealsLoading] = useState<boolean>(false);
+
+  const [youtubeMedia, setYoutubeMedia] = useState<{ ost: YouTubeVideo[], reviews: YouTubeVideo[] }>({ ost: [], reviews: [] });
+  const [youtubeLoading, setYoutubeLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const checkCollection = async () => {
@@ -214,6 +219,21 @@ const GamePage: React.FC = () => {
       }
     };
     fetchDeals();
+
+    const fetchYouTube = async () => {
+      if (gameDetails?.name) {
+        setYoutubeLoading(true);
+        try {
+          const media = await getGameMedia(gameDetails.name);
+          setYoutubeMedia(media);
+        } catch (err) {
+          console.error("Error loading YouTube media:", err);
+        } finally {
+          setYoutubeLoading(false);
+        }
+      }
+    };
+    fetchYouTube();
   }, [gameDetails?.name]);
 
   const allImages = [
@@ -405,6 +425,12 @@ const GamePage: React.FC = () => {
                 </p>
               )}
 
+              {gameDetails.publishers && gameDetails.publishers.length > 0 && (
+                <p>
+                  <strong>Publishers:</strong> {gameDetails.publishers.join(", ")}
+                </p>
+              )}
+
               {gameDetails.tags && gameDetails.tags.length > 0 && (
                 <div className={styles.tagsSection}>
                   <strong>Tags:</strong>
@@ -552,7 +578,7 @@ const GamePage: React.FC = () => {
 
           {trailers.length > 0 && (
             <div className={styles.trailersSection}>
-              <h2 className={styles.sectionHeading}>Trailers</h2>
+              <h2 className={styles.sectionHeading}>Official Trailers</h2>
               <div className={styles.trailersGallery}>
                 {trailers.map((src, index) => (
                   <div key={index} className={styles.trailerItem}>
@@ -565,6 +591,41 @@ const GamePage: React.FC = () => {
                       Sorry, your browser doesn't support embedded videos.
                     </video>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* YouTube Media Section */}
+          <YouTubeSection 
+            title="Official Soundtracks" 
+            videos={youtubeMedia.ost} 
+            loading={youtubeLoading} 
+          />
+
+          <YouTubeSection 
+            title="Game Reviews & Walkthroughs" 
+            videos={youtubeMedia.reviews} 
+            loading={youtubeLoading} 
+          />
+
+          {gameDetails.additions && gameDetails.additions.length > 0 && (
+            <div className={styles.relatedSection}>
+              <h2 className={styles.sectionHeading}>DLCs & Additions</h2>
+              <div className={styles.relatedGrid}>
+                {gameDetails.additions.map((addition) => (
+                  <Link 
+                    to={`/game/${addition.id}`} 
+                    key={addition.id} 
+                    className={styles.relatedItem}
+                  >
+                    <img 
+                      src={addition.background_image} 
+                      alt={addition.name} 
+                      className={styles.relatedImage} 
+                    />
+                    <span className={styles.relatedName}>{addition.name}</span>
+                  </Link>
                 ))}
               </div>
             </div>
