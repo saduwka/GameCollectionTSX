@@ -45,12 +45,20 @@ const PageRoutes = () => {
 
   return (
     <div className="app-container">
+      <a href="#main-content" className="skip-link">
+        Перейти к основному содержимому
+      </a>
       <BurgerMenu onClick={toggleSidebar} />
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
       <ComparisonBar />
 
       <div className="content-wrapper" style={{ display: "flex", minHeight: "100vh" }}>
-        <main className="main-content" style={{ flex: 1, width: "100%", paddingTop: "0" }}>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="main-content"
+          style={{ flex: 1, width: "100%", paddingTop: "0" }}
+        >
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
