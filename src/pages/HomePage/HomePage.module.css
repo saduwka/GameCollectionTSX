@@ -95,6 +95,26 @@
   transform: translateY(-1px);
 }
 
+/* CTA «Свайпать игры» — в hero и заметнее обычной вторичной кнопки */
+.btnMatch {
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #ff6b6b, #ff4ecd 55%, #a855f7);
+  box-shadow: 0 8px 24px rgba(255, 78, 205, 0.35);
+}
+
+.btnMatch:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 32px rgba(255, 78, 205, 0.45);
+}
+
 .heroHint {
   margin-top: 24px;
   color: rgba(255, 255, 255, 0.5);
@@ -156,6 +176,120 @@
 
 .cardLink:hover {
   transform: translateY(-4px);
+}
+
+/* ---------- Match banner ---------- */
+.matchBanner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 32px 36px;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at top left, rgba(255, 107, 107, 0.35), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.35), transparent 55%),
+    linear-gradient(135deg, #2a1633, #1a1a2e);
+  border: 1px solid rgba(255, 78, 205, 0.25);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.matchBanner:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 78, 205, 0.55);
+  box-shadow: 0 16px 48px rgba(168, 85, 247, 0.25);
+}
+
+.matchBannerStack {
+  position: relative;
+  width: 120px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.matchCard {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, #3a3a4e, #20202e);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.matchCard1 {
+  z-index: 3;
+  transform: rotate(-6deg);
+  background:
+    radial-gradient(ellipse at top, rgba(255, 78, 205, 0.4), transparent 60%),
+    linear-gradient(135deg, #4a2a5c, #2a1a3c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.matchCard2 {
+  z-index: 2;
+  transform: rotate(4deg) translate(8px, 6px);
+  opacity: 0.7;
+}
+
+.matchCard3 {
+  z-index: 1;
+  transform: rotate(12deg) translate(14px, 12px);
+  opacity: 0.4;
+}
+
+.matchCardEmoji {
+  font-size: 48px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.matchBannerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.matchBannerBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255, 78, 205, 0.18);
+  border: 1px solid rgba(255, 78, 205, 0.45);
+  color: #ffaae3;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.matchBannerTitle {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.matchBannerText {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.matchBannerArrow {
+  font-size: 28px;
+  color: #ffaae3;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.matchBanner:hover .matchBannerArrow {
+  transform: translateX(6px);
 }
 
 /* ---------- Features ---------- */
@@ -233,9 +367,25 @@
   }
 
   .btnPrimary,
-  .btnSecondary {
+  .btnSecondary,
+  .btnMatch {
     padding: 12px 20px;
     font-size: 14px;
     width: 100%;
+  }
+
+  .matchBanner {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding: 28px 20px;
+  }
+
+  .matchBannerArrow {
+    display: none;
+  }
+
+  .matchBannerTitle {
+    font-size: 1.4em;
   }
 }
