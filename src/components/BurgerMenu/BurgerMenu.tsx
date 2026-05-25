@@ -7,10 +7,16 @@ interface BurgerMenuProps {
 
 const BurgerMenu: React.FC<BurgerMenuProps> = ({ onClick }) => {
   return (
-    <button className={styles.burgerButton} onClick={onClick} aria-label="Open menu">
-      <div className={styles.bar}></div>
-      <div className={styles.bar}></div>
-      <div className={styles.bar}></div>
+    <button
+      type="button"
+      className={styles.burgerButton}
+      onClick={onClick}
+      aria-label="Открыть меню"
+      aria-haspopup="dialog"
+    >
+      <span className={styles.bar} aria-hidden="true"></span>
+      <span className={styles.bar} aria-hidden="true"></span>
+      <span className={styles.bar} aria-hidden="true"></span>
     </button>
   );
 };

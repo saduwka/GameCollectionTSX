@@ -28,6 +28,29 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  /* reset native <button> styles */
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.overlay:focus-visible {
+  outline: 2px solid #646cff;
+  outline-offset: -4px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .overlayOpen {
