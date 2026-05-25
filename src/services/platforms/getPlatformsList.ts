@@ -1,69 +1,33 @@
-// FILE: src/services/platforms/getPlatformsList.ts
-import axios from "axios";
+import apiClient from "../apiClient";
 import type { Platform } from "../../types/game";
-
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-const API_URL = "https://api.rawg.io/api/platforms";
-const platformsCache: Record<string, Platform> = {};
-let allPlatformsCached: Platform[] | null = null;
 
 /**
  * Получает список всех доступных платформ.
- * Использует кеширование и увеличенный размер страницы, чтобы получить полный список за один раз.
+ * React Query будет отвечать за кеширование.
  */
 export const getPlatforms = async (): Promise<Platform[]> => {
-  if (allPlatformsCached) return allPlatformsCached;
-  
-  try {
-    // RAWG имеет около 51 платформы. page_size=100 гарантирует получение всех платформ одним запросом.
-    const response = await axios.get(`${API_URL}?key=${API_KEY}&page_size=100`);
-    allPlatformsCached = response.data.results;
-    return allPlatformsCached!;
-  } catch (error) {
-    console.error("Error fetching platforms:", error);
-    return [];
-  }
+  const { data } = await apiClient.get("/platforms", {
+    params: { page_size: 100 }
+  });
+  return data.results;
 };
 
-export const getParentPlatforms = async (): Promise<any[]> => {
-  try {
-    const response = await axios.get(`https://api.rawg.io/api/platforms/lists/parents?key=${API_KEY}`);
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching parent platforms:", error);
-    return [];
-  }
+export const getParentPlatforms = async (): Promise<{ id: number; name: string; slug: string; platforms: Platform[] }[]> => {
+  const { data } = await apiClient.get("/platforms/lists/parents");
+  return data.results;
 };
 
 /**
  * Ищет платформы по названию.
- * Если список всех платформ уже загружен, поиск выполняется локально.
  */
 export const searchPlatforms = async (query: string): Promise<Platform[]> => {
-  try {
-    if (allPlatformsCached) {
-      const q = query.toLowerCase();
-      return allPlatformsCached.filter(p => p.name.toLowerCase().includes(q));
-    }
-    const response = await axios.get(`${API_URL}?key=${API_KEY}&search=${query}`);
-    return response.data.results;
-  } catch (error) {
-    console.error("Error searching platforms:", error);
-    return [];
-  }
+  const { data } = await apiClient.get("/platforms", {
+    params: { search: query }
+  });
+  return data.results;
 };
 
-export const getPlatformDetails = async (id: string): Promise<Platform | null> => {
-  if (platformsCache[id]) {
-    return platformsCache[id];
-  }
-
-  try {
-    const response = await axios.get(`${API_URL}/${id}?key=${API_KEY}`);
-    platformsCache[id] = response.data;
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching platform details:", error);
-    return null;
-  }
+export const getPlatformDetails = async (id: string): Promise<Platform> => {
+  const { data } = await apiClient.get(`/platforms/${id}`);
+  return data;
 };

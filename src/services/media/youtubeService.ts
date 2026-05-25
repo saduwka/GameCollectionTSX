@@ -45,7 +45,7 @@ export const searchYouTubeVideos = async (query: string, maxResults = 5): Promis
       }
     });
 
-    return response.data.items.map((item: any) => ({
+    return response.data.items.map((item: { id: { videoId: string }; snippet: { title: string; thumbnails: { high?: { url: string }; default?: { url: string } }; channelTitle: string; publishedAt: string } }) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
@@ -59,10 +59,14 @@ export const searchYouTubeVideos = async (query: string, maxResults = 5): Promis
 };
 
 export const getGameMedia = async (gameName: string) => {
-  const [ost, reviews] = await Promise.all([
-    searchYouTubeVideos(`${gameName} Official Soundtrack`, 4),
-    searchYouTubeVideos(`${gameName} Game Review`, 4)
+  const [ost, reviewsEn, reviewsRu] = await Promise.all([
+    searchYouTubeVideos(`${gameName} OST`, 3),
+    searchYouTubeVideos(`${gameName} review`, 3),
+    searchYouTubeVideos(`${gameName} обзор игры`, 3)
   ]);
 
-  return { ost, reviews };
+  // Merge and deduplicate reviews, or just combine them
+  const allReviews = [...reviewsRu, ...reviewsEn];
+  
+  return { ost, reviews: allReviews };
 };

@@ -14,7 +14,7 @@ interface PlatformCardProps {
 const PlatformCard: React.FC<PlatformCardProps> = ({ platform }) => {
   return (
     <div className={styles.platformCard}>
-      <img src={platform.image_background} alt={platform.name} className={styles.platformImage} />
+      <img src={platform.image_background} alt={platform.name} className={styles.platformCardImg} />
       <div className={styles.platformInfo}>
         <h3 className={styles.platformName}>{platform.name}</h3>
         {platform.games_count && (

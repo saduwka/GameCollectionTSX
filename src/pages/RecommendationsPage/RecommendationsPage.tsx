@@ -1,6 +1,7 @@
 // FILE: src/pages/RecommendationsPage/RecommendationsPage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
@@ -20,22 +21,21 @@ interface RecommendedGame extends Game {
 
 const RecommendationsPage: React.FC = () => {
   const { user, authLoading } = useAuth();
-  const [recommendations, setRecommendations] = useState<RecommendedGame[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [manualRefreshKey, setManualRefreshKey] = useState(0);
 
-  useEffect(() => {
-    if (authLoading) setLoading(true);
-  }, [authLoading]);
-
-  const generateRecommendations = async (isManualRefresh = false) => {
-    if (isManualRefresh) setRefreshing(true);
-    else setLoading(true);
-    
-    try {
+  const {
+    data: recommendations = [],
+    isLoading,
+    isRefetching,
+    refetch,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ["recommendations", user?.uid, manualRefreshKey],
+    queryFn: async () => {
       const [collection, devices] = await Promise.all([
-        getUserCollection(),
-        getUserDevices()
+        getUserCollection(user?.uid),
+        getUserDevices(user?.uid)
       ]);
 
       const collectionIds = new Set(collection.map(g => g.id));
@@ -43,8 +43,9 @@ const RecommendationsPage: React.FC = () => {
       const platformIds = devices.length > 0 ? devices.join(",") : "";
       const recsMap = new Map<number, RecommendedGame>();
       
+      const isManualRefresh = manualRefreshKey > 0;
+
       if (collection.length === 0) {
-        // If no games, but has platforms, recommend popular games for those platforms
         if (devices.length > 0) {
           const data = await fetchGames(1, "-rating", "", "", platformIds);
           data.games.forEach(g => {
@@ -53,19 +54,16 @@ const RecommendationsPage: React.FC = () => {
             }
           });
         } else {
-          // No games, no platforms -> just general popular
           const data = await fetchGames(1, "-rating");
           data.games.forEach(g => {
             recsMap.set(g.id, { ...g, reason: "Community favorite" });
           });
         }
       } else {
-        // 1. Analyze genre preferences weighted by user rating
         const genreStats: Record<string, { weight: number, name: string }> = {};
         const meaningfulGames = collection.filter(g => g.status !== "Not Interested");
         
         if (meaningfulGames.length === 0 && collection.length > 0) {
-          // All games are 'Not Interested' - fallback to popular
           const data = await fetchGames(1, "-rating", "", "", platformIds);
           data.games.forEach(g => {
             if (!notInterestedIds.has(g.id)) {
@@ -88,9 +86,7 @@ const RecommendationsPage: React.FC = () => {
             .sort((a, b) => b[1].weight - a[1].weight)
             .slice(0, 3);
 
-          // 2. Fetch recommendations for each top genre
           for (const [slug, info] of sortedGenres) {
-            // For variety, use different orderings if manually refreshed
             const ordering = isManualRefresh ? (Math.random() > 0.5 ? "-metacritic" : "-rating") : "-metacritic";
             const data = await fetchGames(1, ordering, "", slug, platformIds);
             data.games.forEach(g => {
@@ -100,7 +96,6 @@ const RecommendationsPage: React.FC = () => {
             });
           }
 
-          // 3. Add recommendations based on a high-rated game
           const shuffledMeaningful = [...meaningfulGames].sort(() => Math.random() - 0.5);
           const topGame = isManualRefresh 
             ? shuffledMeaningful.find(g => (g.rating || 0) >= 7) || shuffledMeaningful[0]
@@ -118,7 +113,6 @@ const RecommendationsPage: React.FC = () => {
           }
         }
         
-        // 4. If we still don't have many, add some general popular games on user platforms
         if (recsMap.size < 10 && platformIds) {
           const data = await fetchGames(1, "-added", "", "", platformIds);
           data.games.forEach(g => {
@@ -129,26 +123,21 @@ const RecommendationsPage: React.FC = () => {
         }
       }
 
-      // Shuffle and take top 15-20
-      const finalRecs = Array.from(recsMap.values())
+      return Array.from(recsMap.values())
         .sort(() => Math.random() - 0.5)
         .slice(0, 18);
+    },
+    enabled: !authLoading,
+  });
 
-      setRecommendations(finalRecs);
-      if (isManualRefresh) toast.success("Recommendations updated!");
-    } catch (err) {
-      console.error("Error generating recommendations:", err);
-      if (isManualRefresh) toast.error("Failed to update.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const handleRefresh = () => {
+    setManualRefreshKey(prev => prev + 1);
+    toast.promise(refetch(), {
+      loading: "Updating recommendations...",
+      success: "Recommendations updated!",
+      error: "Failed to update recommendations",
+    });
   };
-
-  useEffect(() => {
-    if (authLoading) return;
-    generateRecommendations();
-  }, [user, authLoading]);
 
   const handleNotInterested = async (e: React.MouseEvent, game: Game) => {
     e.preventDefault();
@@ -168,9 +157,9 @@ const RecommendationsPage: React.FC = () => {
         status: "Not Interested"
       });
       
-      setRecommendations(prev => prev.filter(g => g.id !== game.id));
+      refetch();
       toast.success(`${game.name} will not be shown again`);
-    } catch (err) {
+    } catch {
       toast.error("Action failed");
     }
   };
@@ -188,21 +177,21 @@ const RecommendationsPage: React.FC = () => {
         </div>
         <button 
           className={styles.refreshButton} 
-          onClick={() => generateRecommendations(true)}
-          disabled={refreshing || loading}
+          onClick={handleRefresh}
+          disabled={isRefetching || isLoading}
         >
-          {refreshing ? "Updating..." : "↻ Update"}
+          {isRefetching ? "Updating..." : "↻ Update"}
         </button>
       </header>
 
       <LoadingErrorMessage 
-        loading={loading || authLoading} 
-        error={null} 
-        noResults={!loading && !authLoading && recommendations.length === 0} 
+        loading={isLoading || authLoading} 
+        error={isError ? (error as Error).message : null} 
+        noResults={!isLoading && !authLoading && recommendations.length === 0} 
         message="Add more games to your collection to get better recommendations!" 
       />
 
-      {!loading && recommendations.length > 0 && (
+      {!isLoading && !authLoading && recommendations.length > 0 && (
        <div className={styles.grid}>
          {recommendations.map((game) => (
            <div key={game.id} className={styles.cardWrapper}>

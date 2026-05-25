@@ -1,33 +1,29 @@
-// FILE: src/services/games/getGameDetails.ts
+import apiClient from "../apiClient";
 import type { Game, RawGame, RawScreenshot, RawMovie, RawStore } from "../../types/game";
 
 export async function getGameDetails(id: string): Promise<Game> {
-  const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-  
-  const gamePromise = fetch(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`);
-  const screenshotsPromise = fetch(`https://api.rawg.io/api/games/${id}/screenshots?key=${API_KEY}`);
-  const moviesPromise = fetch(`https://api.rawg.io/api/games/${id}/movies?key=${API_KEY}`);
-  const storesPromise = fetch(`https://api.rawg.io/api/games/${id}/stores?key=${API_KEY}`);
-  const seriesPromise = fetch(`https://api.rawg.io/api/games/${id}/game-series?key=${API_KEY}`);
-  const additionsPromise = fetch(`https://api.rawg.io/api/games/${id}/additions?key=${API_KEY}`);
-
-  const [gameRes, screenshotsRes, moviesRes, storesRes, seriesRes, additionsRes] = await Promise.all([
-    gamePromise,
-    screenshotsPromise,
-    moviesPromise,
-    storesPromise,
-    seriesPromise,
-    additionsPromise
+  const [
+    gameRes,
+    screenshotsRes,
+    moviesRes,
+    storesRes,
+    seriesRes,
+    additionsRes
+  ] = await Promise.all([
+    apiClient.get<RawGame>(`/games/${id}`),
+    apiClient.get<{ results: RawScreenshot[] }>(`/games/${id}/screenshots`),
+    apiClient.get<{ results: RawMovie[] }>(`/games/${id}/movies`),
+    apiClient.get<{ results: RawStore[] }>(`/games/${id}/stores`),
+    apiClient.get<{ results: { id: number; name: string; background_image: string }[] }>(`/games/${id}/game-series`),
+    apiClient.get<{ results: { id: number; name: string; background_image: string }[] }>(`/games/${id}/additions`)
   ]);
 
-  if (!gameRes.ok) throw new Error(`Error fetching game details: ${gameRes.statusText}`);
-
-  const gameData: RawGame = await gameRes.json();
-  const screenshotsData: { results: RawScreenshot[] } = screenshotsRes.ok ? await screenshotsRes.json() : { results: [] };
-  const moviesData: { results: RawMovie[] } = moviesRes.ok ? await moviesRes.json() : { results: [] };
-  const storesData: { results: RawStore[] } = storesRes.ok ? await storesRes.json() : { results: [] };
-  const seriesData: { results: { id: number; name: string; background_image: string }[] } = seriesRes.ok ? await seriesRes.json() : { results: [] };
-  const additionsData: { results: { id: number; name: string; background_image: string }[] } = additionsRes.ok ? await additionsRes.json() : { results: [] };
+  const gameData = gameRes.data;
+  const screenshotsData = screenshotsRes.data;
+  const moviesData = moviesRes.data;
+  const storesData = storesRes.data;
+  const seriesData = seriesRes.data;
+  const additionsData = additionsRes.data;
 
   return {
     id: gameData.id,

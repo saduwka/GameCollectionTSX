@@ -1,13 +1,13 @@
 // FILE: src/pages/ProfilePage/ProfilePage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
   getUserDevices, 
   saveUserDevices 
 } from "../../services/collection/collectionService";
-import type { CollectedGame } from "../../services/collection/collectionService";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
 import styles from "./ProfilePage.module.css";
 import { toast } from "react-hot-toast";
@@ -19,94 +19,88 @@ interface PlatformInfo {
 
 const ProfilePage: React.FC = () => {
   const { user, authLoading } = useAuth();
-  const [collection, setCollection] = useState<CollectedGame[]>([]);
-  const [myDevices, setMyDevices] = useState<PlatformInfo[]>([]);
-  const [allPlatforms, setAllPlatforms] = useState<PlatformInfo[]>([]);
+  const queryClient = useQueryClient();
+  const [myDevicesLocal, setMyDevicesLocal] = useState<PlatformInfo[] | null>(null);
   const [showAllPlatforms, setShowAllPlatforms] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   
   // Platform Search State
   const [platformSearch, setPlatformSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<PlatformInfo[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/");
+  // Queries
+  const { data: collection = [] } = useQuery({
+    queryKey: ["userCollection", user?.uid],
+    queryFn: () => getUserCollection(),
+    enabled: !!user,
+  });
+
+  const { data: serverDevices = [] } = useQuery({
+    queryKey: ["userDevices", user?.uid],
+    queryFn: () => getUserDevices(),
+    enabled: !!user,
+  });
+
+  const { data: allPlatforms = [] } = useQuery({
+    queryKey: ["allPlatforms"],
+    queryFn: async () => {
+      const raw = await getPlatforms();
+      return raw.map(p => ({ id: p.id, name: p.name }));
+    },
+  });
+
+  const { data: searchResults = [], isFetching: isSearching } = useQuery({
+    queryKey: ["platformSearch", platformSearch],
+    queryFn: async () => {
+      if (platformSearch.length <= 1) return [];
+      const results = await searchPlatforms(platformSearch);
+      return results.slice(0, 20).map(p => ({ id: p.id, name: p.name }));
+    },
+    enabled: platformSearch.length > 1,
+  });
+
+  // Sync server devices to local state once loaded
+  const myDevices = useMemo(() => {
+    if (myDevicesLocal !== null) return myDevicesLocal;
+    if (serverDevices.length > 0 && allPlatforms.length > 0) {
+      return allPlatforms.filter(p => serverDevices.includes(p.id));
     }
-  }, [user, authLoading, navigate]);
+    return [];
+  }, [myDevicesLocal, serverDevices, allPlatforms]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (user) {
-        setLoading(true);
-        try {
-          const [userCollection, deviceIds, rawPlatforms] = await Promise.all([
-            getUserCollection(),
-            getUserDevices(),
-            getPlatforms()
-          ]);
-          setCollection(userCollection);
-          
-          const platformList: PlatformInfo[] = rawPlatforms.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }));
-          setAllPlatforms(platformList);
-          
-          if (deviceIds.length > 0) {
-            const filtered = platformList.filter((p: PlatformInfo) => deviceIds.includes(p.id));
-            setMyDevices(filtered);
-          }
-        } catch (err) {
-          console.error("Error fetching profile data:", err);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [user]);
+  // Mutations
+  const saveDevicesMutation = useMutation({
+    mutationFn: (deviceIds: number[]) => saveUserDevices(deviceIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userDevices", user?.uid] });
+      toast.success("Settings saved!");
+    },
+    onError: () => {
+      toast.error("Failed to save settings.");
+    },
+  });
 
-  // Handle Platform Search
-  useEffect(() => {
-    const search = async () => {
-      if (platformSearch.length > 1) {
-        setIsSearching(true);
-        const results = await searchPlatforms(platformSearch);
-        setSearchResults(results.slice(0, 20));
-        setIsSearching(false);
-      } else {
-        setSearchResults([]);
-      }
-    };
-    search();
-  }, [platformSearch]);
+  if (!authLoading && !user) {
+    navigate("/");
+    return null;
+  }
 
   const addDevice = (platform: PlatformInfo) => {
-    if (!myDevices.find(d => d.id === platform.id)) {
-      setMyDevices([...myDevices, platform]);
+    const current = myDevices;
+    if (!current.find(d => d.id === platform.id)) {
+      setMyDevicesLocal([...current, platform]);
     }
     if (platformSearch) {
       setPlatformSearch("");
-      setSearchResults([]);
     }
   };
 
   const removeDevice = (id: number) => {
-    setMyDevices(myDevices.filter(d => d.id !== id));
+    setMyDevicesLocal(myDevices.filter(d => d.id !== id));
   };
 
-  const handleSaveDevices = async () => {
-    setSaving(true);
-    try {
-      await saveUserDevices(myDevices.map(d => d.id));
-      toast.success("Settings saved!");
-    } catch (err) {
-      toast.error("Failed to save settings.");
-    } finally {
-      setSaving(false);
-    }
+  const handleSaveDevices = () => {
+    saveDevicesMutation.mutate(myDevices.map(d => d.id));
   };
 
   const handleShareCollection = () => {
@@ -128,7 +122,7 @@ const ProfilePage: React.FC = () => {
     totalHours: collection.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0)
   };
 
-  if (authLoading || (!user && !loading)) return null;
+  if (authLoading) return null;
 
   return (
     <div className={styles.profilePage}>
@@ -223,9 +217,9 @@ const ProfilePage: React.FC = () => {
           <button 
             className={styles.saveButton} 
             onClick={handleSaveDevices}
-            disabled={saving || isSearching}
+            disabled={saveDevicesMutation.isPending || isSearching}
           >
-            {saving ? "Saving..." : "Save Hardware Settings"}
+            {saveDevicesMutation.isPending ? "Saving..." : "Save Hardware Settings"}
           </button>
           
           <button 

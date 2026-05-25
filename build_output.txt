@@ -1,0 +1,19 @@
+
+> gamecollection-ts@0.0.0 build
+> tsc -b && vite build
+
+vite v6.3.5 building for production...
+transforming...
+✓ 228 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/favicon-B_pNwpT5.svg    0.68 kB │ gzip:   0.47 kB
+dist/index.html                     0.71 kB │ gzip:   0.41 kB
+dist/assets/index-2lxzft9-.css     41.30 kB │ gzip:   8.62 kB
+dist/assets/index-NtkGA3IR.js     860.77 kB │ gzip: 240.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1m 28s

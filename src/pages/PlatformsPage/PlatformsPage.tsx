@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getParentPlatforms } from "../../services/platforms/getPlatformsList";
 import PlatformCard from "../../components/PlatformCard/PlatformCard";
@@ -14,26 +14,10 @@ interface ParentPlatform {
 }
 
 function PlatformsPage() {
-  const [parentPlatforms, setParentPlatforms] = useState<ParentPlatform[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPlatforms = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getParentPlatforms();
-        setParentPlatforms(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch platforms");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlatforms();
-  }, []);
+  const { data: parentPlatforms = [], isLoading, error, isError } = useQuery<ParentPlatform[]>({
+    queryKey: ["parentPlatforms"],
+    queryFn: getParentPlatforms,
+  });
 
   return (
     <div className={styles.platformsPage}>
@@ -41,12 +25,12 @@ function PlatformsPage() {
         <h1 className={styles.heading}>Gaming Platforms</h1>
 
         <LoadingErrorMessage
-          loading={loading}
-          error={error}
-          noResults={parentPlatforms.length === 0}
+          loading={isLoading}
+          error={isError ? (error as Error).message : null}
+          noResults={!isLoading && !isError && parentPlatforms.length === 0}
         />
 
-        {!loading && !error && parentPlatforms.map((group) => (
+        {!isLoading && !isError && parentPlatforms.map((group) => (
           <div key={group.id} className={styles.platformGroup}>
             <h2 className={styles.groupTitle}>{group.name}</h2>
             <div className={styles.platformList}>

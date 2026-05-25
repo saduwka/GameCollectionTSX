@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import styles from "./HomePage.module.css";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
@@ -7,22 +8,17 @@ import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getPopularGames } from "../../services/games/getPopularGames";
-import type { Game } from "../../types/game";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const loadGames = async () => {
-      setLoading(true);
-      const games = await getPopularGames();
-      setGames(games.slice(0, 5));
-      setLoading(false);
-    };
-    loadGames();
-  }, []);
+  const { data: games = [], isLoading: loading } = useQuery({
+    queryKey: ["popularGames"],
+    queryFn: async () => {
+      const result = await getPopularGames();
+      return result.slice(0, 5);
+    },
+  });
 
   return (
     <div className={styles.homePage}>

@@ -1,12 +1,13 @@
 // FILE: src/pages/SearchPage/SearchPage.tsx
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { SearchContext } from "../../context/SearchContext";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import { fetchGames } from "../../services/search/searchServices";
-import type { Game, RawGame } from "../../types/game";
+import type { Game } from "../../types/game";
 import styles from "./SearchPage.module.css";
 
 type SortOption = "relevance" | "name" | "rating";
@@ -19,40 +20,15 @@ const SearchPage: React.FC = () => {
   const urlQuery = params.get("query") || "";
 
   const [inputValue, setInputValue] = useState(urlQuery);
-  const [games, setGames] = useState<RawGame[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync with URL query on mount and when it changes
-  useEffect(() => {
-    setInputValue(urlQuery);
-    if (urlQuery) {
-      loadGames(urlQuery);
-    } else {
-      setGames([]);
-    }
-  }, [urlQuery]);
-
-  // Auto-focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const loadGames = async (query: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const results = await fetchGames(query);
-      setGames(results);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: games = [], isLoading: loading, error, isError } = useQuery({
+    queryKey: ["search", urlQuery],
+    queryFn: () => fetchGames(urlQuery),
+    enabled: !!urlQuery,
+  });
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -72,18 +48,16 @@ const SearchPage: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  const sortGames = (gamesList: RawGame[]): RawGame[] => {
-    const list = [...gamesList];
+  const sortedGames = useMemo(() => {
+    const list = [...games];
     if (sortOption === "name") {
       return list.sort((a, b) => a.name.localeCompare(b.name));
     }
     if (sortOption === "rating") {
       return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
-    return list; // relevance is default order from service (which keeps API order)
-  };
-
-  const sortedGames = sortGames(games);
+    return list; // relevance is default order
+  }, [games, sortOption]);
 
   return (
     <div className={styles.searchPage}>
@@ -110,7 +84,7 @@ const SearchPage: React.FC = () => {
         <button type="submit" className={styles.submitButton}>Search</button>
       </form>
 
-      {error && <LoadingErrorMessage loading={false} error={error} noResults={false} />}
+      {isError && <LoadingErrorMessage loading={false} error={(error as Error).message} noResults={false} />}
 
       {!urlQuery ? (
         <div className={styles.emptyState}>
@@ -130,7 +104,7 @@ const SearchPage: React.FC = () => {
                       <span className={styles.queryText}>"{urlQuery}"</span> — {games.length} results
                     </>
                   ) : (
-                    <span>Searching for <span className={styles.queryText}>"{urlQuery}"</span>...</span>
+                    <span>No results for <span className={styles.queryText}>"{urlQuery}"</span></span>
                   )}
                 </span>
               )}

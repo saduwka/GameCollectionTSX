@@ -1,6 +1,7 @@
 // FILE: src/pages/GamesPage/GamesPage.tsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
@@ -9,7 +10,6 @@ import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
 import styles from "./GamesPage.module.css";
-import type { Game } from "../../types/game";
 
 const STORAGE_KEY = "playhub_filters";
 
@@ -25,13 +25,54 @@ const GamesPage: React.FC = () => {
   const selectedTagId = searchParams.get("tag") || "";
   const selectedPlaytime = searchParams.get("playtime") || "";
 
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  // Queries
+  const { data: genres = [] } = useQuery({
+    queryKey: ["genres"],
+    queryFn: getGenres,
+  });
 
-  const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
-  const [platforms, setPlatforms] = useState<{ id: string | number; name: string }[]>([]);
+  const { data: platforms = [] } = useQuery({
+    queryKey: ["platforms"],
+    queryFn: async () => {
+      const list = await getPlatforms();
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    },
+  });
+
+  const ordering = filter === "popular" ? "-added" : filter === "rating" ? "-rating" : "";
+
+  const {
+    data: gamesData,
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [
+      "games",
+      currentPage,
+      ordering,
+      selectedYear,
+      selectedGenreId,
+      selectedPlatformId,
+      selectedDeveloperId,
+      selectedTagId,
+      selectedPlaytime,
+    ],
+    queryFn: () =>
+      fetchGames(
+        currentPage,
+        ordering,
+        selectedYear,
+        selectedGenreId,
+        selectedPlatformId,
+        selectedDeveloperId,
+        selectedTagId,
+        selectedPlaytime
+      ),
+  });
+
+  const games = gamesData?.games || [];
+  const hasMore = gamesData?.nextPageUrl !== null;
 
   const updateParams = useCallback((newParams: Record<string, string | number>) => {
     setSearchParams(prev => {
@@ -74,58 +115,7 @@ const GamesPage: React.FC = () => {
         }
       }
     }
-  }, []);
-
-  useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        const [genresList, platformsList] = await Promise.all([
-          getGenres(),
-          getPlatforms()
-        ]);
-        setGenres(genresList);
-        setPlatforms(platformsList.sort((a, b) => a.name.localeCompare(b.name)));
-      } catch (err) {
-        console.error("Failed to load metadata", err);
-      }
-    };
-    fetchMetadata();
-  }, []);
-
-  const getGames = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let ordering = "";
-      if (filter === "popular") {
-        ordering = "-added";
-      } else if (filter === "rating") {
-        ordering = "-rating";
-      }
-
-      const gamesData = await fetchGames(
-        currentPage,
-        ordering,
-        selectedYear,
-        selectedGenreId,
-        selectedPlatformId,
-        selectedDeveloperId,
-        selectedTagId,
-        selectedPlaytime
-      );
-
-      setGames(gamesData.games);
-      setHasMore(gamesData.nextPageUrl !== null);
-    } catch (err) {
-      setError("Failed to fetch games. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }, [filter, currentPage, selectedYear, selectedGenreId, selectedPlatformId, selectedDeveloperId, selectedTagId, selectedPlaytime]);
-
-  useEffect(() => {
-    getGames();
-  }, [getGames]);
+  }, [searchParams, setSearchParams]);
 
   const handlePageChange = (newPage: number) => {
     updateParams({ page: newPage });
@@ -168,8 +158,8 @@ const GamesPage: React.FC = () => {
 
         <LoadingErrorMessage
           loading={loading && games.length === 0}
-          error={error}
-          noResults={!loading && !error && games.length === 0}
+          error={isError ? (error as Error).message : null}
+          noResults={!loading && !isError && games.length === 0}
         />
 
         {loading && games.length === 0 && (
@@ -180,7 +170,7 @@ const GamesPage: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && games.length > 0 && (
+        {!loading && !isError && games.length > 0 && (
           <div className={styles.gamesList}>
             {games.map((game) => (
               <Link 
@@ -194,7 +184,7 @@ const GamesPage: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !isError && (
           <div className={styles.pagination}>
             <button
               onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}

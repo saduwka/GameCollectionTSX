@@ -1,11 +1,5 @@
-// FILE: src/services/games/fetchGames.ts
-const API_URL = "https://api.rawg.io/api/games";
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-
+import apiClient from "../apiClient";
 import type { RawGame, Game, FetchGamesResponse } from "../../types/game";
-
-const gameListCache: Record<string, { data: FetchGamesResponse; ts: number }> = {};
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const mapRawGameToGame = (raw: RawGame): Game => ({
   id: raw.id,
@@ -34,64 +28,44 @@ export const fetchGames = async (
   page = 1,
   ordering = "-rating",
   year?: string,
-  genreId?: string, // Можно передавать через запятую для мультиселекта
+  genreId?: string,
   platformId?: string,
   developerId?: string,
   tagId?: string,
-  playtimeRange?: string // "0,10", "10,30", "30,100"
+  playtimeRange?: string
 ): Promise<FetchGamesResponse> => {
-  const cacheKey = `${page}-${ordering}-${year ?? "all"}-${genreId ?? "all"}-${platformId ?? "all"}-${developerId ?? "all"}-${tagId ?? "all"}-${playtimeRange ?? "all"}`;
-  
-  const cachedEntry = gameListCache[cacheKey];
-  if (cachedEntry && (Date.now() - cachedEntry.ts < CACHE_TTL_MS)) {
-    return cachedEntry.data;
+  const params: Record<string, string | number> = {
+    page,
+    page_size: 20,
+    ordering,
+  };
+
+  if (year) {
+    params.dates = year.includes(",") 
+      ? `${year.split(",")[0]}-01-01,${year.split(",")[1]}-12-31` 
+      : `${year}-01-01,${year}-12-31`;
   }
+  if (genreId) params.genres = genreId;
+  if (platformId) params.platforms = platformId;
+  if (developerId) params.developers = developerId;
+  if (tagId) params.tags = tagId;
+  if (playtimeRange) params.playtime = playtimeRange;
 
-  try {
-    let url = `${API_URL}?key=${API_KEY}&page=${page}&page_size=20`;
-    if (ordering) url += `&ordering=${ordering}`;
-    if (year) {
-      // Поддержка диапазона лет или одного года
-      url += year.includes(",") ? `&dates=${year.split(",")[0]}-01-01,${year.split(",")[1]}-12-31` : `&dates=${year}-01-01,${year}-12-31`;
-    }
-    if (genreId) url += `&genres=${genreId}`;
-    if (platformId) url += `&platforms=${platformId}`;
-    if (developerId) url += `&developers=${developerId}`;
-    if (tagId) url += `&tags=${tagId}`;
-    if (playtimeRange) url += `&playtime=${playtimeRange}`;
+  const { data } = await apiClient.get("/games", { params });
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    const data = await response.json();
-    const result: FetchGamesResponse = {
-      games: data.results
-        .filter((raw: RawGame) => /[A-Za-zА-Яа-яЁё]/.test(raw.name))
-        .map(mapRawGameToGame),
-      nextPageUrl: data.next,
-      prevPageUrl: data.previous,
-    };
-
-    gameListCache[cacheKey] = { data: result, ts: Date.now() };
-    return result;
-  } catch (error) {
-    console.error("Error fetching games:", error);
-    return { games: [], nextPageUrl: null, prevPageUrl: null };
-  }
+  return {
+    games: data.results
+      .filter((raw: RawGame) => /[A-Za-zА-Яа-яЁё]/.test(raw.name))
+      .map(mapRawGameToGame),
+    nextPageUrl: data.next,
+    prevPageUrl: data.previous,
+  };
 };
 
-interface GameFilters {
-  year?: string;
-  genre?: string;
-  platform?: string;
-}
-
-export const fetchRandomGame = async (filters: GameFilters): Promise<Game | null> => {
-  // Получаем первую страницу с учетом фильтров, чтобы узнать общее кол-во
+export const fetchRandomGame = async (filters: { year?: string; genre?: string; platform?: string }): Promise<Game | null> => {
   const data = await fetchGames(1, "-rating", filters.year, filters.genre, filters.platform);
   if (data.games.length === 0) return null;
   
-  // RAWG не дает честный random по API, поэтому берем случайную игру из первых 20
   const randomIndex = Math.floor(Math.random() * data.games.length);
   return data.games[randomIndex];
 };

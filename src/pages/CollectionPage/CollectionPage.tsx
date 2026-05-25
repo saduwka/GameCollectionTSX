@@ -1,9 +1,10 @@
 // FILE: src/pages/CollectionPage/CollectionPage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import { getUserCollection } from "../../services/collection/collectionService";
-import type { CollectedGame, GameStatus } from "../../services/collection/collectionService";
+import type { GameStatus } from "../../services/collection/collectionService";
 import { fetchGames } from "../../services/games/fetchGames";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
@@ -15,89 +16,60 @@ const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "
 
 const CollectionPage: React.FC = () => {
   const { user, authLoading } = useAuth();
-  const [fullCollection, setFullCollection] = useState<CollectedGame[]>([]);
-  const [filteredCollection, setFilteredCollection] = useState<CollectedGame[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
-  
-  const [recommendations, setRecommendations] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [recLoading, setRecLoading] = useState(false);
   const navigate = useNavigate();
+  const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/");
-    }
-  }, [user, authLoading, navigate]);
+  const { data: fullCollection = [], isLoading: loading } = useQuery({
+    queryKey: ["userCollection", user?.uid],
+    queryFn: () => getUserCollection(),
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    const loadCollection = async () => {
-      if (user) {
-        setLoading(true);
-        try {
-          const data = await getUserCollection();
-          setFullCollection(data);
-          setFilteredCollection(data);
-          if (data.length > 0) {
-            loadRecommendations(data);
-          }
-        } catch (err) {
-          console.error("Error loading collection:", err);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    loadCollection();
-  }, [user]);
+  const filteredCollection = useMemo(() => {
+    if (selectedStatus === "All") return fullCollection;
+    return fullCollection.filter(g => g.status === selectedStatus);
+  }, [fullCollection, selectedStatus]);
 
-  useEffect(() => {
-    if (selectedStatus === "All") {
-      setFilteredCollection(fullCollection);
-    } else {
-      setFilteredCollection(fullCollection.filter(g => g.status === selectedStatus));
-    }
-  }, [selectedStatus, fullCollection]);
-
-  const loadRecommendations = async (userCollection: CollectedGame[]) => {
-    setRecLoading(true);
-    try {
-      const genreCounts: Record<string, number> = {};
-      userCollection.forEach(game => {
-        (game.genres || []).forEach(genre => {
-          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-        });
+  const topGenres = useMemo(() => {
+    const genreCounts: Record<string, number> = {};
+    fullCollection.forEach(game => {
+      (game.genres || []).forEach(genre => {
+        genreCounts[genre] = (genreCounts[genre] || 0) + 1;
       });
+    });
 
-      const topGenres = Object.entries(genreCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 2)
-        .map(entry => entry[0]);
+    return Object.entries(genreCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(entry => entry[0]);
+  }, [fullCollection]);
 
-      if (topGenres.length > 0 && topGenres[0]) {
-        const genreId = topGenres[0].toLowerCase().replace(/ /g, "-");
-        const data = await fetchGames(1, "-rating", "", genreId, "");
-        
-        const collectionIds = new Set(userCollection.map(g => g.id));
-        const filteredRecs = data.games
-          .filter(g => !collectionIds.has(g.id))
-          .slice(0, 10);
-          
-        setRecommendations(filteredRecs);
-      }
-    } catch (err) {
-      console.error("Error loading recommendations:", err);
-    } finally {
-      setRecLoading(false);
-    }
-  };
+  const { data: recommendations = [], isLoading: recLoading } = useQuery({
+    queryKey: ["recommendations", topGenres],
+    queryFn: async () => {
+      if (topGenres.length === 0) return [];
+      const genreId = topGenres[0].toLowerCase().replace(/ /g, "-");
+      const data = await fetchGames(1, "-rating", "", genreId, "");
+      
+      const collectionIds = new Set(fullCollection.map(g => g.id));
+      return data.games
+        .filter(g => !collectionIds.has(g.id))
+        .slice(0, 10);
+    },
+    enabled: fullCollection.length > 0 && topGenres.length > 0,
+  });
 
   const getStatusCount = (status: GameStatus | "All") => {
     if (status === "All") return fullCollection.length;
     return fullCollection.filter(g => g.status === status).length;
   };
 
-  if (authLoading || (!user && !loading)) return null;
+  if (!authLoading && !user) {
+    navigate("/");
+    return null;
+  }
+
+  if (authLoading) return null;
 
   return (
     <div className={styles.collectionPage}>
@@ -171,7 +143,7 @@ const CollectionPage: React.FC = () => {
           {selectedStatus === "All" && recommendations.length > 0 && (
             <div className={styles.recommendationsSection}>
               <h2 className={styles.subtitle}>Recommended for You</h2>
-              <p className={styles.recReason}>Based on your interest in {fullCollection[0]?.genres.join(", ")}</p>
+              <p className={styles.recReason}>Based on your interest in {topGenres.join(", ")}</p>
               
               {recLoading ? (
                 <p>Finding games you might like...</p>

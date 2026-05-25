@@ -1,9 +1,11 @@
 // FILE: src/pages/GamePage/GamePage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import DOMPurify from "dompurify";
 import { getGameDetails } from "../../services/games/getGameDetails";
+import { getWiki } from "../../services/platforms/wikiService";
 import { 
   addToCollection, 
   removeFromCollection, 
@@ -17,65 +19,86 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import ImageModal from "../../components/ImageModal/ImageModal";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 
-import type { Game } from "../../types/game";
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
-import type { Deal } from "../../services/stores/cheapSharkService";
-import { getGameMedia, type YouTubeVideo } from "../../services/media/youtubeService";
+import { getGameMedia } from "../../services/media/youtubeService";
 import styles from "./GamePage.module.css";
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Not Interested"];
 
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(platformId || null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [gameDetails, setGameDetails] = useState<Game | null>(null);
   const [modalIndex, setModalIndex] = useState<number | null>(null);
   const [imageAnimationKey, setImageAnimationKey] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   
-  const [collectionStatus, setCollectionStatus] = useState<GameStatus | null>(null);
   const [personalRating, setPersonalRating] = useState<number>(0);
   const [personalNote, setPersonalNote] = useState<string>("");
   const [hoursPlayed, setHoursPlayed] = useState<number>(0);
   const [playingOn, setPlayingOn] = useState<string>("");
   const [completedAt, setCompletedAt] = useState<string>("");
-  const [isCollectionLoading, setIsCollectionLoading] = useState<boolean>(false);
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [dealsLoading, setDealsLoading] = useState<boolean>(false);
+  const [isCollectionActionLoading, setIsCollectionActionLoading] = useState<boolean>(false);
 
-  const [youtubeMedia, setYoutubeMedia] = useState<{ ost: YouTubeVideo[], reviews: YouTubeVideo[] }>({ ost: [], reviews: [] });
-  const [youtubeLoading, setYoutubeLoading] = useState<boolean>(false);
+  // Queries
+  const { data: gameDetails, isLoading: loading, error, isError } = useQuery({
+    queryKey: ["game", id],
+    queryFn: () => getGameDetails(id!),
+    enabled: !!id,
+  });
+
+  const currentPlatformInfo = (selectedPlatformId || platformId) && gameDetails
+    ? gameDetails.platforms.find(p => p.platform.id === parseInt(selectedPlatformId || platformId!))
+    : null;
+
+  const platformName = currentPlatformInfo?.platform.name || "";
+
+  const { data: collectionData, refetch: refetchCollection } = useQuery({
+    queryKey: ["collectionStatus", user?.uid, id],
+    queryFn: () => isInCollection(parseInt(id!)),
+    enabled: !!user && !!id,
+  });
+
+  const { data: deals = [], isLoading: dealsLoading } = useQuery({
+    queryKey: ["deals", gameDetails?.name],
+    queryFn: () => searchGameDeals(gameDetails!.name),
+    enabled: !!gameDetails?.name,
+  });
+
+  const { data: youtubeMedia = { ost: [], reviews: [] }, isLoading: youtubeLoading } = useQuery({
+    queryKey: ["youtube", gameDetails?.name, platformName],
+    queryFn: () => getGameMedia(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name),
+    enabled: !!gameDetails?.name,
+  });
+
+  const { data: gameWiki, isLoading: loadingWiki } = useQuery({
+    queryKey: ["gameWiki", gameDetails?.name, platformName],
+    queryFn: () => getWiki(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name),
+    enabled: !!gameDetails?.name,
+  });
+
+  const collectionStatus = collectionData?.status || null;
 
   useEffect(() => {
-    const checkCollection = async () => {
-      if (user && id) {
-        const gameData = await isInCollection(parseInt(id));
-        if (gameData) {
-          setCollectionStatus(gameData.status);
-          setPersonalRating(gameData.rating || 0);
-          setPersonalNote(gameData.note || "");
-          setHoursPlayed(gameData.hoursPlayed || 0);
-          setPlayingOn(gameData.playingOn || "");
-          if (gameData.completedAt) {
-            setCompletedAt(new Date(gameData.completedAt).toISOString().split('T')[0]);
-          } else {
-            setCompletedAt("");
-          }
-        } else {
-          setCollectionStatus(null);
-          setPersonalRating(0);
-          setPersonalNote("");
-          setHoursPlayed(0);
-          setPlayingOn("");
-          setCompletedAt("");
-        }
+    if (collectionData) {
+      setPersonalRating(collectionData.rating || 0);
+      setPersonalNote(collectionData.note || "");
+      setHoursPlayed(collectionData.hoursPlayed || 0);
+      setPlayingOn(collectionData.playingOn || "");
+      if (collectionData.completedAt) {
+        setCompletedAt(new Date(collectionData.completedAt).toISOString().split('T')[0]);
+      } else {
+        setCompletedAt("");
       }
-    };
-    checkCollection();
-  }, [user, id]);
+    } else {
+      setPersonalRating(0);
+      setPersonalNote("");
+      setHoursPlayed(0);
+      setPlayingOn("");
+      setCompletedAt("");
+    }
+  }, [collectionData]);
 
   const handleStatusChange = async (newStatus: GameStatus) => {
     if (!user) {
@@ -85,7 +108,7 @@ const GamePage: React.FC = () => {
 
     if (!gameDetails) return;
 
-    setIsCollectionLoading(true);
+    setIsCollectionActionLoading(true);
     try {
       if (collectionStatus) {
         const updates: Parameters<typeof updateGameMetadata>[1] = { status: newStatus };
@@ -113,12 +136,12 @@ const GamePage: React.FC = () => {
         toast.success(`${gameDetails.name} added to collection!`);
         if (newStatus === "Completed") setCompletedAt(new Date(now).toISOString().split('T')[0]);
       }
-      setCollectionStatus(newStatus);
+      refetchCollection();
     } catch (err) {
       console.error("Status update error:", err);
       toast.error("Failed to update collection.");
     } finally {
-      setIsCollectionLoading(false);
+      setIsCollectionActionLoading(false);
     }
   };
 
@@ -126,6 +149,7 @@ const GamePage: React.FC = () => {
     if (!user || !collectionStatus) return;
     try {
       await updateGameMetadata(parseInt(id!), updates);
+      refetchCollection();
     } catch (err) {
       console.error("Metadata update error:", err);
       toast.error("Failed to save changes.");
@@ -164,77 +188,18 @@ const GamePage: React.FC = () => {
   const handleRemoveFromCollection = async () => {
     if (!user || !gameDetails) return;
     
-    setIsCollectionLoading(true);
+    setIsCollectionActionLoading(true);
     try {
       await removeFromCollection(gameDetails.id);
       toast.success("Removed from collection");
-      setCollectionStatus(null);
-      setPersonalRating(0);
-      setPersonalNote("");
-      setHoursPlayed(0);
-      setPlayingOn("");
-      setCompletedAt("");
+      refetchCollection();
     } catch (err) {
       console.error("Remove error:", err);
       toast.error("Failed to remove game.");
     } finally {
-      setIsCollectionLoading(false);
+      setIsCollectionActionLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) {
-        setError("No game ID provided");
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const game = await getGameDetails(id);
-        setGameDetails(game);
-      } catch (err) {
-        setError("Failed to fetch game details");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  useEffect(() => {
-    const fetchDeals = async () => {
-      if (gameDetails?.name) {
-        setDealsLoading(true);
-        try {
-          const gameDeals = await searchGameDeals(gameDetails.name);
-          setDeals(gameDeals);
-        } catch (err) {
-          console.error("Error loading deals:", err);
-        } finally {
-          setDealsLoading(false);
-        }
-      }
-    };
-    fetchDeals();
-
-    const fetchYouTube = async () => {
-      if (gameDetails?.name) {
-        setYoutubeLoading(true);
-        try {
-          const media = await getGameMedia(gameDetails.name);
-          setYoutubeMedia(media);
-        } catch (err) {
-          console.error("Error loading YouTube media:", err);
-        } finally {
-          setYoutubeLoading(false);
-        }
-      }
-    };
-    fetchYouTube();
-  }, [gameDetails?.name]);
 
   const allImages = [
     gameDetails?.background_image,
@@ -244,20 +209,16 @@ const GamePage: React.FC = () => {
 
   const trailers = gameDetails?.trailers || [];
 
-  const currentPlatformInfo = platformId && gameDetails
-    ? gameDetails.platforms.find(p => p.platform.id === parseInt(platformId))
-    : null;
-
   return (
     <>
       <LoadingErrorMessage
         loading={loading}
-        error={error}
-        noResults={!loading && !error && !gameDetails}
+        error={isError ? (error as Error).message : null}
+        noResults={!loading && !isError && !gameDetails}
         message="No game found"
       />
 
-      {!loading && !error && gameDetails && (
+      {!loading && !isError && gameDetails && (
         <div className={styles.gamePageContainer}>
           <button onClick={() => navigate(-1)} className={styles.backButton}>
             ← Back
@@ -271,6 +232,22 @@ const GamePage: React.FC = () => {
                 [{currentPlatformInfo.platform.name}]
               </span>
             )}
+            
+            {gameDetails.platforms.length > 1 && (
+              <div className={styles.platformSelector}>
+                <label>View Version: </label>
+                <select 
+                  value={selectedPlatformId || ""} 
+                  onChange={(e) => setSelectedPlatformId(e.target.value || null)}
+                >
+                  <option value="">General Info</option>
+                  {gameDetails.platforms.map(p => (
+                    <option key={p.platform.id} value={p.platform.id}>{p.platform.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
             <div className={styles.subscriptionBadges}>
               {gameDetails.tags?.some(t => t.name.toLowerCase().includes("game pass")) && (
                 <span className={styles.gamePassBadge}>Game Pass</span>
@@ -291,7 +268,7 @@ const GamePage: React.FC = () => {
                       key={status}
                       className={`${styles.statusButton} ${collectionStatus === status ? styles.activeStatus : ""}`}
                       onClick={() => handleStatusChange(status)}
-                      disabled={isCollectionLoading}
+                      disabled={isCollectionActionLoading}
                     >
                       {status}
                     </button>
@@ -371,7 +348,7 @@ const GamePage: React.FC = () => {
                     <button 
                       className={styles.saveNoteButton}
                       onClick={handleNoteSave}
-                      disabled={isCollectionLoading}
+                      disabled={isCollectionActionLoading}
                     >
                       Save Note
                     </button>
@@ -380,7 +357,7 @@ const GamePage: React.FC = () => {
                   <button 
                     className={styles.removeButton}
                     onClick={handleRemoveFromCollection}
-                    disabled={isCollectionLoading}
+                    disabled={isCollectionActionLoading}
                   >
                     Remove from Collection
                   </button>
@@ -451,10 +428,21 @@ const GamePage: React.FC = () => {
 
               <div className={styles.descriptionSection}>
                 <strong>Description:</strong>
-                <div
-                  className={styles.description}
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(gameDetails.description) }}
-                />
+                {loadingWiki ? (
+                  <p>Loading details for this version...</p>
+                ) : gameWiki ? (
+                  <div className={styles.wikiBox}>
+                    <p>{gameWiki.extract}</p>
+                    {gameWiki.content_urls?.desktop.page && (
+                      <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">Read more on Wikipedia →</a>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className={styles.description}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(gameDetails.description) }}
+                  />
+                )}
               </div>
 
               <p>
