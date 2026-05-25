@@ -121,4 +121,5 @@ export interface FetchGamesResponse {
   games: Game[];
   nextPageUrl: string | null;
   prevPageUrl: string | null;
+  count?: number;
 }

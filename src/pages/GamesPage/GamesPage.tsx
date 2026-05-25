@@ -13,17 +13,36 @@ import styles from "./GamesPage.module.css";
 
 const STORAGE_KEY = "playhub_filters";
 
+export type SortKey =
+  | "popular"
+  | "rating"
+  | "metacritic"
+  | "released"
+  | "new"
+  | "name";
+
+const ORDERING_MAP: Record<SortKey, string> = {
+  popular: "-added",
+  rating: "-rating",
+  metacritic: "-metacritic",
+  released: "-released",
+  new: "-created",
+  name: "name",
+};
+
 const GamesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const filter = (searchParams.get("filter") as "random" | "popular" | "rating") || "popular";
+  const filter = (searchParams.get("filter") as SortKey) || "popular";
   const currentPage = parseInt(searchParams.get("page") || "1");
   const selectedYear = searchParams.get("year") || "";
+  const selectedYearTo = searchParams.get("yearTo") || "";
   const selectedGenreId = searchParams.get("genre") || "";
   const selectedPlatformId = searchParams.get("platform") || "";
   const selectedDeveloperId = searchParams.get("developer") || "";
   const selectedTagId = searchParams.get("tag") || "";
   const selectedPlaytime = searchParams.get("playtime") || "";
+  const selectedMetacritic = searchParams.get("metacritic") || "";
 
   // Queries
   const { data: genres = [] } = useQuery({
@@ -39,7 +58,7 @@ const GamesPage: React.FC = () => {
     },
   });
 
-  const ordering = filter === "popular" ? "-added" : filter === "rating" ? "-rating" : "";
+  const ordering = ORDERING_MAP[filter] ?? "-added";
 
   const {
     data: gamesData,
@@ -52,11 +71,13 @@ const GamesPage: React.FC = () => {
       currentPage,
       ordering,
       selectedYear,
+      selectedYearTo,
       selectedGenreId,
       selectedPlatformId,
       selectedDeveloperId,
       selectedTagId,
       selectedPlaytime,
+      selectedMetacritic,
     ],
     queryFn: () =>
       fetchGames(
@@ -67,7 +88,9 @@ const GamesPage: React.FC = () => {
         selectedPlatformId,
         selectedDeveloperId,
         selectedTagId,
-        selectedPlaytime
+        selectedPlaytime,
+        selectedMetacritic,
+        selectedYearTo
       ),
   });
 
@@ -92,12 +115,14 @@ const GamesPage: React.FC = () => {
   useEffect(() => {
     const filters = {
       year: selectedYear,
+      yearTo: selectedYearTo,
       genre: selectedGenreId,
       platform: selectedPlatformId,
-      playtime: selectedPlaytime
+      playtime: selectedPlaytime,
+      metacritic: selectedMetacritic,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  }, [selectedYear, selectedGenreId, selectedPlatformId, selectedPlaytime]);
+  }, [selectedYear, selectedYearTo, selectedGenreId, selectedPlatformId, selectedPlaytime, selectedMetacritic]);
 
   // Восстановление фильтров при первом входе (если URL пустой)
   useEffect(() => {
@@ -107,9 +132,11 @@ const GamesPage: React.FC = () => {
         const parsed = JSON.parse(saved);
         const newParams: Record<string, string> = {};
         if (parsed.year) newParams.year = parsed.year;
+        if (parsed.yearTo) newParams.yearTo = parsed.yearTo;
         if (parsed.genre) newParams.genre = parsed.genre;
         if (parsed.platform) newParams.platform = parsed.platform;
         if (parsed.playtime) newParams.playtime = parsed.playtime;
+        if (parsed.metacritic) newParams.metacritic = parsed.metacritic;
         if (Object.keys(newParams).length > 0) {
           setSearchParams(newParams);
         }
@@ -127,16 +154,35 @@ const GamesPage: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const hasAnyFilter = selectedYear || selectedGenreId || selectedPlatformId || selectedDeveloperId || selectedTagId || selectedPlaytime;
+  const hasAnyFilter = !!(
+    selectedYear ||
+    selectedYearTo ||
+    selectedGenreId ||
+    selectedPlatformId ||
+    selectedDeveloperId ||
+    selectedTagId ||
+    selectedPlaytime ||
+    selectedMetacritic
+  );
+
+  const activeFilterCount =
+    (selectedYear ? 1 : 0) +
+    (selectedYearTo ? 1 : 0) +
+    (selectedGenreId ? selectedGenreId.split(",").filter(Boolean).length : 0) +
+    (selectedPlatformId ? 1 : 0) +
+    (selectedDeveloperId ? 1 : 0) +
+    (selectedTagId ? 1 : 0) +
+    (selectedPlaytime ? 1 : 0) +
+    (selectedMetacritic ? 1 : 0);
 
   return (
     <div className={styles.gamesPage}>
       <div className={styles.content}>
         <div className={styles.headerRow}>
-          <h1 className={styles.heading}>Discover Games</h1>
+          <h1 className={styles.heading}>Игры</h1>
           {hasAnyFilter && (
             <button className={styles.clearButton} onClick={handleClearFilters}>
-              Clear All Filters
+              Сбросить фильтры
             </button>
           )}
         </div>
@@ -146,14 +192,20 @@ const GamesPage: React.FC = () => {
           setFilter={(f) => updateParams({ filter: f, page: 1 })}
           selectedYear={selectedYear}
           setSelectedYear={(y) => updateParams({ year: y, page: 1 })}
+          selectedYearTo={selectedYearTo}
+          setSelectedYearTo={(y) => updateParams({ yearTo: y, page: 1 })}
           selectedGenreId={selectedGenreId}
           setSelectedGenreId={(g) => updateParams({ genre: g, page: 1 })}
           selectedPlatformId={selectedPlatformId}
           setSelectedPlatformId={(p) => updateParams({ platform: p, page: 1 })}
           selectedPlaytime={selectedPlaytime}
           setSelectedPlaytime={(range) => updateParams({ playtime: range, page: 1 })}
+          selectedMetacritic={selectedMetacritic}
+          setSelectedMetacritic={(m) => updateParams({ metacritic: m, page: 1 })}
           genres={genres}
           platforms={platforms}
+          totalCount={gamesData?.count}
+          activeFilterCount={activeFilterCount}
         />
 
         <LoadingErrorMessage
@@ -191,7 +243,7 @@ const GamesPage: React.FC = () => {
               disabled={currentPage === 1}
               className={styles.paginationButton}
             >
-              Previous
+              Назад
             </button>
             <span className={styles.pageNumber}>{currentPage}</span>
             {hasMore && (
@@ -199,7 +251,7 @@ const GamesPage: React.FC = () => {
                 onClick={() => handlePageChange(currentPage + 1)}
                 className={styles.paginationButton}
               >
-                Next
+                Вперёд
               </button>
             )}
           </div>

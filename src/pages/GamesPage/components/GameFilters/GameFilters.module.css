@@ -27,6 +27,96 @@
   color: white !important;
 }
 
+.sortGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sortLabel {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-weight: 600;
+}
+
+.sortSelect {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.sortSelect:hover, .sortSelect:focus {
+  border-color: #646cff;
+  outline: none;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.countBadge {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 10px;
+  background: rgba(100, 108, 255, 0.08);
+  border: 1px solid rgba(100, 108, 255, 0.25);
+  border-radius: 6px;
+}
+
+.countBadge strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.activeBadge {
+  font-size: 0.8rem;
+  color: #fff;
+  background: #646cff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.collapseButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ccc;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collapseButton:hover {
+  border-color: #646cff;
+  color: #fff;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.bodyHidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .surpriseButton {
   background: linear-gradient(45deg, #646cff, #9c27b0);
   font-weight: bold;
@@ -125,7 +215,20 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
+
+  .sortGroup {
+    width: 100%;
+  }
+
+  .sortSelect {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .metaRow {
+    justify-content: space-between;
+  }
+
   .surpriseButton {
     width: 100%;
   }
