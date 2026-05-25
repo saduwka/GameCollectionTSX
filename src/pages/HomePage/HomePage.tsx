@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getPopularGames } from "../../services/games/getPopularGames";
 import { fetchGames } from "../../services/games/fetchGames";
 import type { Game } from "../../types/game";
+import PageMeta from "../../components/PageMeta/PageMeta";
 
 interface ShelfProps {
   title: string;
@@ -92,6 +93,10 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.homePage}>
+      <PageMeta
+        title="PlayHub"
+        description="PlayHub — каталог из 500 000+ игр. Умный поиск, сравнение, личная коллекция и рекомендации, основанные на ваших интересах."
+      />
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <span className={styles.heroBadge}>🎮 PlayHub</span>

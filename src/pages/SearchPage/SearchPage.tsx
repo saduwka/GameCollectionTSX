@@ -7,6 +7,7 @@ import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import { fetchGames } from "../../services/search/searchServices";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import type { Game } from "../../types/game";
 import styles from "./SearchPage.module.css";
 
@@ -61,6 +62,14 @@ const SearchPage: React.FC = () => {
 
   return (
     <div className={styles.searchPage}>
+      <PageMeta
+        title={urlQuery ? `Поиск: ${urlQuery}` : "Поиск игр"}
+        description={
+          urlQuery
+            ? `Результаты поиска «${urlQuery}» по каталогу PlayHub — 500 000+ игр.`
+            : "Умный поиск по каталогу PlayHub — найдите игры по названию, жанру и платформе."
+        }
+      />
       <form className={styles.searchForm} onSubmit={handleSearch}>
         <div className={styles.inputWrapper}>
           <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

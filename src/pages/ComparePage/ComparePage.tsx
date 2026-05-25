@@ -5,8 +5,16 @@ import { useQueries } from "@tanstack/react-query";
 import { useComparison } from "../../context/ComparisonContext";
 import { getGameDetails } from "../../services/games/getGameDetails";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./ComparePage.module.css";
 import type { Game } from "../../types/game";
+
+const COMPARE_META = (
+  <PageMeta
+    title="Сравнение игр"
+    description="Сравнивайте игры по рейтингу, Metacritic, жанрам, платформам и времени прохождения на PlayHub."
+  />
+);
 
 interface AttributeRow {
   label: string;
@@ -111,6 +119,7 @@ const ComparePage: React.FC = () => {
   if (comparisonList.length === 0) {
     return (
       <div className={styles.empty}>
+        {COMPARE_META}
         <div className={styles.emptyEmoji} aria-hidden="true">⚖️</div>
         <h1 className={styles.emptyTitle}>Сравнивать пока нечего</h1>
         <p className={styles.emptyMessage}>
@@ -127,6 +136,7 @@ const ComparePage: React.FC = () => {
   if (comparisonList.length === 1) {
     return (
       <div className={styles.empty}>
+        {COMPARE_META}
         <div className={styles.emptyEmoji} aria-hidden="true">🎮</div>
         <h1 className={styles.emptyTitle}>Нужна ещё хотя бы одна игра</h1>
         <p className={styles.emptyMessage}>
@@ -142,6 +152,7 @@ const ComparePage: React.FC = () => {
 
   return (
     <div className={styles.page}>
+      {COMPARE_META}
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Сравнение игр</h1>

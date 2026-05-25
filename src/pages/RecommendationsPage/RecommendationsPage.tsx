@@ -11,6 +11,7 @@ import {
 import { fetchGames } from "../../services/games/fetchGames";
 import GameCard from "../../components/GameCard/GameCard";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./RecommendationsPage.module.css";
 import type { Game } from "../../types/game";
 import { toast } from "react-hot-toast";
@@ -235,6 +236,10 @@ const RecommendationsPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <PageMeta
+        title="Рекомендации"
+        description="Персональные рекомендации игр на основе вашей коллекции, оценок и устройств от PlayHub."
+      />
       <header className={styles.header}>
         <div className={styles.titleWrapper}>
           <h1 className={styles.title}>

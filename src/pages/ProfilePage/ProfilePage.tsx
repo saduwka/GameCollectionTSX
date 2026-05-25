@@ -9,6 +9,7 @@ import {
   saveUserDevices 
 } from "../../services/collection/collectionService";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./ProfilePage.module.css";
 import { toast } from "react-hot-toast";
 
@@ -126,6 +127,10 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className={styles.profilePage}>
+      <PageMeta
+        title={user?.displayName ? `Профиль — ${user.displayName}` : "Профиль"}
+        description="Ваш профиль PlayHub: устройства, коллекция и настройки."
+      />
       <header className={styles.header}>
         <img src={user?.photoURL || ""} alt="Avatar" className={styles.avatar} />
         <div className={styles.userMeta}>
