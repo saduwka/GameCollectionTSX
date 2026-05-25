@@ -63,9 +63,18 @@ const MatchPage = () => {
   // Свайпы из localStorage. Держим в state, чтобы UI обновлялся при каждом свайпе.
   const [swipes, setSwipes] = useState<SwipeRecord[]>(() => getAllSwipes());
 
-  // Ref на верхнюю карточку — нужен, чтобы кнопки ✕/♥ запускали ту же exit-анимацию,
-  // что и драг (карточка улетает в сторону, а не просто исчезает).
-  const topCardRef = useRef<SwipeCardHandle>(null);
+  // Refs всех видимых карточек по game.id. Кнопки ✕/♥ берут ref у верхней
+  // карточки и дёргают её swipe(). Через Map потому что при перестроении стопки
+  // (B становится верхней после улёта A) ref должен обновляться без потерь.
+  const cardRefs = useRef<Map<number, SwipeCardHandle | null>>(new Map());
+
+  const setCardRef = useCallback((gameId: number) => (handle: SwipeCardHandle | null) => {
+    if (handle) {
+      cardRefs.current.set(gameId, handle);
+    } else {
+      cardRefs.current.delete(gameId);
+    }
+  }, []);
 
   // Игры из коллекции — исключаем из пула
   const excludeIds = useMemo(
@@ -81,6 +90,13 @@ const MatchPage = () => {
 
   // Видны 3 верхние карточки одновременно (стопка)
   const visibleCards = feed.slice(0, 3);
+
+  // Кнопки ✕/♥: берём handle верхней карточки и дёргаем swipe()
+  const triggerSwipe = (direction: "left" | "right") => {
+    const topGame = visibleCards[0];
+    if (!topGame) return;
+    cardRefs.current.get(topGame.id)?.swipe(direction);
+  };
 
   const handleSwiped = useCallback(
     async (direction: "left" | "right", game: Game) => {
@@ -220,7 +236,7 @@ const MatchPage = () => {
               {visibleCards.map((game, idx) => (
                 <SwipeCard
                   key={game.id}
-                  ref={idx === 0 ? topCardRef : undefined}
+                  ref={setCardRef(game.id)}
                   game={game}
                   stackIndex={idx}
                   onSwiped={handleSwiped}
@@ -238,7 +254,7 @@ const MatchPage = () => {
               type="button"
               className={`${styles.actionBtn} ${styles.nopeBtn}`}
               aria-label="Не нравится"
-              onClick={() => topCardRef.current?.swipe("left")}
+              onClick={() => triggerSwipe("left")}
             >
               ✕
             </button>
@@ -246,7 +262,7 @@ const MatchPage = () => {
               type="button"
               className={`${styles.actionBtn} ${styles.likeBtn}`}
               aria-label="Нравится"
-              onClick={() => topCardRef.current?.swipe("right")}
+              onClick={() => triggerSwipe("right")}
             >
               ♥
             </button>
