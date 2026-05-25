@@ -1,0 +1,144 @@
+.card {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #1a1a1a;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  will-change: transform;
+}
+
+.bgImage {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+/* Цветной тинт поверх фона: зелёный при свайпе вправо, красный — влево */
+.tintOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.content {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 28px 24px 32px;
+  color: #fff;
+  z-index: 2;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.rating { color: #ffd93d; }
+.year { color: rgba(255, 255, 255, 0.85); }
+.playtime { color: rgba(255, 255, 255, 0.85); }
+
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.genreTag {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.description {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Штампы LIKE / NOPE — появляются при драге */
+.stamp {
+  position: absolute;
+  top: 40px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  border: 4px solid currentColor;
+  z-index: 10;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.likeStamp {
+  right: 30px;
+  color: #43e97b;
+  transform: rotate(15deg);
+}
+
+.nopeStamp {
+  left: 30px;
+  color: #ff6b6b;
+  transform: rotate(-15deg);
+}
+
+@media (max-width: 600px) {
+  .card {
+    border-radius: 20px;
+  }
+  .title {
+    font-size: 1.45rem;
+  }
+  .content {
+    padding: 20px 18px 24px;
+  }
+  .description {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}

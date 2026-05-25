@@ -13,7 +13,7 @@ import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./CollectionPage.module.css";
 import type { Game } from "../../types/game";
 
-const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Dropped"];
+const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Liked", "Dropped"];
 
 const CollectionPage: React.FC = () => {
   const { user, authLoading } = useAuth();

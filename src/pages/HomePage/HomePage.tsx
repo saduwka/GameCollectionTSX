@@ -114,6 +114,12 @@ const HomePage: React.FC = () => {
             >
               Каталог игр
             </button>
+            <button
+              className={styles.btnMatch}
+              onClick={() => navigate("/match")}
+            >
+              🔥 Свайпать игры
+            </button>
             {isAuthenticated ? (
               <button
                 className={styles.btnSecondary}
@@ -164,6 +170,26 @@ const HomePage: React.FC = () => {
           </Link>
         )}
       />
+
+      <Link to="/match" className={styles.matchBanner}>
+        <div className={styles.matchBannerStack} aria-hidden="true">
+          <span className={`${styles.matchCard} ${styles.matchCard3}`} />
+          <span className={`${styles.matchCard} ${styles.matchCard2}`} />
+          <span className={`${styles.matchCard} ${styles.matchCard1}`}>
+            <span className={styles.matchCardEmoji}>🎮</span>
+          </span>
+        </div>
+        <div className={styles.matchBannerContent}>
+          <span className={styles.matchBannerBadge}>NEW · PlayHub Match</span>
+          <h2 className={styles.matchBannerTitle}>
+            Найди игры свайпами
+          </h2>
+          <p className={styles.matchBannerText}>
+            Вправо — нравится, влево — нет. Чем больше свайпаешь, тем точнее подбор.
+          </p>
+        </div>
+        <span className={styles.matchBannerArrow}>→</span>
+      </Link>
 
       <Shelf
         title="🗡️ Лучшие RPG"
