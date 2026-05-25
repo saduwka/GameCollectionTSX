@@ -19,7 +19,11 @@ const LoginButton = () => {
 
   return (
     <div className="login-button-wrapper">
-      <button className={styles.googleButton} onClick={handleLogin}>
+      <button
+        className={styles.googleButton}
+        onClick={handleLogin}
+        aria-label="Войти в PlayHub через Google"
+      >
         <div className={styles.iconWrapper}>
           <img
             src="https://developers.google.com/identity/images/g-logo.png"
@@ -27,7 +31,7 @@ const LoginButton = () => {
             className={styles.icon}
           />
         </div>
-        <span className={styles.buttonText}>Sign in with Google</span>
+        <span className={styles.buttonText}>Войти через Google</span>
       </button>
     </div>
   );
