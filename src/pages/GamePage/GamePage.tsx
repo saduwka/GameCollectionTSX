@@ -20,6 +20,7 @@ import { useComparison } from "../../context/ComparisonContext";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import ImageModal from "../../components/ImageModal/ImageModal";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
+import GamePageSkeleton from "../../components/Skeleton/GamePageSkeleton";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
@@ -222,10 +223,12 @@ const GamePage: React.FC = () => {
 
   const trailers = gameDetails?.trailers || [];
 
+  if (loading) return <GamePageSkeleton />;
+
   return (
     <>
       <LoadingErrorMessage
-        loading={loading}
+        loading={false}
         error={isError ? (error as Error).message : null}
         noResults={!loading && !isError && !gameDetails}
         message="No game found"
