@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { fetchGames } from "../../services/games/fetchGames";
 import {
@@ -211,14 +212,16 @@ const MatchPage = () => {
           </div>
         ) : (
           <div className={styles.cardStack}>
-            {visibleCards.map((game, idx) => (
-              <SwipeCard
-                key={game.id}
-                game={game}
-                stackIndex={idx}
-                onSwiped={handleSwiped}
-              />
-            ))}
+            <AnimatePresence>
+              {visibleCards.map((game, idx) => (
+                <SwipeCard
+                  key={game.id}
+                  game={game}
+                  stackIndex={idx}
+                  onSwiped={handleSwiped}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>

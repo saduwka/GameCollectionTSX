@@ -58,15 +58,23 @@ const SwipeCard = ({ game, stackIndex, onSwiped, disabled = false }: SwipeCardPr
       style={{
         x: stackIndex === 0 ? x : 0,
         rotate: stackIndex === 0 ? rotate : 0,
-        scale,
-        y,
         zIndex: 100 - stackIndex,
+      }}
+      // Плавный переход между позициями в стопке: когда нижняя карточка
+      // становится верхней (stackIndex меняется 1→0), framer-motion
+      // анимирует scale и y к новым значениям.
+      animate={{ scale, y }}
+      transition={{ type: "spring", stiffness: 260, damping: 28 }}
+      // Exit-анимация: вылет в сторону свайпа, отрабатывает внутри AnimatePresence
+      exit={{
+        x: exitX !== 0 ? exitX : 0,
+        opacity: 0,
+        transition: { duration: 0.35 },
       }}
       drag={stackIndex === 0 && !disabled ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.7}
       onDragEnd={handleDragEnd}
-      animate={exitX !== 0 ? { x: exitX, opacity: 0, transition: { duration: 0.35 } } : {}}
       whileTap={{ cursor: "grabbing" }}
     >
       {/* Фоновое изображение */}
