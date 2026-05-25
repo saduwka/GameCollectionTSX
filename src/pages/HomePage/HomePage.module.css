@@ -1,126 +1,241 @@
-:global(.slick-slide) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .homePage {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-top: 50px;
+  gap: 60px;
+  padding: 0 24px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
+/* ---------- Hero ---------- */
 .hero {
+  position: relative;
+  padding: 80px 32px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at top left, rgba(100, 108, 255, 0.25), transparent 60%),
+              radial-gradient(ellipse at bottom right, rgba(255, 100, 200, 0.15), transparent 60%),
+              linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.heroContent {
+  max-width: 720px;
+  margin: 0 auto;
   text-align: center;
-  margin-bottom: 50px;
 }
 
-.title {
-  font-size: 48px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.description {
-  font-size: 18px;
-  color: #666;
+.heroBadge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.4);
+  color: #a5acff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
   margin-bottom: 20px;
-  font-family: var(--ui-font);
+  letter-spacing: 0.04em;
 }
 
-.buttons {
+.heroTitle {
+  font-size: 3em;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+
+.heroDescription {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.heroButtons {
   display: flex;
+  gap: 12px;
   justify-content: center;
-  gap: 15px;
+  flex-wrap: wrap;
 }
 
-.btn {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 8px;
+.btnPrimary,
+.btnSecondary {
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  border: none;
 }
 
-.btn:hover {
-  background-color: #3730a3;
+.btnPrimary {
+  background: #646cff;
+  color: #fff;
 }
 
-.trending h1 {
-  text-align: center;
-  font-size: 32px;
-  margin: 50px 0 20px;
+.btnPrimary:hover {
+  background: #535bf2;
+  transform: translateY(-1px);
 }
 
-.trending {
+.btnSecondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+.heroHint {
+  margin-top: 24px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+/* ---------- Shelf ---------- */
+.shelf {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
-.gameCards {
+.shelfHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shelfTitle {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.shelfSubtitle {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 14px;
+  margin: 0;
+}
+
+.shelfCta {
+  color: #a5acff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.shelfCta:hover {
+  color: #c2c7ff;
+}
+
+.shelfGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.cardLink:hover {
+  transform: translateY(-4px);
+}
+
+/* ---------- Features ---------- */
+.featuresStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.feature:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.featureEmoji {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.featureTitle {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 700;
+  margin: 0;
+}
+
+.featureText {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.5;
 }
 
 @media (max-width: 768px) {
   .homePage {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 0 12px 60px;
+    gap: 40px;
   }
 
-  .title {
-    font-size: 24px;
-    margin-bottom: 6px;
+  .hero {
+    padding: 48px 20px;
+    margin-top: 12px;
   }
 
-  .description {
+  .heroTitle {
+    font-size: 2em;
+  }
+
+  .heroDescription {
+    font-size: 15px;
+  }
+
+  .shelfTitle {
+    font-size: 1.4em;
+  }
+
+  .shelfGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    padding: 12px 20px;
     font-size: 14px;
-    margin-bottom: 12px;
-  }
-
-  .buttons {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn {
-    width: 90%;
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  .trending h1 {
-    font-size: 20px;
-    margin-top: 20px;
-  }
-
-  .gameCards {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    justify-content: center;
-  }
-
-  .gameCards > div {
     width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .carouselFullWidth {
-    padding: 0 10px;
-  }
-
-  :global(.slick-slide) {
-    padding: 0 5px;
   }
 }

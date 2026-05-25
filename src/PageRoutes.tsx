@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
+import HomePage from "./pages/HomePage/HomePage";
 import GamePage from "./pages/GamePage/GamePage";
 import GamesPage from "./pages/GamesPage/GamesPage";
 import PlatformsPage from "./pages/PlatformsPage/PlatformsPage";
 import PlatformDetails from "./pages/PlatformDetails/PlatformDetails";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import CollectionPage from "./pages/CollectionPage/CollectionPage";
+import ComparePage from "./pages/ComparePage/ComparePage";
 import RecommendationsPage from "./pages/RecommendationsPage/RecommendationsPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import PublicCollectionPage from "./pages/PublicCollectionPage/PublicCollectionPage";
@@ -30,7 +32,8 @@ const PageRoutes = () => {
       <div className="content-wrapper" style={{ display: "flex", minHeight: "100vh" }}>
         <main className="main-content" style={{ flex: 1, width: "100%", paddingTop: "0" }}>
           <Routes>
-            <Route path="/" element={<RecommendationsPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/me" element={<RecommendationsPage />} />
             <Route path="/game/:id" element={<GamePage />} />
             <Route path="/game/:id/:platformId" element={<GamePage />} />
             <Route path="/games" element={<GamesPage />} />
@@ -39,6 +42,7 @@ const PageRoutes = () => {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/collection/:uid" element={<PublicCollectionPage />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             {/* path="*" must be the LAST route */}
             <Route path="*" element={<NotFoundPage />} />

@@ -13,7 +13,9 @@ import {
   updateGameMetadata
 } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
+import type { Game } from "../../types/game";
 import { useAuth } from "../../context/AuthContext";
+import { useComparison } from "../../context/ComparisonContext";
 
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import ImageModal from "../../components/ImageModal/ImageModal";
@@ -30,6 +32,17 @@ const GamePage: React.FC = () => {
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(platformId || null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addToComparison, removeFromComparison, isInComparison } = useComparison();
+
+  const handleToggleCompare = (game: Game) => {
+    if (isInComparison(game.id)) {
+      removeFromComparison(game.id);
+      toast.success("Убрано из сравнения");
+    } else {
+      addToComparison(game);
+      toast.success("Добавлено в сравнение");
+    }
+  };
 
   const [modalIndex, setModalIndex] = useState<number | null>(null);
   const [imageAnimationKey, setImageAnimationKey] = useState<number>(0);
@@ -220,9 +233,18 @@ const GamePage: React.FC = () => {
 
       {!loading && !isError && gameDetails && (
         <div className={styles.gamePageContainer}>
-          <button onClick={() => navigate(-1)} className={styles.backButton}>
-            ← Back
-          </button>
+          <div className={styles.topActions}>
+            <button onClick={() => navigate(-1)} className={styles.backButton}>
+              ← Back
+            </button>
+            <button
+              onClick={() => handleToggleCompare(gameDetails)}
+              className={`${styles.compareButton} ${isInComparison(gameDetails.id) ? styles.compareButtonActive : ""}`}
+              aria-pressed={isInComparison(gameDetails.id)}
+            >
+              {isInComparison(gameDetails.id) ? "✓ In compare" : "⚖️ Add to compare"}
+            </button>
+          </div>
 
           <h1 className={styles.gamePageHeader}>
             {gameDetails.name}

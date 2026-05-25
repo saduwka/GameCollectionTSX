@@ -10,6 +10,7 @@ import { SearchProvider } from "./context/SearchContext.tsx";
 import { ComparisonProvider } from "./context/ComparisonContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import { Toaster } from "react-hot-toast";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,18 +24,20 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <ComparisonProvider>
-            <SearchProvider>
-              <App />
-              <Toaster position="top-center" />
-            </SearchProvider>
-          </ComparisonProvider>
-        </AuthProvider>
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <ComparisonProvider>
+              <SearchProvider>
+                <App />
+                <Toaster position="top-center" />
+              </SearchProvider>
+            </ComparisonProvider>
+          </AuthProvider>
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
