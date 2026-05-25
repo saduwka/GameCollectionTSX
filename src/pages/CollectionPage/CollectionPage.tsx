@@ -9,6 +9,7 @@ import { fetchGames } from "../../services/games/fetchGames";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./CollectionPage.module.css";
 import type { Game } from "../../types/game";
 
@@ -73,6 +74,10 @@ const CollectionPage: React.FC = () => {
 
   return (
     <div className={styles.collectionPage}>
+      <PageMeta
+        title="Моя коллекция"
+        description="Ваша личная коллекция игр: пройденные, в процессе, в желаемом и беклог на PlayHub."
+      />
       <h1 className={styles.title}>My Collection</h1>
 
       <div className={styles.statusFilters}>

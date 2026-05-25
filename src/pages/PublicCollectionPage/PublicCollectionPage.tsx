@@ -6,6 +6,7 @@ import type { GameStatus } from "../../services/collection/collectionService";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "../CollectionPage/CollectionPage.module.css";
 import type { Game } from "../../types/game";
 
@@ -33,6 +34,10 @@ const PublicCollectionPage: React.FC = () => {
 
   return (
     <div className={styles.collectionPage}>
+      <PageMeta
+        title="Коллекция пользователя"
+        description="Публичная коллекция игр пользователя PlayHub."
+      />
       <h1 className={styles.title}>Public Collection</h1>
       <p style={{ textAlign: "center", color: "#aaa", marginBottom: "30px" }}>
         Viewing collection of user: {uid?.substring(0, 8)}...

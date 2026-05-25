@@ -21,6 +21,7 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import ImageModal from "../../components/ImageModal/ImageModal";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import GamePageSkeleton from "../../components/Skeleton/GamePageSkeleton";
+import PageMeta from "../../components/PageMeta/PageMeta";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
@@ -225,8 +226,21 @@ const GamePage: React.FC = () => {
 
   if (loading) return <GamePageSkeleton />;
 
+  const game = gameDetails as Game | undefined;
+  const metaDescription = game?.description
+    ? `${game.description.replace(/<[^>]+>/g, "").slice(0, 160)}...`
+    : `${game?.name ?? ""} — обзор, оценки, скриншоты и трейлеры на PlayHub`;
+
   return (
     <>
+      {game && (
+        <PageMeta
+          title={game.name}
+          description={metaDescription}
+          image={game.background_image}
+          type="article"
+        />
+      )}
       <LoadingErrorMessage
         loading={false}
         error={isError ? (error as Error).message : null}

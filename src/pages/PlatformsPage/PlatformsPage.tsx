@@ -5,6 +5,7 @@ import PlatformCard from "../../components/PlatformCard/PlatformCard";
 import PlatformCardSkeleton from "../../components/Skeleton/PlatformCardSkeleton";
 import Skeleton from "../../components/Skeleton/Skeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./PlatformsPage.module.css";
 import type { Platform } from "../../types/game";
 
@@ -23,6 +24,10 @@ function PlatformsPage() {
 
   return (
     <div className={styles.platformsPage}>
+      <PageMeta
+        title="Игровые платформы"
+        description="PC, PlayStation, Xbox, Nintendo, мобильные и ретро-платформы — каталог с историей, играми и фактами."
+      />
       <div className={styles.content}>
         <h1 className={styles.heading}>Игровые платформы</h1>
 

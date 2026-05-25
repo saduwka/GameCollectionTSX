@@ -9,6 +9,7 @@ import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./GamesPage.module.css";
 
 const STORAGE_KEY = "playhub_filters";
@@ -177,6 +178,10 @@ const GamesPage: React.FC = () => {
 
   return (
     <div className={styles.gamesPage}>
+      <PageMeta
+        title="Каталог игр"
+        description="Большой каталог игр с фильтрами по жанру, платформе, году выхода и Metacritic. Найди свою следующую игру на PlayHub."
+      />
       <div className={styles.content}>
         <div className={styles.headerRow}>
           <h1 className={styles.heading}>Игры</h1>

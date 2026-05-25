@@ -1,10 +1,15 @@
 // src/components/NotFoundPage.tsx
 import React from 'react';
 import styles from './NotFoundPage.module.css'; // Make sure to import the CSS module!
+import PageMeta from "../../components/PageMeta/PageMeta";
 
 const NotFoundPage: React.FC = () => {
   return (
     <div className={styles.notFoundContainer}>
+      <PageMeta
+        title="Страница не найдена"
+        description="Кажется, такой страницы не существует. Возвращайтесь в каталог PlayHub."
+      />
       <div className={styles.notFoundContent}>
         <h1 className={styles.notFoundTitle}>404</h1>
         <h2 className={styles.notFoundSubtitle}>Game Over!</h2>

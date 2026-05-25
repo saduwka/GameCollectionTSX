@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameCard from "../../components/GameCard/GameCard";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
+import PageMeta from "../../components/PageMeta/PageMeta";
 import {
   getPlatformDetails,
   getGamesForPlatform
@@ -110,6 +111,15 @@ const PlatformPage: FC = () => {
 
   return (
     <div className={styles.platformPage}>
+      <PageMeta
+        title={platformDetails?.name || "Платформа"}
+        description={
+          platformDetails?.name
+            ? `${platformDetails.name} — игры, история, факты и обзоры платформы на PlayHub.`
+            : undefined
+        }
+        image={platformDetails?.image_background || platformDetails?.image || undefined}
+      />
       <button
         className={styles.backButton}
         onClick={() => window.history.back()}
