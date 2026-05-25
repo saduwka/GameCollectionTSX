@@ -19,6 +19,7 @@ const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage/Recom
 const ProfilePage = lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const PublicCollectionPage = lazy(() => import("./pages/PublicCollectionPage/PublicCollectionPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
+const MatchPage = lazy(() => import("./pages/MatchPage/MatchPage"));
 
 const RouteFallback = () => (
   <div
@@ -73,6 +74,7 @@ const PageRoutes = () => {
               <Route path="/collection/:uid" element={<PublicCollectionPage />} />
               <Route path="/compare" element={<ComparePage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/match" element={<MatchPage />} />
               {/* path="*" must be the LAST route */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

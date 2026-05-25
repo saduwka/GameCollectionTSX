@@ -144,6 +144,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Link to="/platforms" className={styles.navLink} onClick={onClose}>
               Платформы
             </Link>
+            <Link to="/match" className={styles.navLink} onClick={onClose}>
+              Подбор игр
+            </Link>
             <Link to="/me" className={styles.navLink} onClick={onClose}>
               Рекомендации
             </Link>

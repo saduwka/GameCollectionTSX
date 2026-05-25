@@ -32,8 +32,9 @@ const slugify = (name: string) => name.toLowerCase().replace(/ /g, "-").replace(
 const STATUS_WEIGHTS: Record<string, number> = {
   Completed: 1.4,
   Playing: 1.3,
-  Backlog: 0.9,
+  Liked: 1.2,
   Wishlist: 1.1,
+  Backlog: 0.9,
   Dropped: 0.4,
   "Not Interested": 0,
 };

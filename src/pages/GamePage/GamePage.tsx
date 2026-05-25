@@ -27,7 +27,7 @@ import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkS
 import { getGameMedia } from "../../services/media/youtubeService";
 import styles from "./GamePage.module.css";
 
-const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Not Interested"];
+const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Liked", "Not Interested"];
 
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();
