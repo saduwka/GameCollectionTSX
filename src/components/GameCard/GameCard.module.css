@@ -41,6 +41,64 @@
   cursor: pointer;
 }
 
+.compareBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  opacity: 0;
+}
+
+.gameCard:hover .compareBtn,
+.gameCard:focus-within .compareBtn,
+.compareBtn:focus-visible,
+.compareBtnActive {
+  opacity: 1;
+}
+
+.compareBtn:hover {
+  transform: scale(1.08);
+  background: rgba(100, 108, 255, 0.85);
+  border-color: #646cff;
+}
+
+.compareBtn:focus-visible {
+  outline: 2px solid #646cff;
+  outline-offset: 2px;
+}
+
+.compareBtnActive {
+  background: #646cff;
+  border-color: #646cff;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .compareBtn {
+    opacity: 1;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    top: 4px;
+    right: 4px;
+  }
+}
+
 h3 {
   font-size: 1.2rem;
   color: #fff;
