@@ -30,6 +30,15 @@
   );
 }
 
+/* Цветной тинт поверх фона: зелёный при свайпе вправо, красный — влево */
+.tintOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
 .content {
   position: absolute;
   inset: auto 0 0 0;
