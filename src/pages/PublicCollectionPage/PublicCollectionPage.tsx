@@ -1,18 +1,20 @@
 import React, { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getUserCollection } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "../CollectionPage/CollectionPage.module.css";
+import styles from "../CollectionPage/CollectionPage.module.scss";
 import type { Game } from "../../types/game";
 
 const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Liked", "Dropped"];
 
 const PublicCollectionPage: React.FC = () => {
+  const { t } = useTranslation();
   const { uid } = useParams<{ uid: string }>();
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
 
@@ -35,12 +37,12 @@ const PublicCollectionPage: React.FC = () => {
   return (
     <div className={styles.collectionPage}>
       <PageMeta
-        title="Коллекция пользователя"
-        description="Публичная коллекция игр пользователя PlayHub."
+        title={t('collection.public_title')}
+        description={t('collection.public_description')}
       />
-      <h1 className={styles.title}>Public Collection</h1>
+      <h1 className={styles.title}>{t('collection.public_title')}</h1>
       <p style={{ textAlign: "center", color: "#aaa", marginBottom: "30px" }}>
-        Viewing collection of user: {uid?.substring(0, 8)}...
+        {t('common.results').split(' ')[0]} {uid?.substring(0, 8)}...
       </p>
 
       <div className={styles.statusFilters}>
@@ -50,7 +52,7 @@ const PublicCollectionPage: React.FC = () => {
             className={`${styles.filterTab} ${selectedStatus === status ? styles.activeTab : ""}`}
             onClick={() => setSelectedStatus(status)}
           >
-            {status} <span className={styles.count}>{getStatusCount(status)}</span>
+            {status === "All" ? t('home.see_all').split(' ')[0] : status} <span className={styles.count}>{getStatusCount(status)}</span>
           </button>
         ))}
       </div>
@@ -59,7 +61,7 @@ const PublicCollectionPage: React.FC = () => {
         loading={loading && fullCollection.length === 0} 
         error={null} 
         noResults={!loading && filteredCollection.length === 0} 
-        message="This collection is empty or private." 
+        message={t('search.empty_state_hint').split(' ')[0] + ' ' + t('common.nothing_found').split(' ')[0].toLowerCase()} 
       />
 
       {loading && fullCollection.length === 0 && (

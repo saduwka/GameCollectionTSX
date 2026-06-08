@@ -1,19 +1,28 @@
-import styles from "./LoginButton.module.css";
-import { signInWithPopup, signInWithRedirect } from "firebase/auth";
+import { useState } from "react";
+import styles from "./LoginButton.module.scss";
+import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase";
+import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const LoginButton = () => {
-  const handleLogin = () => {
-    localStorage.setItem("redirectPath", window.location.pathname);
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
 
-    if (import.meta.env.MODE === "development") {
-      signInWithPopup(auth, googleProvider).catch((error) => {
-        console.error("Ошибка авторизации через Google (popup):", error);
-      });
-    } else {
-      signInWithRedirect(auth, googleProvider).catch((error) => {
-        console.error("Ошибка авторизации через Google (redirect):", error);
-      });
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      toast.success(t("auth.login_success"));
+    } catch (error: any) {
+      console.error("Ошибка авторизации через Google:", error);
+      if (error.code === "auth/popup-blocked") {
+        toast.error(t("auth.popup_blocked"));
+      } else {
+        toast.error(t("auth.login_error"));
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -22,7 +31,8 @@ const LoginButton = () => {
       <button
         className={styles.googleButton}
         onClick={handleLogin}
-        aria-label="Войти в PlayHub через Google"
+        disabled={isLoading}
+        aria-label={t("auth.login_google")}
       >
         <div className={styles.iconWrapper}>
           <img
@@ -31,7 +41,9 @@ const LoginButton = () => {
             className={styles.icon}
           />
         </div>
-        <span className={styles.buttonText}>Войти через Google</span>
+        <span className={styles.buttonText}>
+          {isLoading ? t("auth.logging_in") : t("auth.login_google")}
+        </span>
       </button>
     </div>
   );

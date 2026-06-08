@@ -8,7 +8,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import type { Game } from "../../types/game";
-import styles from "./SwipeCard.module.css";
+import styles from "./SwipeCard.module.scss";
 
 interface SwipeCardProps {
   game: Game;
@@ -140,7 +140,6 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             </motion.div>
           </>
         )}
-
         {/* Контент карточки */}
         <div className={styles.content}>
           <h2 className={styles.title}>{game.name}</h2>

@@ -1,0 +1,24 @@
+@use "../../assets/styles/variables" as *;
+
+.switcher {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 44px;
+  text-transform: uppercase;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: $primary-color;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}

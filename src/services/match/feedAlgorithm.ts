@@ -5,10 +5,10 @@
 import type { Game } from "../../types/game";
 import type { SwipeRecord } from "./swipeStore";
 
-const RECENT_SWIPES_WINDOW = 15;
-const LIKE_WEIGHT = 1;
-const DISLIKE_WEIGHT = -1.5; // дизлайк весит больше — пользователь явно говорит "нет"
-const RANDOM_NOISE = 0.15; // чтобы не приелось — лёгкая случайность
+const RECENT_SWIPES_WINDOW = 20;
+const LIKE_WEIGHT = 1.2;
+const DISLIKE_WEIGHT = -2.5; // дизлайк весит значительно больше
+const RANDOM_NOISE = 0.1; // чуть меньше случайности для более точного соответствия
 
 export interface GenreScore {
   [genre: string]: number;
@@ -16,7 +16,6 @@ export interface GenreScore {
 
 /**
  * Считает веса жанров и тегов по последним N свайпам.
- * Используется и для подбора, и для будущего "профиля вкуса".
  */
 export const computeTasteProfile = (swipes: SwipeRecord[]): {
   genreScores: GenreScore;
@@ -41,7 +40,6 @@ export const computeTasteProfile = (swipes: SwipeRecord[]): {
 
 /**
  * Считает score для одной игры на основе профиля вкуса.
- * Чем выше — тем сильнее должна быть показана.
  */
 const scoreGame = (
   game: Game,
@@ -50,54 +48,70 @@ const scoreGame = (
 ): number => {
   let score = 0;
 
-  // Базовый рейтинг RAWG как floor — чтобы не показывать совсем мусор
-  score += (game.rating || 0) * 0.5;
+  // Базовый рейтинг RAWG и Metacritic как основа качества
+  const qualityScore = (game.rating || 0) * 0.4 + (game.metacritic ? game.metacritic / 20 : 0);
+  score += qualityScore;
 
   // Бонус за совпадение жанров
   for (const g of game.genres || []) {
     score += genreScores[g] || 0;
   }
 
-  // Бонус за совпадение тегов (если есть)
+  // Бонус за совпадение тегов (теперь весят больше)
   const gameTags = (game as Game & { tags?: { name: string }[] }).tags;
   if (gameTags) {
     for (const t of gameTags) {
-      score += (tagScores[t.name] || 0) * 0.5; // теги весят вдвое меньше жанров
+      score += (tagScores[t.name] || 0) * 0.8;
     }
   }
 
   // Случайность для разнообразия
-  score += (Math.random() - 0.5) * RANDOM_NOISE * 2;
+  score += (Math.random() - 0.5) * RANDOM_NOISE;
 
   return score;
 };
 
 /**
  * Принимает пул игр и историю свайпов — возвращает отсортированный по релевантности список.
- * Уже свайпнутые игры исключаются.
+ * Включает жесткую фильтрацию качества.
  */
 export const rankFeed = (
   pool: Game[],
   swipes: SwipeRecord[],
   excludeIds: Set<number> = new Set()
 ): Game[] => {
-  const swipedIds = new Set(swipes.map((s) => s.gameId));
-  const blocked = new Set([...swipedIds, ...excludeIds]);
-
+  const swipedIds = new Set(swipes.map((s) => String(s.gameId)));
+  const excludedStrings = new Set(Array.from(excludeIds).map((id) => String(id)));
+  
+  // ФИЛЬТРАЦИЯ КАЧЕСТВА
   const candidates = pool.filter(
-    (g) => !blocked.has(g.id) && g.background_image // отсеиваем без обложек — некрасиво
+    (g) => {
+      const gIdStr = String(g.id);
+      
+      // Базовые проверки
+      if (swipedIds.has(gIdStr) || excludedStrings.has(gIdStr) || !g.background_image) {
+        return false;
+      }
+
+      // Проверка качества: рейтинг не ниже 3.0 (если есть) и наличие отзывов
+      const minRating = g.rating || 0;
+      if (minRating > 0 && minRating < 2.5) return false; // Совсем плохие игры не берем
+      
+      return true;
+    }
   );
 
   const { genreScores, tagScores } = computeTasteProfile(swipes);
-
-  // Если профиля ещё нет (новичок) — отдаём по rating + лёгкой случайности
-  const hasProfile =
-    Object.keys(genreScores).length > 0 || Object.keys(tagScores).length > 0;
+  const hasProfile = Object.keys(genreScores).length > 0 || Object.keys(tagScores).length > 0;
 
   if (!hasProfile) {
+    // Для новичков: приоритет играм с Metacritic и высоким рейтингом
     return [...candidates].sort(
-      (a, b) =>
-        (b.rating || 0) - (a.rating || 0) + (Math.random() - 0.5) * 0.5
+      (a, b) => {
+        const scoreA = (a.rating || 0) + (a.metacritic ? a.metacritic / 20 : 0);
+        const scoreB = (b.rating || 0) + (b.metacritic ? b.metacritic / 20 : 0);
+        return scoreB - scoreA + (Math.random() - 0.5) * 0.2;
+      }
     );
   }
 

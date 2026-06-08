@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import DOMPurify from "dompurify";
+import { useTranslation } from "react-i18next";
 import { getGameDetails } from "../../services/games/getGameDetails";
 import { getWiki } from "../../services/platforms/wikiService";
 import { 
@@ -25,7 +26,7 @@ import PageMeta from "../../components/PageMeta/PageMeta";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
-import styles from "./GamePage.module.css";
+import styles from './GamePage.module.scss';
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Liked", "Not Interested"];
 
@@ -35,14 +36,15 @@ const GamePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
+  const { t, i18n } = useTranslation();
 
   const handleToggleCompare = (game: Game) => {
     if (isInComparison(game.id)) {
       removeFromComparison(game.id);
-      toast.success("Убрано из сравнения");
+      toast.success(t('compare.removed'));
     } else {
       addToComparison(game);
-      toast.success("Добавлено в сравнение");
+      toast.success(t('compare.added'));
     }
   };
 
@@ -82,14 +84,14 @@ const GamePage: React.FC = () => {
   });
 
   const { data: youtubeMedia = { ost: [], reviews: [] }, isLoading: youtubeLoading } = useQuery({
-    queryKey: ["youtube", gameDetails?.name, platformName],
-    queryFn: () => getGameMedia(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name),
+    queryKey: ["youtube", gameDetails?.name, platformName, i18n.language],
+    queryFn: () => getGameMedia(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name, i18n.language.startsWith('ru') ? 'ru' : 'en'),
     enabled: !!gameDetails?.name,
   });
 
   const { data: gameWiki, isLoading: loadingWiki } = useQuery({
-    queryKey: ["gameWiki", gameDetails?.name, platformName],
-    queryFn: () => getWiki(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name),
+    queryKey: ["gameWiki", gameDetails?.name, platformName, i18n.language],
+    queryFn: () => getWiki(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name, i18n.language.startsWith('ru') ? 'ru' : 'en'),
     enabled: !!gameDetails?.name,
   });
 
@@ -117,7 +119,7 @@ const GamePage: React.FC = () => {
 
   const handleStatusChange = async (newStatus: GameStatus) => {
     if (!user) {
-      toast.error("Please sign in to add games.");
+      toast.error(t('game_page.toasts.sign_in'));
       return;
     }
 
@@ -133,7 +135,7 @@ const GamePage: React.FC = () => {
           setCompletedAt(new Date(now).toISOString().split('T')[0]);
         }
         await updateGameMetadata(gameDetails.id, updates);
-        toast.success(`Status updated to ${newStatus}`);
+        toast.success(t('game_page.toasts.status_updated', { status: newStatus }));
       } else {
         const now = Date.now();
         await addToCollection({
@@ -148,13 +150,13 @@ const GamePage: React.FC = () => {
           playingOn: playingOn || (platformId ? gameDetails.platforms.find(p => p.platform.id === parseInt(platformId))?.platform.name : ""),
           completedAt: newStatus === "Completed" ? now : undefined
         });
-        toast.success(`${gameDetails.name} added to collection!`);
+        toast.success(t('game_page.toasts.added_to_collection', { name: gameDetails.name }));
         if (newStatus === "Completed") setCompletedAt(new Date(now).toISOString().split('T')[0]);
       }
       refetchCollection();
     } catch (err) {
       console.error("Status update error:", err);
-      toast.error("Failed to update collection.");
+      toast.error(t('game_page.toasts.update_failed'));
     } finally {
       setIsCollectionActionLoading(false);
     }
@@ -167,19 +169,19 @@ const GamePage: React.FC = () => {
       refetchCollection();
     } catch (err) {
       console.error("Metadata update error:", err);
-      toast.error("Failed to save changes.");
+      toast.error(t('game_page.toasts.save_failed'));
     }
   };
 
   const handleRatingChange = (rating: number) => {
     setPersonalRating(rating);
     handleMetadataUpdate({ rating });
-    toast.success(`Rating set to ${rating}/10`);
+    toast.success(t('game_page.toasts.rating_set', { rating }));
   };
 
   const handleNoteSave = () => {
     handleMetadataUpdate({ note: personalNote });
-    toast.success("Notes saved!");
+    toast.success(t('game_page.toasts.notes_saved'));
   };
 
   const handleHoursChange = (val: string) => {
@@ -191,7 +193,7 @@ const GamePage: React.FC = () => {
   const handlePlatformSelect = (platformName: string) => {
     setPlayingOn(platformName);
     handleMetadataUpdate({ playingOn: platformName });
-    toast.success(`Platform set to ${platformName}`);
+    toast.success(t('game_page.toasts.platform_set', { name: platformName }));
   };
 
   const handleCompletionDateChange = (dateStr: string) => {
@@ -206,11 +208,11 @@ const GamePage: React.FC = () => {
     setIsCollectionActionLoading(true);
     try {
       await removeFromCollection(gameDetails.id);
-      toast.success("Removed from collection");
+      toast.success(t('game_page.toasts.removed_from_collection'));
       refetchCollection();
     } catch (err) {
       console.error("Remove error:", err);
-      toast.error("Failed to remove game.");
+      toast.error(t('game_page.toasts.remove_failed'));
     } finally {
       setIsCollectionActionLoading(false);
     }
@@ -300,7 +302,7 @@ const GamePage: React.FC = () => {
           <div className={styles.gameWrapper}>
             <div className={styles.gamePageDetails}>
               <div className={styles.statusSection}>
-                <label className={styles.statusLabel}>Collection Status:</label>
+                <label className={styles.statusLabel}>{t('game_page.collection_status')}</label>
                 <div className={styles.statusButtons}>
                   {STATUS_OPTIONS.map(status => (
                     <button
@@ -309,7 +311,7 @@ const GamePage: React.FC = () => {
                       onClick={() => handleStatusChange(status)}
                       disabled={isCollectionActionLoading}
                     >
-                      {status}
+                      {t(`game_page.status.${status}`)}
                     </button>
                   ))}
                 </div>
@@ -319,13 +321,13 @@ const GamePage: React.FC = () => {
                 <div className={styles.personalSection}>
                   <div className={styles.progressTracker}>
                     <div className={styles.inputGroup}>
-                      <label className={styles.statusLabel}>Playing On:</label>
+                      <label className={styles.statusLabel}>{t('game_page.playing_on')}</label>
                       <select 
                         className={styles.statusSelect}
                         value={playingOn}
                         onChange={(e) => handlePlatformSelect(e.target.value)}
                       >
-                        <option value="">Select Platform...</option>
+                        <option value="">{t('game_page.select_platform')}</option>
                         {gameDetails.platforms.map(p => (
                           <option key={p.platform.id} value={p.platform.name}>
                             {p.platform.name}
@@ -335,7 +337,7 @@ const GamePage: React.FC = () => {
                     </div>
 
                     <div className={styles.inputGroup}>
-                      <label className={styles.statusLabel}>Hours Played:</label>
+                      <label className={styles.statusLabel}>{t('game_page.hours_played')}</label>
                       <input 
                         type="number" 
                         min="0"
@@ -348,7 +350,7 @@ const GamePage: React.FC = () => {
 
                     {collectionStatus === "Completed" && (
                       <div className={styles.inputGroup}>
-                        <label className={styles.statusLabel}>Completed At:</label>
+                        <label className={styles.statusLabel}>{t('game_page.completed_at')}</label>
                         <input 
                           type="date"
                           className={styles.dateInput}
@@ -360,7 +362,7 @@ const GamePage: React.FC = () => {
                   </div>
 
                   <div className={styles.ratingBox}>
-                    <label className={styles.statusLabel}>My Rating:</label>
+                    <label className={styles.statusLabel}>{t('game_page.my_rating')}</label>
                     <div className={styles.stars}>
                       {[...Array(10)].map((_, i) => (
                         <span 
@@ -376,10 +378,10 @@ const GamePage: React.FC = () => {
                   </div>
 
                   <div className={styles.noteBox}>
-                    <label className={styles.statusLabel}>My Notes:</label>
+                    <label className={styles.statusLabel}>{t('game_page.my_notes')}</label>
                     <textarea 
                       className={styles.noteInput}
-                      placeholder="Write your personal thoughts or progress..."
+                      placeholder={t('game_page.note_placeholder')}
                       value={personalNote}
                       onChange={(e) => setPersonalNote(e.target.value)}
                       onBlur={handleNoteSave}
@@ -389,7 +391,7 @@ const GamePage: React.FC = () => {
                       onClick={handleNoteSave}
                       disabled={isCollectionActionLoading}
                     >
-                      Save Note
+                      {t('game_page.save_note')}
                     </button>
                   </div>
 
@@ -398,38 +400,38 @@ const GamePage: React.FC = () => {
                     onClick={handleRemoveFromCollection}
                     disabled={isCollectionActionLoading}
                   >
-                    Remove from Collection
+                    {t('game_page.remove_from_collection')}
                   </button>
                 </div>
               )}
 
               <p>
-                <strong>Release Date:</strong>{" "}
+                <strong>{t('game_page.details.release_date')}</strong>{" "}
                 {currentPlatformInfo?.released_at || gameDetails.released}
               </p>
               <p>
-                <strong>RAWG Rating:</strong> {gameDetails.rating} / 5
+                <strong>{t('game_page.details.rawg_rating')}</strong> {gameDetails.rating} / 5
               </p>
               {gameDetails.playtime ? (
                 <p>
-                  <strong>Average Playtime:</strong> {gameDetails.playtime} hours
+                  <strong>{t('game_page.details.avg_playtime')}</strong> {t('game_page.details.hours', { hours: gameDetails.playtime })}
                 </p>
               ) : null}
               {gameDetails.metacritic && (
                 <p>
-                  <strong>Metacritic:</strong> {gameDetails.metacritic}
+                  <strong>{t('game_page.details.metacritic')}</strong> {gameDetails.metacritic}
                 </p>
               )}
 
               {gameDetails.esrb_rating && (
                 <p>
-                  <strong>ESRB Rating:</strong> {gameDetails.esrb_rating}
+                  <strong>{t('game_page.details.esrb')}</strong> {gameDetails.esrb_rating}
                 </p>
               )}
 
               {gameDetails.developers && gameDetails.developers.length > 0 && (
                 <p>
-                  <strong>Developers:</strong>{" "}
+                  <strong>{t('game_page.details.developers')}</strong>{" "}
                   {gameDetails.developers.map((dev, i) => (
                     <React.Fragment key={dev.id}>
                       <Link to={`/games?developer=${dev.id}`} className={styles.platformLink}>
@@ -443,13 +445,13 @@ const GamePage: React.FC = () => {
 
               {gameDetails.publishers && gameDetails.publishers.length > 0 && (
                 <p>
-                  <strong>Publishers:</strong> {gameDetails.publishers.join(", ")}
+                  <strong>{t('game_page.details.publishers')}</strong> {gameDetails.publishers.join(", ")}
                 </p>
               )}
 
               {gameDetails.tags && gameDetails.tags.length > 0 && (
                 <div className={styles.tagsSection}>
-                  <strong>Tags:</strong>
+                  <strong>{t('game_page.details.tags')}</strong>
                   <div className={styles.tags}>
                     {gameDetails.tags.slice(0, 15).map((tag) => (
                       <Link 
@@ -466,14 +468,14 @@ const GamePage: React.FC = () => {
               )}
 
               <div className={styles.descriptionSection}>
-                <strong>Description:</strong>
+                <strong>{t('game_page.details.description')}</strong>
                 {loadingWiki ? (
-                  <p>Loading details for this version...</p>
+                  <p>{t('game_page.details.loading_wiki')}</p>
                 ) : gameWiki ? (
                   <div className={styles.wikiBox}>
                     <p>{gameWiki.extract}</p>
                     {gameWiki.content_urls?.desktop.page && (
-                      <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">Read more on Wikipedia →</a>
+                      <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">{t('game_page.details.read_more_wiki')}</a>
                     )}
                   </div>
                 ) : (
@@ -485,7 +487,7 @@ const GamePage: React.FC = () => {
               </div>
 
               <p>
-                <strong>Platforms:</strong>{" "}
+                <strong>{t('game_page.details.platforms')}</strong>{" "}
                 {gameDetails.platforms?.length
                   ? gameDetails.platforms.map((p, i, arr) => (
                       <span key={p.platform.id}>
@@ -507,13 +509,13 @@ const GamePage: React.FC = () => {
 
               {gameDetails.website && (
                 <p>
-                  <strong>Website:</strong>{" "}
+                  <strong>{t('game_page.details.website')}</strong>{" "}
                   <a
                     href={gameDetails.website}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Visit Website
+                    {t('game_page.details.visit_website')}
                   </a>
                 </p>
               )}
@@ -521,7 +523,7 @@ const GamePage: React.FC = () => {
               {/* Retro Integration */}
               {gameDetails.released && parseInt(gameDetails.released.split("-")[0]) < 2000 && (
                 <div className={styles.retroSection}>
-                  <strong>Play Retro:</strong>
+                  <strong>{t('game_page.details.play_retro')}</strong>
                   <div className={styles.storesList}>
                     <a
                       href={`https://archive.org/details/softwarelibrary_msdos_games?query=${encodeURIComponent(gameDetails.name)}`}
@@ -529,7 +531,7 @@ const GamePage: React.FC = () => {
                       rel="noopener noreferrer"
                       className={styles.retroBadge}
                     >
-                      Search on Internet Archive
+                      {t('game_page.details.search_archive')}
                     </a>
                   </div>
                 </div>
@@ -538,9 +540,9 @@ const GamePage: React.FC = () => {
               {/* Price Comparison */}
               {(dealsLoading || deals.length > 0) && (
                 <div className={styles.dealsSection}>
-                  <strong>Best Deals:</strong>
+                  <strong>{t('game_page.details.best_deals')}</strong>
                   {dealsLoading ? (
-                    <p className={styles.dealsLoader}>Searching for best prices...</p>
+                    <p className={styles.dealsLoader}>{t('game_page.details.searching_deals')}</p>
                   ) : (
                     <div className={styles.dealsList}>
                       {deals.map((deal) => (
@@ -565,7 +567,7 @@ const GamePage: React.FC = () => {
 
               {gameDetails.stores && gameDetails.stores.length > 0 && (
                 <div className={styles.storesSection}>
-                  <strong>Official Stores:</strong>
+                  <strong>{t('game_page.details.official_stores')}</strong>
                   <div className={styles.storesList}>
                     {gameDetails.stores.map((s) => (
                       <a
@@ -575,7 +577,7 @@ const GamePage: React.FC = () => {
                         rel="noopener noreferrer"
                         className={styles.storeBadge}
                       >
-                        {s.store.name || "Visit Store"}
+                        {s.store.name || t('game_page.details.visit_store')}
                       </a>
                     ))}
                   </div>
@@ -586,7 +588,7 @@ const GamePage: React.FC = () => {
             <div className={styles.gameMediaContainer}>
               {allImages.length > 0 && (
                 <div className={styles.screenshotsSection}>
-                  <h2 className={styles.sectionHeading}>Gallery</h2>
+                  <h2 className={styles.sectionHeading}>{t('game_page.details.gallery')}</h2>
                   <div className={styles.screenshotsGallery}>
                     {allImages.map((src, index) => (
                       <img
@@ -605,7 +607,7 @@ const GamePage: React.FC = () => {
 
           {trailers.length > 0 && (
             <div className={styles.trailersSection}>
-              <h2 className={styles.sectionHeading}>Official Trailers</h2>
+              <h2 className={styles.sectionHeading}>{t('game_page.details.trailers')}</h2>
               <div className={styles.trailersGallery}>
                 {trailers.map((src, index) => (
                   <div key={index} className={styles.trailerItem}>
@@ -615,7 +617,7 @@ const GamePage: React.FC = () => {
                       src={src}
                       title={`${gameDetails.name} trailer ${index + 1}`}
                     >
-                      Sorry, your browser doesn't support embedded videos.
+                      {t('game_page.details.browser_unsupported')}
                     </video>
                   </div>
                 ))}
@@ -625,20 +627,20 @@ const GamePage: React.FC = () => {
 
           {/* YouTube Media Section */}
           <YouTubeSection 
-            title="Official Soundtracks" 
+            title={t('game_page.details.soundtracks')} 
             videos={youtubeMedia.ost} 
             loading={youtubeLoading} 
           />
 
           <YouTubeSection 
-            title="Game Reviews & Walkthroughs" 
+            title={t('game_page.details.reviews')} 
             videos={youtubeMedia.reviews} 
             loading={youtubeLoading} 
           />
 
           {gameDetails.additions && gameDetails.additions.length > 0 && (
             <div className={styles.relatedSection}>
-              <h2 className={styles.sectionHeading}>DLCs & Additions</h2>
+              <h2 className={styles.sectionHeading}>{t('game_page.details.dlcs')}</h2>
               <div className={styles.relatedGrid}>
                 {gameDetails.additions.map((addition) => (
                   <Link 
@@ -660,7 +662,7 @@ const GamePage: React.FC = () => {
 
           {gameDetails.game_series && gameDetails.game_series.length > 0 && (
             <div className={styles.relatedSection}>
-              <h2 className={styles.sectionHeading}>More from this series</h2>
+              <h2 className={styles.sectionHeading}>{t('game_page.details.series')}</h2>
               <div className={styles.relatedGrid}>
                 {gameDetails.game_series.map((seriesGame) => (
                   <Link 

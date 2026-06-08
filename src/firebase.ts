@@ -3,9 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import {
   getAuth,
-  GoogleAuthProvider,
-  setPersistence,
-  browserLocalPersistence
+  GoogleAuthProvider
 } from "firebase/auth";
 
 // ✅ Конфигурация Firebase через переменные окружения
@@ -23,8 +21,5 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-
-// ✅ Локальное сохранение сессии
-setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 export { app, db, auth, googleProvider };

@@ -1,6 +1,6 @@
 import React from "react";
 import Skeleton from "./Skeleton";
-import styles from "./GamePageSkeleton.module.css";
+import styles from "./GamePageSkeleton.module.scss";
 
 const GamePageSkeleton: React.FC = () => {
   return (

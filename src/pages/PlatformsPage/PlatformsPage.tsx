@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getParentPlatforms } from "../../services/platforms/getPlatformsList";
 import PlatformCard from "../../components/PlatformCard/PlatformCard";
 import PlatformCardSkeleton from "../../components/Skeleton/PlatformCardSkeleton";
 import Skeleton from "../../components/Skeleton/Skeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./PlatformsPage.module.css";
+import styles from './PlatformsPage.module.scss';
 import type { Platform } from "../../types/game";
 
 interface ParentPlatform {
@@ -17,6 +18,8 @@ interface ParentPlatform {
 }
 
 function PlatformsPage() {
+  const { t } = useTranslation();
+  
   const { data: parentPlatforms = [], isLoading, error, isError } = useQuery<ParentPlatform[]>({
     queryKey: ["parentPlatforms"],
     queryFn: getParentPlatforms,
@@ -25,11 +28,11 @@ function PlatformsPage() {
   return (
     <div className={styles.platformsPage}>
       <PageMeta
-        title="Игровые платформы"
-        description="PC, PlayStation, Xbox, Nintendo, мобильные и ретро-платформы — каталог с историей, играми и фактами."
+        title={t('platforms_page.title')}
+        description={t('platforms_page.description')}
       />
       <div className={styles.content}>
-        <h1 className={styles.heading}>Игровые платформы</h1>
+        <h1 className={styles.heading}>{t('platforms_page.title')}</h1>
 
         <LoadingErrorMessage
           loading={false}

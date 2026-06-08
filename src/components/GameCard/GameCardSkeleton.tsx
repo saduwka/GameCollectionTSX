@@ -1,6 +1,6 @@
 import React from "react";
 import Skeleton from "../Skeleton/Skeleton";
-import styles from "./GameCard.module.css";
+import styles from "./GameCard.module.scss";
 
 const GameCardSkeleton: React.FC = () => {
   return (

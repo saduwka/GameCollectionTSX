@@ -10,7 +10,7 @@ import {
 } from "../../services/collection/collectionService";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./ProfilePage.module.css";
+import styles from './ProfilePage.module.scss';
 import { toast } from "react-hot-toast";
 
 interface PlatformInfo {

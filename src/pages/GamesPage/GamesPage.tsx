@@ -2,6 +2,7 @@
 import React, { useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
@@ -10,7 +11,7 @@ import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./GamesPage.module.css";
+import styles from "./GamesPage.module.scss";
 
 const STORAGE_KEY = "playhub_filters";
 
@@ -32,6 +33,7 @@ const ORDERING_MAP: Record<SortKey, string> = {
 };
 
 const GamesPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const filter = (searchParams.get("filter") as SortKey) || "popular";
@@ -179,15 +181,15 @@ const GamesPage: React.FC = () => {
   return (
     <div className={styles.gamesPage}>
       <PageMeta
-        title="Каталог игр"
-        description="Большой каталог игр с фильтрами по жанру, платформе, году выхода и Metacritic. Найди свою следующую игру на PlayHub."
+        title={t('catalog.title')}
+        description={t('catalog.description')}
       />
       <div className={styles.content}>
         <div className={styles.headerRow}>
-          <h1 className={styles.heading}>Игры</h1>
+          <h1 className={styles.heading}>{t('common.games')}</h1>
           {hasAnyFilter && (
             <button className={styles.clearButton} onClick={handleClearFilters}>
-              Сбросить фильтры
+              {t('common.clear')}
             </button>
           )}
         </div>
@@ -240,27 +242,26 @@ const GamesPage: React.FC = () => {
             ))}
           </div>
         )}
-
-        {!loading && !isError && (
-          <div className={styles.pagination}>
-            <button
-              onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-              disabled={currentPage === 1}
-              className={styles.paginationButton}
-            >
-              Назад
-            </button>
-            <span className={styles.pageNumber}>{currentPage}</span>
-            {hasMore && (
-              <button 
-                onClick={() => handlePageChange(currentPage + 1)}
-                className={styles.paginationButton}
-              >
-                Вперёд
-              </button>
-            )}
-          </div>
-        )}
+{!loading && !isError && (
+  <div className={styles.pagination}>
+    <button
+      onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+      disabled={currentPage === 1}
+      className={styles.paginationButton}
+    >
+      {t('catalog.filters.previous')}
+    </button>
+    <span className={styles.pageNumber}>{currentPage}</span>
+    {hasMore && (
+      <button 
+        onClick={() => handlePageChange(currentPage + 1)}
+        className={styles.paginationButton}
+      >
+        {t('catalog.filters.next')}
+      </button>
+    )}
+  </div>
+)}
       </div>
     </div>
   );

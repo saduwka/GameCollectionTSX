@@ -1,6 +1,6 @@
 // FILE: src/components/PlatformCard/PlatformCard.tsx
 import React, { useState } from 'react';
-import styles from './PlatformCard.module.css';
+import styles from './PlatformCard.module.scss';
 
 interface PlatformCardProps {
   platform: {

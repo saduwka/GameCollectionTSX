@@ -1,25 +1,18 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { fetchRandomGame } from "../../../../services/games/fetchGames";
 import { getUserDevices } from "../../../../services/collection/collectionService";
-import { useNavigate } from "react-router-dom";
-import styles from "./GameFilters.module.css";
-
-export type SortKey =
-  | "popular"
-  | "rating"
-  | "metacritic"
-  | "released"
-  | "new"
-  | "name";
+import styles from "./GameFilters.module.scss";
 
 interface GameFiltersProps {
-  filter: SortKey;
-  setFilter: (filter: SortKey) => void;
+  filter: string;
+  setFilter: (filter: string) => void;
   selectedYear: string;
   setSelectedYear: (year: string) => void;
   selectedYearTo: string;
   setSelectedYearTo: (year: string) => void;
-  selectedGenreId: string; // CSV
+  selectedGenreId: string;
   setSelectedGenreId: (id: string) => void;
   selectedPlatformId: string;
   setSelectedPlatformId: (id: string) => void;
@@ -32,36 +25,6 @@ interface GameFiltersProps {
   totalCount?: number;
   activeFilterCount: number;
 }
-
-const PLAYTIME_OPTIONS = [
-  { label: "Любая длина", value: "" },
-  { label: "Короткая (< 10ч)", value: "0,10" },
-  { label: "Средняя (10–30ч)", value: "10,30" },
-  { label: "Длинная (30–100ч)", value: "30,100" },
-  { label: "Эпик (100ч+)", value: "100,500" },
-];
-
-const METACRITIC_OPTIONS = [
-  { label: "Любой Metacritic", value: "" },
-  { label: "60+", value: "60" },
-  { label: "70+", value: "70" },
-  { label: "80+ (хорошие)", value: "80" },
-  { label: "90+ (легендарные)", value: "90" },
-];
-
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "popular", label: "Популярные" },
-  { value: "rating", label: "По рейтингу" },
-  { value: "metacritic", label: "По Metacritic" },
-  { value: "released", label: "По дате релиза" },
-  { value: "new", label: "Новинки (добавлены)" },
-  { value: "name", label: "По названию (A→Z)" },
-];
-
-const formatNumber = (n?: number): string => {
-  if (n === undefined) return "";
-  return n.toLocaleString("ru-RU");
-};
 
 const GameFilters: React.FC<GameFiltersProps> = ({
   filter,
@@ -83,6 +46,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
   totalCount,
   activeFilterCount,
 }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isRolling, setIsRolling] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -91,6 +55,36 @@ const GameFilters: React.FC<GameFiltersProps> = ({
     { length: new Date().getFullYear() - 1979 },
     (_, i) => (1980 + i).toString()
   ).reverse();
+
+  const PLAYTIME_OPTIONS = [
+    { label: t('catalog.filters.any_length'), value: "" },
+    { label: t('catalog.filters.short'), value: "0,10" },
+    { label: t('catalog.filters.medium'), value: "10,30" },
+    { label: t('catalog.filters.long'), value: "30,100" },
+    { label: t('catalog.filters.epic'), value: "100,500" },
+  ];
+
+  const METACRITIC_OPTIONS = [
+    { label: t('catalog.filters.any_metacritic'), value: "" },
+    { label: "60+", value: "60" },
+    { label: "70+", value: "70" },
+    { label: `80+ (${t('home.top_metacritic_subtitle').split(' ')[0].toLowerCase()})`, value: "80" },
+    { label: `90+ (${t('home.indie_gems_title').split(' ')[0].toLowerCase()})`, value: "90" },
+  ];
+
+  const SORT_OPTIONS: { value: string; label: string }[] = [
+    { value: "popular", label: t('catalog.filters.sort_popular') },
+    { value: "rating", label: t('catalog.filters.sort_rating') },
+    { value: "metacritic", label: t('catalog.filters.sort_metacritic') },
+    { value: "released", label: t('catalog.filters.sort_released') },
+    { value: "new", label: t('catalog.filters.sort_new') },
+    { value: "name", label: t('catalog.filters.sort_name') },
+  ];
+
+  const formatNumber = (n?: number): string => {
+    if (n === undefined) return "";
+    return n.toLocaleString(i18n.language.startsWith('ru') ? "ru-RU" : "en-US");
+  };
 
   const handleGenreToggle = (genreId: string) => {
     const currentGenres = selectedGenreId ? selectedGenreId.split(",") : [];
@@ -119,7 +113,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
       });
       setIsRolling(false);
       if (game) navigate(`/game/${game.id}`);
-      else alert("По этим фильтрам игр не нашлось!");
+      else alert(t('catalog.filters.no_games_found'));
     }, 1500);
   };
 
@@ -127,12 +121,12 @@ const GameFilters: React.FC<GameFiltersProps> = ({
     <div className={styles.filters}>
       <div className={styles.topRow}>
         <div className={styles.sortGroup}>
-          <label className={styles.sortLabel} htmlFor="sort-select">Сортировка:</label>
+          <label className={styles.sortLabel} htmlFor="sort-select">{t('catalog.filters.sort_name').split(' ')[0]}:</label>
           <select
             id="sort-select"
             className={styles.sortSelect}
             value={filter}
-            onChange={(e) => setFilter(e.target.value as SortKey)}
+            onChange={(e) => setFilter(e.target.value)}
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -143,12 +137,12 @@ const GameFilters: React.FC<GameFiltersProps> = ({
         <div className={styles.metaRow}>
           {totalCount !== undefined && (
             <span className={styles.countBadge} aria-live="polite">
-              Найдено: <strong>{formatNumber(totalCount)}</strong>
+              {t('common.results').split(' ')[0]}: <strong>{formatNumber(totalCount)}</strong>
             </span>
           )}
           {activeFilterCount > 0 && (
             <span className={styles.activeBadge}>
-              Активных фильтров: {activeFilterCount}
+              {t('catalog.filters.sort_new').split(' ')[0]} {t('common.games_plural_1').split(' ')[0]}: {activeFilterCount}
             </span>
           )}
           <button
@@ -158,7 +152,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
             aria-expanded={!isCollapsed}
             aria-controls="filters-body"
           >
-            {isCollapsed ? "▾ Показать фильтры" : "▴ Скрыть фильтры"}
+            {isCollapsed ? `▾ ${t('catalog.filters.show_filters')}` : `▴ ${t('catalog.filters.hide_filters')}`}
           </button>
           <button
             type="button"
@@ -166,7 +160,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
             onClick={handleSurpriseMe}
             disabled={isRolling}
           >
-            {isRolling ? "🎲 Крутим..." : "✨ Удиви меня!"}
+            {isRolling ? `🎲 ${t('recommendations.refreshing')}` : t('catalog.filters.surprise_me')}
           </button>
         </div>
       </div>
@@ -177,14 +171,14 @@ const GameFilters: React.FC<GameFiltersProps> = ({
       >
         <div className={styles.selectGroup}>
           <div className={styles.filterItem}>
-            <label htmlFor="year-from">Год от</label>
+            <label htmlFor="year-from">{t('compare.year_from')}</label>
             <select
               id="year-from"
               className={styles.selectFilter}
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
             >
-              <option value="">Любой</option>
+              <option value="">{t('catalog.filters.any_length').split(' ')[0]}</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -192,14 +186,14 @@ const GameFilters: React.FC<GameFiltersProps> = ({
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="year-to">Год до</label>
+            <label htmlFor="year-to">{t('compare.year_to')}</label>
             <select
               id="year-to"
               className={styles.selectFilter}
               value={selectedYearTo}
               onChange={(e) => setSelectedYearTo(e.target.value)}
             >
-              <option value="">Любой</option>
+              <option value="">{t('catalog.filters.any_length').split(' ')[0]}</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -207,14 +201,14 @@ const GameFilters: React.FC<GameFiltersProps> = ({
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="platform-select">Платформа</label>
+            <label htmlFor="platform-select">{t('common.platforms').slice(0, -1)}</label>
             <select
               id="platform-select"
               className={styles.selectFilter}
               value={selectedPlatformId}
               onChange={(e) => setSelectedPlatformId(e.target.value)}
             >
-              <option value="">Все платформы</option>
+              <option value="">{t('home.see_all')} {t('common.platforms')}</option>
               {platforms.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -222,7 +216,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="playtime-select">Длительность</label>
+            <label htmlFor="playtime-select">{t('compare.playtime_avg').split(' ')[1]}</label>
             <select
               id="playtime-select"
               className={styles.selectFilter}
@@ -251,7 +245,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
         </div>
 
         <div className={styles.genreSection}>
-          <label className={styles.genreLabel}>Жанры (можно несколько):</label>
+          <label className={styles.genreLabel}>{t('compare.genres_label')}</label>
           <div className={styles.genreChips}>
             {genres.map((genre) => {
               const isActive = selectedGenreId

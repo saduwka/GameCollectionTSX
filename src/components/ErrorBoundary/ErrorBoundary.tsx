@@ -1,7 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import styles from "./ErrorBoundary.module.css";
+import { withTranslation, type WithTranslation } from "react-i18next";
+import styles from "./ErrorBoundary.module.scss";
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -35,6 +36,8 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    const { t } = this.props;
+
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
 
@@ -42,10 +45,9 @@ class ErrorBoundary extends Component<Props, State> {
         <div className={styles.wrapper} role="alert" aria-live="assertive">
           <div className={styles.card}>
             <div className={styles.emoji} aria-hidden="true">🎮💥</div>
-            <h1 className={styles.title}>Что-то сломалось</h1>
+            <h1 className={styles.title}>{t('common.error')}</h1>
             <p className={styles.message}>
-              Произошла непредвиденная ошибка. Мы уже знаем о ней.
-              Попробуйте обновить страницу или вернуться на главную.
+              {t('not_found.description')}
             </p>
             {import.meta.env.DEV && this.state.error && (
               <pre className={styles.errorDetails}>
@@ -54,10 +56,10 @@ class ErrorBoundary extends Component<Props, State> {
             )}
             <div className={styles.actions}>
               <button className={styles.btnPrimary} onClick={this.handleReload}>
-                Обновить страницу
+                {t('common.update_error').split(' ')[0]} {/* Placeholder for "Reload" */}
               </button>
               <button className={styles.btnSecondary} onClick={this.handleHome}>
-                На главную
+                {t('common.home')}
               </button>
             </div>
           </div>
@@ -69,4 +71,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);

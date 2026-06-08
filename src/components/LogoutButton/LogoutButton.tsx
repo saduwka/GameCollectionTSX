@@ -1,24 +1,28 @@
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import styles from "./LogoutButton.module.css";
+import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+import styles from "./LogoutButton.module.scss";
 
 const LogoutButton: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      console.log("Пользователь вышел");
-      navigate("/login");
+      toast.success(t("auth.logout_success"));
+      navigate("/");
     } catch (error) {
       console.error("Ошибка выхода:", error);
+      toast.error(t("auth.logout_error"));
     }
   };
 
   return (
     <button onClick={handleLogout} className={styles.button}>
-      Logout
+      {t("auth.logout")}
     </button>
   );
 };

@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import { toast } from "react-hot-toast";
 import type { Game } from "../../types/game";
 import { useComparison } from "../../context/ComparisonContext";
-import styles from "./GameCard.module.css";
+import styles from "./GameCard.module.scss";
+import ImageWithFallback from "../ImageWithFallback/ImageWithFallback";
 
 interface GameCardProps {
   game: Game;
@@ -47,7 +48,7 @@ const GameCard = ({ game, hideCompareButton = false }: GameCardProps) => {
           {inCompare ? "✓" : "⇄"}
         </button>
       )}
-      <img
+      <ImageWithFallback
         src={game.background_image}
         alt={game.name}
         className={styles.gameCardImg}

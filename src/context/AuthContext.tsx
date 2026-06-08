@@ -14,6 +14,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
+    // Слушаем состояние авторизации. 
+    // onAuthStateChanged вызывается сразу при инициализации с текущим юзером или null.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);

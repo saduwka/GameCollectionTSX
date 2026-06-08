@@ -1,20 +1,13 @@
-// FILE: src/pages/ComparePage/ComparePage.tsx
 import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQueries } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useComparison } from "../../context/ComparisonContext";
 import { getGameDetails } from "../../services/games/getGameDetails";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./ComparePage.module.css";
+import styles from './ComparePage.module.scss';
 import type { Game } from "../../types/game";
-
-const COMPARE_META = (
-  <PageMeta
-    title="Сравнение игр"
-    description="Сравнивайте игры по рейтингу, Metacritic, жанрам, платформам и времени прохождения на PlayHub."
-  />
-);
 
 interface AttributeRow {
   label: string;
@@ -40,23 +33,6 @@ const formatMetacritic = (score: number | null | undefined): React.ReactNode => 
   return <span style={{ color, fontWeight: 700 }}>{score}</span>;
 };
 
-const ATTRIBUTES: AttributeRow[] = [
-  { label: "Год выхода", getValue: (g) => formatYear(g.released) },
-  { label: "Рейтинг RAWG", getValue: (g) => formatRating(g.rating), highlight: "max" },
-  { label: "Metacritic", getValue: (g) => formatMetacritic(g.metacritic), highlight: "max" },
-  { label: "Среднее время прохождения", getValue: (g) => formatPlaytime(g.playtime), highlight: "min" },
-  { label: "Жанры", getValue: (g) => formatList(g.genres) },
-  { label: "Платформы", getValue: (g) => formatList((g.platforms || []).map((p) => p.platform.name)) },
-  { label: "Разработчики", getValue: (g) => formatList((g.developers || []).map((d) => d.name)) },
-  { label: "Издатели", getValue: (g) => formatList(g.publishers) },
-  { label: "ESRB", getValue: (g) => g.esrb_rating || "—" },
-  {
-    label: "Тегов",
-    getValue: (g) => (g.tags && g.tags.length > 0 ? String(g.tags.length) : "—"),
-    highlight: "max",
-  },
-];
-
 const compareNumeric = (
   values: (number | null | undefined)[],
   mode: "max" | "min"
@@ -67,8 +43,26 @@ const compareNumeric = (
 };
 
 const ComparePage: React.FC = () => {
+  const { t } = useTranslation();
   const { comparisonList, removeFromComparison, clearComparison } = useComparison();
   const navigate = useNavigate();
+
+  const ATTRIBUTES: AttributeRow[] = [
+    { label: t('compare.year'), getValue: (g) => formatYear(g.released) },
+    { label: t('compare.rating_rawg'), getValue: (g) => formatRating(g.rating), highlight: "max" },
+    { label: "Metacritic", getValue: (g) => formatMetacritic(g.metacritic), highlight: "max" },
+    { label: t('compare.playtime_avg'), getValue: (g) => formatPlaytime(g.playtime), highlight: "min" },
+    { label: t('compare.genres'), getValue: (g) => formatList(g.genres) },
+    { label: t('compare.platforms'), getValue: (g) => formatList((g.platforms || []).map((p) => p.platform.name)) },
+    { label: t('compare.developers'), getValue: (g) => formatList((g.developers || []).map((d) => d.name)) },
+    { label: t('compare.publishers'), getValue: (g) => formatList(g.publishers) },
+    { label: "ESRB", getValue: (g) => g.esrb_rating || "—" },
+    {
+      label: t('compare.tags_count'),
+      getValue: (g) => (g.tags && g.tags.length > 0 ? String(g.tags.length) : "—"),
+      highlight: "max",
+    },
+  ];
 
   const detailQueries = useQueries({
     queries: comparisonList.map((game) => ({
@@ -92,42 +86,39 @@ const ComparePage: React.FC = () => {
     if (games.length < 2) return map;
     ATTRIBUTES.forEach((attr) => {
       if (!attr.highlight) return;
-      if (attr.label === "Рейтинг RAWG") {
-        map.set(attr.label, compareNumeric(games.map((g) => g.rating), attr.highlight));
-      } else if (attr.label === "Metacritic") {
-        map.set(attr.label, compareNumeric(games.map((g) => g.metacritic ?? null), attr.highlight));
-      } else if (attr.label === "Среднее время прохождения") {
-        map.set(attr.label, compareNumeric(games.map((g) => g.playtime ?? null), attr.highlight));
-      } else if (attr.label === "Тегов") {
-        map.set(attr.label, compareNumeric(games.map((g) => g.tags?.length ?? 0), attr.highlight));
-      }
+      map.set(attr.label, compareNumeric(games.map((g) => {
+        if (attr.label === t('compare.rating_rawg')) return g.rating;
+        if (attr.label === "Metacritic") return g.metacritic ?? null;
+        if (attr.label === t('compare.playtime_avg')) return g.playtime ?? null;
+        if (attr.label === t('compare.tags_count')) return g.tags?.length ?? 0;
+        return null;
+      }), attr.highlight));
     });
     return map;
-  }, [games]);
+  }, [games, t]);
 
   const isHighlighted = (attr: AttributeRow, game: Game): boolean => {
     if (!attr.highlight) return false;
     const winner = highlights.get(attr.label);
     if (winner === null || winner === undefined) return false;
-    if (attr.label === "Рейтинг RAWG") return game.rating === winner;
+    if (attr.label === t('compare.rating_rawg')) return game.rating === winner;
     if (attr.label === "Metacritic") return game.metacritic === winner;
-    if (attr.label === "Среднее время прохождения") return game.playtime === winner;
-    if (attr.label === "Тегов") return (game.tags?.length ?? 0) === winner;
+    if (attr.label === t('compare.playtime_avg')) return game.playtime === winner;
+    if (attr.label === t('compare.tags_count')) return (game.tags?.length ?? 0) === winner;
     return false;
   };
 
   if (comparisonList.length === 0) {
     return (
       <div className={styles.empty}>
-        {COMPARE_META}
+        <PageMeta title={t('compare.title')} description={t('compare.description')} />
         <div className={styles.emptyEmoji} aria-hidden="true">⚖️</div>
-        <h1 className={styles.emptyTitle}>Сравнивать пока нечего</h1>
+        <h1 className={styles.emptyTitle}>{t('compare.removed').split(' ')[0]} {t('common.nothing_found').toLowerCase()}</h1>
         <p className={styles.emptyMessage}>
-          Добавьте от 2 до 4 игр в сравнение с карточек игр или из деталей. Они появятся
-          здесь рядом.
+          {t('compare.description')}
         </p>
         <button className={styles.btnPrimary} onClick={() => navigate("/games")}>
-          Перейти к играм
+          {t('common.games')}
         </button>
       </div>
     );
@@ -136,39 +127,39 @@ const ComparePage: React.FC = () => {
   if (comparisonList.length === 1) {
     return (
       <div className={styles.empty}>
-        {COMPARE_META}
+        <PageMeta title={t('compare.title')} description={t('compare.description')} />
         <div className={styles.emptyEmoji} aria-hidden="true">🎮</div>
-        <h1 className={styles.emptyTitle}>Нужна ещё хотя бы одна игра</h1>
+        <h1 className={styles.emptyTitle}>{t('common.game')} {t('common.searching').split(' ')[0]}</h1>
         <p className={styles.emptyMessage}>
-          В сравнении сейчас только «{comparisonList[0].name}». Добавьте ещё одну, чтобы
-          увидеть отличия.
+          {t('compare.description')}
         </p>
         <button className={styles.btnPrimary} onClick={() => navigate("/games")}>
-          Найти другую игру
+          {t('common.games')}
         </button>
       </div>
     );
   }
 
+  const gameCountLabel = games.length === 1 ? t('common.game') : games.length < 5 ? t('common.games_plural_1') : t('common.games_plural_2');
+
   return (
     <div className={styles.page}>
-      {COMPARE_META}
+      <PageMeta title={t('compare.title')} description={t('compare.description')} />
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Сравнение игр</h1>
+          <h1 className={styles.title}>{t('compare.title')}</h1>
           <p className={styles.subtitle}>
-            {games.length} {games.length === 1 ? "игра" : games.length < 5 ? "игры" : "игр"}{" "}
-            рядом. Лучшие показатели подсвечены.
+            {games.length} {gameCountLabel} {t('common.results').toLowerCase()}
           </p>
         </div>
         <button className={styles.clearBtn} onClick={clearComparison}>
-          Очистить сравнение
+          {t('common.clear')}
         </button>
       </header>
 
       {hasError && (
         <div className={styles.errorBanner} role="alert">
-          Не удалось загрузить часть данных. Показываем то, что есть.
+          {t('common.error')}
         </div>
       )}
 
@@ -177,7 +168,7 @@ const ComparePage: React.FC = () => {
           <thead>
             <tr>
               <th className={styles.attrCol} scope="col">
-                Параметр
+                {t('common.error').charAt(0).toUpperCase() + t('common.error').slice(1)}...
               </th>
               {games.map((game) => (
                 <th key={game.id} className={styles.gameCol} scope="col">
@@ -196,9 +187,9 @@ const ComparePage: React.FC = () => {
                     <button
                       className={styles.removeBtn}
                       onClick={() => removeFromComparison(game.id)}
-                      aria-label={`Убрать ${game.name} из сравнения`}
+                      aria-label={`${t('compare.removed')} ${game.name}`}
                     >
-                      Убрать
+                      {t('common.clear')}
                     </button>
                   </div>
                 </th>
