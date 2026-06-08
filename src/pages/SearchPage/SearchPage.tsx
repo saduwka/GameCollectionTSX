@@ -2,6 +2,7 @@
 import React, { useState, useRef, useContext, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { SearchContext } from "../../context/SearchContext";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
@@ -9,11 +10,12 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import { fetchGames } from "../../services/search/searchServices";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import type { Game } from "../../types/game";
-import styles from "./SearchPage.module.css";
+import styles from "./SearchPage.module.scss";
 
 type SortOption = "relevance" | "name" | "rating";
 
 const SearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const searchContext = useContext(SearchContext);
   const setSearchQuery = searchContext?.setSearchQuery;
@@ -63,11 +65,11 @@ const SearchPage: React.FC = () => {
   return (
     <div className={styles.searchPage}>
       <PageMeta
-        title={urlQuery ? `Поиск: ${urlQuery}` : "Поиск игр"}
+        title={urlQuery ? t('search.title_with_query', { query: urlQuery }) : t('search.title_default')}
         description={
           urlQuery
-            ? `Результаты поиска «${urlQuery}» по каталогу PlayHub — 500 000+ игр.`
-            : "Умный поиск по каталогу PlayHub — найдите игры по названию, жанру и платформе."
+            ? t('search.description_with_query', { query: urlQuery })
+            : t('search.description_default')
         }
       />
       <form className={styles.searchForm} onSubmit={handleSearch}>
@@ -80,40 +82,40 @@ const SearchPage: React.FC = () => {
             ref={inputRef}
             type="text"
             className={styles.searchInput}
-            placeholder="Search games..."
+            placeholder={t('common.search_placeholder')}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
           />
           {inputValue && (
-            <button type="button" className={styles.clearButton} onClick={clearSearch} aria-label="Clear search">
+            <button type="button" className={styles.clearButton} onClick={clearSearch} aria-label={t('search.clear_search')}>
               ✕
             </button>
           )}
         </div>
-        <button type="submit" className={styles.submitButton}>Search</button>
+        <button type="submit" className={styles.submitButton}>{t('search.submit_button')}</button>
       </form>
 
       {isError && <LoadingErrorMessage loading={false} error={(error as Error).message} noResults={false} />}
 
       {!urlQuery ? (
         <div className={styles.emptyState}>
-          <h2 className={styles.emptyTitle}>What are you looking for?</h2>
-          <p className={styles.emptyHint}>Type a game title to start searching</p>
+          <h2 className={styles.emptyTitle}>{t('search.empty_state_title')}</h2>
+          <p className={styles.emptyHint}>{t('search.empty_state_hint')}</p>
         </div>
       ) : (
         <>
           <div className={styles.headerRow}>
             <div className={styles.resultsCount}>
               {loading ? (
-                <span>Searching...</span>
+                <LoadingErrorMessage loading={true} error={null} noResults={false} variant="inline" />
               ) : (
                 <span>
                   {games.length > 0 ? (
                     <>
-                      <span className={styles.queryText}>"{urlQuery}"</span> — {games.length} results
+                      <span className={styles.queryText}>"{urlQuery}"</span> — {t('search.results_count', { count: games.length })}
                     </>
                   ) : (
-                    <span>No results for <span className={styles.queryText}>"{urlQuery}"</span></span>
+                    <span>{t('search.no_results', { query: urlQuery })}</span>
                   )}
                 </span>
               )}
@@ -127,9 +129,9 @@ const SearchPage: React.FC = () => {
                   className={`${styles.sortBtn} ${sortOption === option ? styles.sortBtnActive : ""}`}
                   onClick={() => setSortOption(option)}
                 >
-                  {option === "relevance" && "Relevance"}
-                  {option === "rating" && "Rating ↓"}
-                  {option === "name" && "A–Z"}
+                  {option === "relevance" && t('search.sort_relevance')}
+                  {option === "rating" && t('search.sort_rating')}
+                  {option === "name" && t('search.sort_name')}
                 </button>
               ))}
             </div>
@@ -146,8 +148,8 @@ const SearchPage: React.FC = () => {
               ))
             ) : (
               <div className={styles.emptyState}>
-                <h2 className={styles.emptyTitle}>No games found for "{urlQuery}"</h2>
-                <p className={styles.emptyHint}>Try a different spelling or a shorter query</p>
+                <h2 className={styles.emptyTitle}>{t('search.not_found_title', { query: urlQuery })}</h2>
+                <p className={styles.emptyHint}>{t('search.not_found_hint')}</p>
               </div>
             )}
           </div>

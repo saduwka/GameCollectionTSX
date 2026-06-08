@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useCallback } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameCard from "../../components/GameCard/GameCard";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
@@ -15,11 +16,12 @@ import { getPlatformWiki } from "../../services/platforms/wikiService";
 import { searchYouTubeVideos } from "../../services/media/youtubeService";
 import { getConsoleFact } from "../../services/platforms/factService";
 import type { Platform, Game } from "../../types/game";
-import styles from "./PlatformDetails.module.css";
+import styles from './PlatformDetails.module.scss';
 
 const PlatformPage: FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t, i18n } = useTranslation();
 
   const selectedGenre = searchParams.get("genre") || "";
   const ordering = searchParams.get("ordering") || "-added";
@@ -54,13 +56,14 @@ const PlatformPage: FC = () => {
   });
 
   const { data: platformVideos, isLoading: loadingVideos } = useQuery({
-    queryKey: ["platformVideos", platformDetails?.name],
+    queryKey: ["platformVideos", platformDetails?.name, i18n.language],
     queryFn: async () => {
-      const [reviewsRu, reviewsEn] = await Promise.all([
-        searchYouTubeVideos(`${platformDetails!.name} обзор приставки`, 3),
-        searchYouTubeVideos(`${platformDetails!.name} console review`, 3)
-      ]);
-      return [...reviewsRu, ...reviewsEn];
+      const isRu = i18n.language.startsWith('ru');
+      const lang = isRu ? 'ru' : 'en';
+      const query = isRu
+        ? `${platformDetails!.name} обзор прохождение`
+        : `${platformDetails!.name} review walkthrough`;
+      return await searchYouTubeVideos(query, 6, lang);
     },
     enabled: !!platformDetails?.name,
   });
@@ -93,7 +96,7 @@ const PlatformPage: FC = () => {
         loading={true}
         error={null}
         noResults={false}
-        message="Loading platform details..."
+        message={t('common.loading')}
       />
     );
   }
@@ -104,7 +107,7 @@ const PlatformPage: FC = () => {
         loading={false}
         error={((platformError || gamesError) as Error).message}
         noResults={false}
-        message="An error occurred while loading platform details."
+        message={t('common.error')}
       />
     );
   }
@@ -112,10 +115,10 @@ const PlatformPage: FC = () => {
   return (
     <div className={styles.platformPage}>
       <PageMeta
-        title={platformDetails?.name || "Платформа"}
+        title={platformDetails?.name || t('platforms_page.title')}
         description={
           platformDetails?.name
-            ? `${platformDetails.name} — игры, история, факты и обзоры платформы на PlayHub.`
+            ? `${platformDetails.name} — ${t('platforms_page.description')}`
             : undefined
         }
         image={platformDetails?.image_background || platformDetails?.image || undefined}
@@ -124,7 +127,7 @@ const PlatformPage: FC = () => {
         className={styles.backButton}
         onClick={() => window.history.back()}
       >
-        ← Go Back
+        {t('platform_details.go_back')}
       </button>
 
       <div className={styles.heroSection}>
@@ -139,8 +142,8 @@ const PlatformPage: FC = () => {
           <div className={styles.heroTitleGroup}>
             <h1 className={styles.heading}>{platformDetails?.name}</h1>
             <div className={styles.quickStats}>
-              {platformDetails?.year_start && <span>Release: {platformDetails.year_start}</span>}
-              {platformDetails?.games_count && <span>Library: {platformDetails.games_count.toLocaleString()} games</span>}
+              {platformDetails?.year_start && <span>{t('platform_details.release', { year: platformDetails.year_start })}</span>}
+              {platformDetails?.games_count && <span>{t('platform_details.library', { count: platformDetails.games_count.toLocaleString() })}</span>}
             </div>
           </div>
         </div>
@@ -148,11 +151,11 @@ const PlatformPage: FC = () => {
 
       <div className={styles.wikiSection}>
         {loadingWiki ? (
-          <p>Loading historical data...</p>
+          <p>{t('common.loading')}</p>
         ) : wikiData ? (
           <div className={styles.wikiContent}>
             <div className={styles.wikiText}>
-              <h2 className={styles.sectionHeading}>History & Overview</h2>
+              <h2 className={styles.sectionHeading}>{t('platform_details.history')}</h2>
               <p>{wikiData.extract}</p>
               {wikiData.content_urls?.desktop.page && (
                 <a 
@@ -161,7 +164,7 @@ const PlatformPage: FC = () => {
                   rel="noopener noreferrer"
                   className={styles.wikiLink}
                 >
-                  Read more on Wikipedia →
+                  {t('platform_details.read_more')}
                 </a>
               )}
             </div>
@@ -178,31 +181,31 @@ const PlatformPage: FC = () => {
         <div className={styles.factBox}>
           <div className={styles.factIcon}>💡</div>
           <div className={styles.factText}>
-            <h3>Did you know?</h3>
+            <h3>{t('platform_details.did_you_know')}</h3>
             <p>{funFact}</p>
           </div>
         </div>
       )}
 
       <YouTubeSection 
-        title={`${platformDetails?.name} - Video Reviews & Documentaries`}
+        title={`${platformDetails?.name} - ${t('platform_details.reviews_walkthroughs')}`}
         videos={platformVideos || []}
         loading={loadingVideos}
       />
 
       <div className={styles.gamesHeader}>
-        <h2 className={styles.sectionHeading}>Best Games</h2>
+        <h2 className={styles.sectionHeading}>{t('platform_details.best_games')}</h2>
 
         <div className={styles.filtersContainer}>
           <div className={styles.filterGroup}>
-            <label htmlFor="genre-select" className={styles.filterLabel}>Filter by Genre:</label>
+            <label htmlFor="genre-select" className={styles.filterLabel}>{t('platform_details.filter_genre')}</label>
             <select
               id="genre-select"
               value={selectedGenre}
               onChange={handleGenreChange}
               className={styles.filterSelect}
             >
-              <option value="">All Genres</option>
+              <option value="">{t('catalog.filters.all_genres')}</option>
               {genres.map((genre) => (
                 <option key={genre.id} value={genre.id}>
                   {genre.name}
@@ -212,16 +215,16 @@ const PlatformPage: FC = () => {
           </div>
 
           <div className={styles.filterGroup}>
-            <label htmlFor="ordering-select" className={styles.filterLabel}>Sort by:</label>
+            <label htmlFor="ordering-select" className={styles.filterLabel}>{t('platform_details.sort_by')}</label>
             <select
               id="ordering-select"
               value={ordering}
               onChange={handleOrderingChange}
               className={styles.filterSelect}
             >
-              <option value="-added">Popularity</option>
-              <option value="-rating">Rating</option>
-              <option value="-released">Release Date</option>
+              <option value="-added">{t('catalog.filters.sort_popular')}</option>
+              <option value="-rating">{t('catalog.filters.sort_rating')}</option>
+              <option value="-released">{t('catalog.filters.sort_released')}</option>
             </select>
           </div>
         </div>
@@ -234,7 +237,7 @@ const PlatformPage: FC = () => {
           </Link>
         ))}
         {games.length === 0 && !loadingGames && (
-          <p className={styles.noGames}>No games found for this genre/platform.</p>
+          <p className={styles.noGames}>{t('platform_details.no_games')}</p>
         )}
       </div>
 
@@ -244,7 +247,7 @@ const PlatformPage: FC = () => {
             onClick={() => updateParams({ page: page + 1 })}
             disabled={loadingGames}
           >
-            {loadingGames ? "Loading..." : "Show More"}
+            {loadingGames ? t('common.loading') : t('platform_details.load_more')}
           </button>
         </div>
       )}
@@ -253,4 +256,3 @@ const PlatformPage: FC = () => {
 };
 
 export default PlatformPage;
-

@@ -1,0 +1,238 @@
+@use "../../../../assets/styles/variables" as *;
+@use "../../../../assets/styles/mixins" as *;
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: $bg-card;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid $border-color;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.activeButton {
+  background-color: $primary-color !important;
+  color: white !important;
+}
+
+.sortGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sortLabel {
+  font-size: 0.85rem;
+  color: $text-secondary;
+  font-weight: 600;
+}
+
+.sortSelect {
+  background-color: $bg-dark;
+  color: $text-main;
+  border: 1px solid $border-color;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.sortSelect:hover, .sortSelect:focus {
+  border-color: $primary-color;
+  outline: none;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.countBadge {
+  font-size: 0.85rem;
+  color: $text-secondary;
+  padding: 6px 10px;
+  background: rgba(100, 108, 255, 0.08); // Keep for now
+  border: 1px solid rgba(100, 108, 255, 0.25);
+  border-radius: 6px;
+}
+
+.countBadge strong {
+  color: $text-main;
+  font-weight: 700;
+}
+
+.activeBadge {
+  font-size: 0.8rem;
+  color: $text-main;
+  background: $primary-color;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.collapseButton {
+  background: transparent;
+  border: 1px solid $border-color;
+  color: $text-secondary;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collapseButton:hover {
+  border-color: $primary-color;
+  color: $text-main;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.bodyHidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.surpriseButton {
+  background: linear-gradient(45deg, $primary-color, #9c27b0);
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 25px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+}
+
+.surpriseButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.5);
+}
+
+.rolling {
+  animation: pulse 0.5s infinite alternate;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.selectGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filterItem label {
+  font-size: 0.8rem;
+  color: $text-secondary;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.selectFilter {
+  background-color: $bg-dark;
+  color: $text-main;
+  border: 1px solid $border-color;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.genreSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.genreLabel {
+  font-size: 0.8rem;
+  color: $text-secondary;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.genreChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.genreChip {
+  background-color: $bg-card;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.genreChip:hover {
+  border-color: $primary-color;
+  color: $text-main;
+}
+
+.activeChip {
+  background-color: $primary-color;
+  color: $text-main;
+  border-color: $primary-color;
+}
+
+@media (max-width: $tablet) {
+  .topRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sortGroup {
+    width: 100%;
+  }
+
+  .sortSelect {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .metaRow {
+    justify-content: space-between;
+  }
+
+  .surpriseButton {
+    width: 100%;
+  }
+}

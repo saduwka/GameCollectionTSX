@@ -1,6 +1,7 @@
 // FILE: src/PageRoutes.tsx
 import { lazy, Suspense, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import HomePage from "./pages/HomePage/HomePage";
 import BurgerMenu from "./components/BurgerMenu/BurgerMenu";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -19,45 +20,34 @@ const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage/Recom
 const ProfilePage = lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const PublicCollectionPage = lazy(() => import("./pages/PublicCollectionPage/PublicCollectionPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
-
-const RouteFallback = () => (
-  <div
-    role="status"
-    aria-live="polite"
-    style={{
-      minHeight: "60vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#999",
-      fontSize: 14,
-    }}
-  >
-    Загрузка...
-  </div>
-);
+const MatchPage = lazy(() => import("./pages/MatchPage/MatchPage"));
+import LoadingErrorMessage from "./components/LoadingErrorMessage/LoadingErrorMessage";
+const RouteFallback = () => {
+  return (
+    <LoadingErrorMessage loading={true} error={null} noResults={false} variant="inline" />
+  );
+};
 
 const PageRoutes = () => {
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
+return (
+  <div className="app-container">
+    <a href="#main-content" className="skip-link">
+      {t('common.main_menu')}
+    </a>
+    <BurgerMenu onClick={toggleSidebar} isOpen={isSidebarOpen} />
+    <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+    <ComparisonBar />
 
-  return (
-    <div className="app-container">
-      <a href="#main-content" className="skip-link">
-        Перейти к основному содержимому
-      </a>
-      <BurgerMenu onClick={toggleSidebar} />
-      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
-      <ComparisonBar />
-
-      <div className="content-wrapper" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="content-wrapper">
         <main
           id="main-content"
           tabIndex={-1}
           className="main-content"
-          style={{ flex: 1, width: "100%", paddingTop: "0" }}
         >
           <Suspense fallback={<RouteFallback />}>
             <Routes>
@@ -73,6 +63,7 @@ const PageRoutes = () => {
               <Route path="/collection/:uid" element={<PublicCollectionPage />} />
               <Route path="/compare" element={<ComparePage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/match" element={<MatchPage />} />
               {/* path="*" must be the LAST route */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

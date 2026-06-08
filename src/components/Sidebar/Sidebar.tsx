@@ -1,11 +1,13 @@
 // FILE: src/components/Sidebar/Sidebar.tsx
 import React, { useContext, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { SearchContext } from "../../context/SearchContext";
 import { useAuth } from "../../context/AuthContext";
 import LoginButton from "../LoginButton/LoginButton";
 import LogoutButton from "../LogoutButton/LogoutButton";
-import styles from "./Sidebar.module.css";
+import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import styles from "./Sidebar.module.scss";
 import logo from "../../assets/logo/logo.svg";
 
 interface SidebarProps {
@@ -14,6 +16,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { searchQuery, setSearchQuery } = useContext(SearchContext)!;
   const { user } = useAuth();
@@ -68,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         type="button"
         className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ""}`}
         onClick={onClose}
-        aria-label="Закрыть меню"
+        aria-label={t('common.close_menu')}
         tabIndex={isOpen ? 0 : -1}
         aria-hidden={!isOpen}
       />
@@ -76,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Главное меню"
+        aria-label={t('common.main_menu')}
         aria-hidden={!isOpen}
       >
         <div className={styles.sidebarHeader}>
@@ -89,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             type="button"
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Закрыть меню"
+            aria-label={t('common.close_menu')}
           >
             &times;
           </button>
@@ -120,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             role="search"
           >
             <label htmlFor="sidebar-search" className={styles.srOnly}>
-              Поиск игр
+              {t('common.search_placeholder')}
             </label>
             <input
               id="sidebar-search"
@@ -128,31 +131,38 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               value={searchQuery}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Поиск игр..."
+              placeholder={t('common.search_placeholder')}
               className={styles.searchInput}
-              aria-label="Поиск игр"
+              aria-label={t('common.search_placeholder')}
             />
           </form>
 
           <nav className={styles.navLinks} aria-label="Основная навигация">
             <Link to="/" className={styles.navLink} onClick={onClose}>
-              Главная
+              {t('common.home')}
             </Link>
             <Link to="/games" className={styles.navLink} onClick={onClose}>
-              Игры
+              {t('common.games')}
             </Link>
             <Link to="/platforms" className={styles.navLink} onClick={onClose}>
-              Платформы
+              {t('common.platforms')}
+            </Link>
+            <Link to="/match" className={styles.navLink} onClick={onClose}>
+              {t('common.game_match')}
             </Link>
             <Link to="/me" className={styles.navLink} onClick={onClose}>
-              Рекомендации
+              {t('common.recommendations')}
             </Link>
             {user && (
               <Link to="/collection" className={styles.navLink} onClick={onClose}>
-                Моя коллекция
+                {t('common.my_collection')}
               </Link>
             )}
           </nav>
+        </div>
+
+        <div className={styles.sidebarFooter}>
+          <LanguageSwitcher />
         </div>
       </aside>
     </>

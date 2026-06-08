@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import styles from "./ImageModal.module.css";
+import styles from "./ImageModal.module.scss";
 
 type Props = {
   images: string[];

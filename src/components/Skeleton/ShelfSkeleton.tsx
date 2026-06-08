@@ -1,7 +1,7 @@
 import React from "react";
 import Skeleton from "./Skeleton";
 import GameCardSkeleton from "../GameCard/GameCardSkeleton";
-import styles from "./ShelfSkeleton.module.css";
+import styles from "./ShelfSkeleton.module.scss";
 
 interface ShelfSkeletonProps {
   count?: number;

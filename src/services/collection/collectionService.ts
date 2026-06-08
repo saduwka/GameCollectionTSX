@@ -9,7 +9,7 @@ import {
   getDoc
 } from "firebase/firestore";
 
-export type GameStatus = "Backlog" | "Playing" | "Completed" | "Dropped" | "Wishlist" | "Not Interested";
+export type GameStatus = "Backlog" | "Playing" | "Completed" | "Dropped" | "Wishlist" | "Not Interested" | "Liked";
 
 export interface CollectedGame {
   id: number;

@@ -1,7 +1,8 @@
 // FILE: src/components/YouTubeSection/YouTubeSection.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
 import type { YouTubeVideo } from "../../services/media/youtubeService";
-import styles from "./YouTubeSection.module.css";
+import styles from "./YouTubeSection.module.scss";
 
 interface YouTubeSectionProps {
   title: string;
@@ -10,13 +11,14 @@ interface YouTubeSectionProps {
 }
 
 const YouTubeSection: React.FC<YouTubeSectionProps> = ({ title, videos, loading }) => {
+  const { t } = useTranslation();
   if (!loading && videos.length === 0) return null;
 
   return (
     <div className={styles.section}>
       <h3 className={styles.title}>{title}</h3>
       {loading ? (
-        <div className={styles.loader}>Searching YouTube...</div>
+        <div className={styles.loader}>{t('common.loading')}</div>
       ) : (
         <div className={styles.grid}>
           {videos.map((video) => (

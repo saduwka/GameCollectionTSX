@@ -1,7 +1,7 @@
-// FILE: src/pages/RecommendationsPage/RecommendationsPage.tsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import {
   getUserCollection,
@@ -12,7 +12,7 @@ import { fetchGames } from "../../services/games/fetchGames";
 import GameCard from "../../components/GameCard/GameCard";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./RecommendationsPage.module.css";
+import styles from "./RecommendationsPage.module.scss";
 import type { Game } from "../../types/game";
 import { toast } from "react-hot-toast";
 
@@ -32,13 +32,15 @@ const slugify = (name: string) => name.toLowerCase().replace(/ /g, "-").replace(
 const STATUS_WEIGHTS: Record<string, number> = {
   Completed: 1.4,
   Playing: 1.3,
-  Backlog: 0.9,
+  Liked: 1.2,
   Wishlist: 1.1,
+  Backlog: 0.9,
   Dropped: 0.4,
   "Not Interested": 0,
 };
 
 const RecommendationsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, authLoading } = useAuth();
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
 
@@ -64,7 +66,6 @@ const RecommendationsPage: React.FC = () => {
       const platformIds = devices.length > 0 ? devices.join(",") : "";
       const isManualRefresh = manualRefreshKey > 0;
 
-      // Cold start: пустая коллекция -> популярное / на их платформах
       const meaningfulGames = collection.filter(
         (g) => g.status !== "Not Interested"
       );
@@ -80,28 +81,22 @@ const RecommendationsPage: React.FC = () => {
         const existing = candidates.get(game.id);
         if (existing) {
           existing.score += addedScore;
-          // Сохраняем reason с наибольшим вкладом
-          if (addedScore > 0.5 && !existing.reason.includes(reason)) {
-            // keep original strongest reason
-          }
         } else {
           candidates.set(game.id, { ...game, score: addedScore, reason });
         }
       };
 
       if (meaningfulGames.length === 0) {
-        // Cold start
         const ordering = isManualRefresh ? "-added" : "-rating";
         const data = await fetchGames(1, ordering, "", "", platformIds);
         data.games.forEach((g, i) => {
           addCandidate(
             g,
             1 - i * 0.02,
-            platformIds ? "Популярно на вашем железе" : "Хит сообщества"
+            platformIds ? t('recommendations.popular_on_hardware') : t('recommendations.community_hit')
           );
         });
       } else {
-        // 1) Считаем веса жанров по коллекции
         const genreStats: Record<string, GenreStat> = {};
         meaningfulGames.forEach((game) => {
           const statusW = STATUS_WEIGHTS[game.status] ?? 1;
@@ -123,7 +118,6 @@ const RecommendationsPage: React.FC = () => {
         const totalWeight =
           topGenres.reduce((s, g) => s + g.weight, 0) || 1;
 
-        // 2) Тянем кандидатов из топ-3 жанров, score пропорционален weight
         for (const genre of topGenres) {
           const ordering = isManualRefresh
             ? Math.random() > 0.5
@@ -131,62 +125,50 @@ const RecommendationsPage: React.FC = () => {
               : "-rating"
             : "-metacritic";
           const data = await fetchGames(1, ordering, "", genre.slug, platformIds);
-          const weightShare = genre.weight / totalWeight; // 0..1
+          const weightShare = genre.weight / totalWeight;
           data.games.forEach((g, i) => {
-            const positionFactor = 1 - i * 0.03; // первые позиции важнее
+            const positionFactor = 1 - i * 0.03;
             const rawScore =
               (1 + weightShare * 2) * positionFactor +
               (g.rating ? g.rating / 10 : 0) * 0.3;
-            addCandidate(g, rawScore, `Топ в жанре ${genre.name}`);
+            addCandidate(g, rawScore, `${t('compare.genres').charAt(0).toUpperCase() + t('compare.genres').slice(1)}: ${genre.name}`);
           });
         }
 
-        // 3) «Похоже на любимое»: берём самую высоко оценённую/Completed игру и тянем её жанр в -relevance
         const favorite = [...meaningfulGames].sort((a, b) => {
-          const aw =
-            (a.rating ?? 0) * (STATUS_WEIGHTS[a.status] ?? 1);
-          const bw =
-            (b.rating ?? 0) * (STATUS_WEIGHTS[b.status] ?? 1);
+          const aw = (a.rating ?? 0) * (STATUS_WEIGHTS[a.status] ?? 1);
+          const bw = (b.rating ?? 0) * (STATUS_WEIGHTS[b.status] ?? 1);
           return bw - aw;
         })[0];
         const favGenreName = favorite?.genres?.[0];
         if (favorite && favGenreName) {
           const favSlug = slugify(favGenreName);
-          const data = await fetchGames(
-            1,
-            "-relevance",
-            "",
-            favSlug,
-            platformIds
-          );
+          const data = await fetchGames(1, "-relevance", "", favSlug, platformIds);
           data.games.forEach((g, i) => {
             addCandidate(
               g,
               1.5 * (1 - i * 0.03),
-              `Похоже на ${favorite.name}`
+              `${t('recommendations.community_hit').split(' ')[0]} ${favorite.name}`
             );
           });
         }
 
-        // 4) Добивка: тренды на их платформах, если кандидатов мало
         if (candidates.size < 12 && platformIds) {
           const data = await fetchGames(1, "-added", "", "", platformIds);
           data.games.forEach((g, i) => {
             addCandidate(
               g,
               0.6 * (1 - i * 0.02),
-              "В тренде на ваших платформах"
+              t('recommendations.trending_on_platforms')
             );
           });
         }
       }
 
-      // 5) Сортируем по score и обрезаем
       const sorted = Array.from(candidates.values()).sort(
         (a, b) => b.score - a.score
       );
 
-      // Лёгкая стохастика только при manual refresh: меняем местами 2 соседних кейса в первой десятке
       if (isManualRefresh && sorted.length > 4) {
         for (let i = 0; i < Math.min(sorted.length - 1, 10); i += 2) {
           if (Math.random() > 0.5) {
@@ -203,9 +185,9 @@ const RecommendationsPage: React.FC = () => {
   const handleRefresh = () => {
     setManualRefreshKey((prev) => prev + 1);
     toast.promise(refetch(), {
-      loading: "Обновляем рекомендации...",
-      success: "Рекомендации обновлены",
-      error: "Не удалось обновить рекомендации",
+      loading: t('recommendations.refreshing'),
+      success: t('common.update_success'),
+      error: t('common.update_error'),
     });
   };
 
@@ -214,7 +196,7 @@ const RecommendationsPage: React.FC = () => {
     e.stopPropagation();
 
     if (!user) {
-      toast.error("Войдите, чтобы скрывать игры");
+      toast.error(t('recommendations.login_for_recommendations'));
       return;
     }
 
@@ -228,36 +210,36 @@ const RecommendationsPage: React.FC = () => {
       });
 
       refetch();
-      toast.success(`${game.name} больше не будет показана`);
+      toast.success(t('common.update_success'));
     } catch {
-      toast.error("Не удалось выполнить действие");
+      toast.error(t('common.update_error'));
     }
   };
 
   return (
     <div className={styles.container}>
       <PageMeta
-        title="Рекомендации"
-        description="Персональные рекомендации игр на основе вашей коллекции, оценок и устройств от PlayHub."
+        title={t('recommendations.title')}
+        description={t('recommendations.description')}
       />
       <header className={styles.header}>
         <div className={styles.titleWrapper}>
           <h1 className={styles.title}>
-            {!authLoading && user ? "Подобрано для вас" : "Рекомендованные игры"}
+            {!authLoading && user ? t('recommendations.picked_for_you') : t('recommendations.recommended_games')}
           </h1>
           <p className={styles.subtitle}>
             {!authLoading && user
-              ? "На основе вашей коллекции, оценок и устройств"
-              : "Войдите, чтобы получить персональные рекомендации по вашей коллекции"}
+              ? t('recommendations.based_on_collection')
+              : t('recommendations.login_for_recommendations')}
           </p>
         </div>
         <button
           className={styles.refreshButton}
           onClick={handleRefresh}
           disabled={isRefetching || isLoading}
-          aria-label="Обновить рекомендации"
+          aria-label={t('recommendations.refresh_recommendations')}
         >
-          {isRefetching ? "Обновляем..." : "↻ Обновить"}
+          {isRefetching ? t('recommendations.refreshing') : t('recommendations.refresh_action')}
         </button>
       </header>
 
@@ -265,7 +247,7 @@ const RecommendationsPage: React.FC = () => {
         loading={isLoading || authLoading}
         error={isError ? (error as Error).message : null}
         noResults={!isLoading && !authLoading && recommendations.length === 0}
-        message="Добавьте больше игр в коллекцию — рекомендации станут точнее"
+        message={t('recommendations.add_more_hint')}
       />
 
       {!isLoading && !authLoading && recommendations.length > 0 && (
@@ -281,9 +263,9 @@ const RecommendationsPage: React.FC = () => {
               <button
                 className={styles.notInterestedButton}
                 onClick={(e) => handleNotInterested(e, game)}
-                aria-label={`Скрыть ${game.name} из рекомендаций`}
+                aria-label={`${t('match.dislike')} ${game.name}`}
               >
-                Не интересно
+                {t('match.dislike')}
               </button>
             </div>
           ))}

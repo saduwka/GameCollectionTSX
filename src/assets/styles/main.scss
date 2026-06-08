@@ -1,0 +1,8 @@
+@use "base";
+
+// Global utility classes can go here
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

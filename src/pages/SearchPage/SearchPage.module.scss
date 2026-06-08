@@ -1,0 +1,196 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.searchPage {
+  padding: 32px 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 100vh;
+  background-color: transparent;
+
+  @include tablet {
+    padding: 20px;
+    gap: 20px;
+  }
+}
+
+.searchForm {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+
+  @include tablet {
+    flex-direction: column;
+    max-width: none;
+    gap: 8px;
+  }
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: $text-secondary;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 42px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.clearButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  @include flex-center;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.submitButton {
+  padding: 12px 24px;
+  background-color: $primary-color;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  @include tablet {
+    width: 100%;
+  }
+}
+
+.headerRow {
+  @include flex-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  @include tablet {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+.resultsCount {
+  font-size: 18px;
+  color: #eee;
+}
+
+.queryText {
+  font-weight: 700;
+  color: $primary-color;
+}
+
+.sortControls {
+  display: flex;
+  gap: 8px;
+}
+
+.sortBtn {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  &Active {
+    background: rgba($primary-color, 0.15);
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+}
+
+.gameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+
+  @include tablet {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}
+
+.gameLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #fff;
+
+  @include tablet {
+    font-size: 20px;
+  }
+}
+
+.emptyHint {
+  font-size: 16px;
+  color: $text-secondary;
+}

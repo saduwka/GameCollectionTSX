@@ -1,0 +1,143 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.container {
+  padding: 40px;
+  max-width: $container-max-width;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  gap: 20px;
+}
+
+.titleWrapper {
+  flex: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: $text-main;
+}
+
+.subtitle {
+  color: $text-secondary;
+  font-size: 1.1rem;
+}
+
+.refreshButton {
+  padding: 10px 20px;
+  background-color: $bg-card;
+  color: $text-main;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  margin-top: 10px;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background-color: $primary-color;
+  border-color: $primary-color;
+  transform: translateY(-2px);
+}
+
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.cardWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.link {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+}
+
+.link:hover {
+  transform: translateY(-5px);
+}
+
+.cardContainer {
+  position: relative;
+}
+
+.notInterestedButton {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  color: #ff4b4b; // Keep
+  border: 1px solid $border-color;
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.notInterestedButton:hover {
+  background-color: rgba(255, 75, 75, 0.1);
+  border-color: #ff4b4b;
+}
+
+.reasonBadge {
+  background-color: #3d3d3d;
+  color: #eee;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid $border-color;
+  border-top: none;
+}
+
+@media (max-width: $tablet) {
+  .container {
+    padding: 20px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .notInterestedButton {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+}

@@ -1,0 +1,121 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.comparisonBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $bg-dark;
+  border-top: 2px solid $primary-color;
+  padding: 15px 20px;
+  z-index: 1001;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}
+
+.container {
+  max-width: $container-max-width;
+  margin: 0 auto;
+  @include flex-between;
+  gap: 20px;
+
+  @include tablet {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.gameList {
+  display: flex;
+  gap: 15px;
+
+  @include tablet {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.gameThumb {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid $border-color;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.removeBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 75, 75, 0.9);
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  @include flex-center;
+  font-size: 14px;
+}
+
+.emptySlot {
+  width: 60px;
+  height: 60px;
+  border: 2px dashed #333;
+  border-radius: 8px;
+  @include flex-center;
+  color: #333;
+  font-size: 24px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.count {
+  font-size: 0.9rem;
+  color: $text-secondary;
+}
+
+.clearBtn {
+  background: none;
+  border: none;
+  color: #ff4b4b;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.compareBtn {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: $primary-hover;
+  }
+
+  &:disabled {
+    background-color: #333;
+    color: #666;
+    cursor: not-allowed;
+  }
+}

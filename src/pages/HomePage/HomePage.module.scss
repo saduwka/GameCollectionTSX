@@ -1,0 +1,382 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.homePage {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  padding: 0 24px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+
+  @include tablet {
+    padding: 0 12px 60px;
+    gap: 40px;
+  }
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  padding: 80px 32px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at top left, rgba($primary-color, 0.25), transparent 60%),
+              radial-gradient(ellipse at bottom right, rgba(255, 100, 200, 0.15), transparent 60%),
+              linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-top: 24px;
+
+  @include tablet {
+    padding: 48px 20px;
+    margin-top: 12px;
+  }
+}
+
+.heroContent {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba($primary-color, 0.15);
+  border: 1px solid rgba($primary-color, 0.4);
+  color: #a5acff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  letter-spacing: 0.04em;
+}
+
+.heroTitle {
+  font-size: 3em;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 2em;
+  }
+}
+
+.heroDescription {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+  margin: 0 0 32px;
+
+  @include tablet {
+    font-size: 15px;
+  }
+}
+
+.heroButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnMatch {
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  border: none;
+
+  @include tablet {
+    padding: 12px 20px;
+    font-size: 14px;
+    width: 100%;
+  }
+}
+
+.btnPrimary {
+  background: $primary-color;
+  color: #fff;
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-1px);
+  }
+}
+
+.btnSecondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-1px);
+  }
+}
+
+.btnMatch {
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b6b, #ff4ecd 55%, #a855f7);
+  box-shadow: 0 8px 24px rgba(255, 78, 205, 0.35);
+  color: #fff;
+
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 12px 32px rgba(255, 78, 205, 0.45);
+  }
+}
+
+.heroHint {
+  margin-top: 24px;
+  color: $text-secondary;
+  font-size: 14px;
+}
+
+/* ---------- Shelf ---------- */
+.shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shelfHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shelfTitle {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+
+  @include tablet {
+    font-size: 1.4em;
+  }
+}
+
+.shelfSubtitle {
+  color: $text-secondary;
+  font-size: 14px;
+  margin: 0;
+}
+
+.shelfCta {
+  color: #a5acff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #c2c7ff;
+  }
+}
+
+.shelfGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+
+  @include tablet {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* ---------- Match banner ---------- */
+.matchBanner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 32px 36px;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at top left, rgba(255, 107, 107, 0.35), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.35), transparent 55%),
+    linear-gradient(135deg, #2a1633, #1a1a2e);
+  border: 1px solid rgba(255, 78, 205, 0.25);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 78, 205, 0.55);
+    box-shadow: 0 16px 48px rgba(168, 85, 247, 0.25);
+
+    .matchBannerArrow {
+      transform: translateX(6px);
+    }
+  }
+
+  @include tablet {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding: 28px 20px;
+  }
+}
+
+.matchBannerStack {
+  position: relative;
+  width: 120px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.matchCard {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, #3a3a4e, #20202e);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+  &1 {
+    z-index: 3;
+    transform: rotate(-6deg);
+    background:
+      radial-gradient(ellipse at top, rgba(255, 78, 205, 0.4), transparent 60%),
+      linear-gradient(135deg, #4a2a5c, #2a1a3c);
+    @include flex-center;
+  }
+
+  &2 {
+    z-index: 2;
+    transform: rotate(4deg) translate(8px, 6px);
+    opacity: 0.7;
+  }
+
+  &3 {
+    z-index: 1;
+    transform: rotate(12deg) translate(14px, 12px);
+    opacity: 0.4;
+  }
+}
+
+.matchCardEmoji {
+  font-size: 48px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.matchBannerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.matchBannerBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255, 78, 205, 0.18);
+  border: 1px solid rgba(255, 78, 205, 0.45);
+  color: #ffaae3;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.matchBannerTitle {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 1.4em;
+  }
+}
+
+.matchBannerText {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.matchBannerArrow {
+  font-size: 28px;
+  color: #ffaae3;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+
+  @include tablet {
+    display: none;
+  }
+}
+
+/* ---------- Features ---------- */
+.featuresStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba($primary-color, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+.featureEmoji {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.featureTitle {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 700;
+  margin: 0;
+}
+
+.featureText {
+  font-size: 13px;
+  color: $text-secondary;
+  margin: 0;
+  line-height: 1.5;
+}

@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { getUserCollection } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
@@ -10,12 +11,13 @@ import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import styles from "./CollectionPage.module.css";
+import styles from './CollectionPage.module.scss';
 import type { Game } from "../../types/game";
 
-const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Dropped"];
+const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Liked", "Dropped"];
 
 const CollectionPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, authLoading } = useAuth();
   const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
@@ -75,10 +77,10 @@ const CollectionPage: React.FC = () => {
   return (
     <div className={styles.collectionPage}>
       <PageMeta
-        title="Моя коллекция"
-        description="Ваша личная коллекция игр: пройденные, в процессе, в желаемом и беклог на PlayHub."
+        title={t('collection.title')}
+        description={t('collection.description')}
       />
-      <h1 className={styles.title}>My Collection</h1>
+      <h1 className={styles.title}>{t('collection.title')}</h1>
 
       <div className={styles.statusFilters}>
         {STATUS_OPTIONS.map(status => (
@@ -87,7 +89,7 @@ const CollectionPage: React.FC = () => {
             className={`${styles.filterTab} ${selectedStatus === status ? styles.activeTab : ""}`}
             onClick={() => setSelectedStatus(status)}
           >
-            {status} <span className={styles.count}>{getStatusCount(status)}</span>
+            {status === "All" ? t('home.see_all').split(' ')[0] : status} <span className={styles.count}>{getStatusCount(status)}</span>
           </button>
         ))}
       </div>
@@ -147,11 +149,11 @@ const CollectionPage: React.FC = () => {
 
           {selectedStatus === "All" && recommendations.length > 0 && (
             <div className={styles.recommendationsSection}>
-              <h2 className={styles.subtitle}>Recommended for You</h2>
-              <p className={styles.recReason}>Based on your interest in {topGenres.join(", ")}</p>
+              <h2 className={styles.subtitle}>{t('recommendations.picked_for_you')}</h2>
+              <p className={styles.recReason}>{t('recommendations.based_on_collection').split(' ')[0]} {topGenres.join(", ")}</p>
               
               {recLoading ? (
-                <p>Finding games you might like...</p>
+                <LoadingErrorMessage loading={true} error={null} noResults={false} variant="inline" />
               ) : (
                 <div className={styles.gamesGrid}>
                   {recommendations.map((game) => (

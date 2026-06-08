@@ -1,0 +1,127 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.gamesPage {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px 50px;
+  gap: 20px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.clearButton {
+  background-color: #ff4b4b; // Keep color
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clearButton:hover {
+  background-color: #ff3333; // Keep color
+}
+
+.gamesList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+  width: 100%;
+}
+
+.gameCardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  text-decoration: none;
+}
+
+.heading {
+  font-size: 24px;
+  color: $text-main;
+  margin: 0;
+  text-align: left;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  gap: 20px;
+}
+
+.pageNumber {
+  font-size: 18px;
+  font-weight: bold;
+  color: $text-main;
+}
+
+.paginationButton {
+  background-color: #4b4b4b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: $primary-color;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: $tablet) {
+  .gamesPage {
+    padding: 10px;
+    gap: 15px;
+  }
+
+  .headerRow {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .gamesList {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .heading {
+    font-size: 20px;
+  }
+  
+  .pagination {
+    margin-top: 20px;
+    gap: 10px;
+  }
+}

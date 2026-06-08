@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useComparison } from "../../context/ComparisonContext";
-import styles from "./ComparisonBar.module.css";
+import styles from "./ComparisonBar.module.scss";
 
 const ComparisonBar: React.FC = () => {
   const { comparisonList, removeFromComparison, clearComparison } = useComparison();

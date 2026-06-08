@@ -1,0 +1,114 @@
+@use "sass:color";
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.boxes {
+  --size: 64px;
+  --duration: 800ms;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: calc(var(--size) * 2);
+  width: calc(var(--size) * 3);
+  transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  z-index: 9999;
+
+  &.inline {
+    --size: 32px;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: rotateX(60deg) rotateZ(45deg);
+    margin: 60px auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .boxes {
+    --size: 80px;
+  }
+}
+
+.box {
+  width: var(--size);
+  height: var(--size);
+  top: 0;
+  left: 0;
+  position: absolute;
+  transform-style: preserve-3d;
+
+  &:nth-child(1) {
+    transform: translate(100%, 0);
+    animation: box1 var(--duration) linear infinite;
+  }
+  &:nth-child(2) {
+    transform: translate(0, 100%);
+    animation: box2 var(--duration) linear infinite;
+  }
+  &:nth-child(3) {
+    transform: translate(100%, 100%);
+    animation: box3 var(--duration) linear infinite;
+  }
+  &:nth-child(4) {
+    transform: translate(200%, 0);
+    animation: box4 var(--duration) linear infinite;
+  }
+
+  > div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: $primary-color;
+    transform: rotateY(0deg) rotateX(0deg) translateZ(calc(var(--size) / 2));
+
+    &:nth-child(1) {
+      top: 0;
+      left: 0;
+    }
+    &:nth-child(2) {
+      background: color.adjust($primary-color, $lightness: -10%);
+      right: 0;
+      transform: rotateY(90deg) translateZ(calc(var(--size) / 2));
+    }
+    &:nth-child(3) {
+      background: color.adjust($primary-color, $lightness: -5%);
+      transform: rotateX(-90deg) translateZ(calc(var(--size) / 2));
+    }
+    &:nth-child(4) {
+      background: #DBE3F4;
+      top: 0;
+      left: 0;
+      transform: translateZ(calc(var(--size) * 3 * -1));
+    }
+  }
+}
+
+@keyframes box1 {
+  0%, 50% { transform: translate(100%, 0); }
+  100% { transform: translate(200%, 0); }
+}
+
+@keyframes box2 {
+  0% { transform: translate(0, 100%); }
+  50% { transform: translate(0, 0); }
+  100% { transform: translate(100%, 0); }
+}
+
+@keyframes box3 {
+  0%, 50% { transform: translate(100%, 100%); }
+  100% { transform: translate(0, 100%); }
+}
+
+@keyframes box4 {
+  0% { transform: translate(200%, 0); }
+  50% { transform: translate(200%, 100%); }
+  100% { transform: translate(100%, 100%); }
+}
+
+.message {
+  text-align: center;
+  padding: 20px;
+  color: $text-secondary;
+}

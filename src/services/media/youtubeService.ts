@@ -12,9 +12,9 @@ export interface YouTubeVideo {
   publishedAt: string;
 }
 
-export const searchYouTubeVideos = async (query: string, maxResults = 5): Promise<YouTubeVideo[]> => {
+export const searchYouTubeVideos = async (query: string, maxResults = 5, lang: string = 'en'): Promise<YouTubeVideo[]> => {
   if (!API_KEY) {
-    console.warn("YouTube API Key is missing. Using dummy data for development.");
+    // ... mock data logic ...
     return [
       {
         id: "dQw4w9WgXcQ",
@@ -41,11 +41,12 @@ export const searchYouTubeVideos = async (query: string, maxResults = 5): Promis
         q: query,
         type: "video",
         key: API_KEY,
-        relevanceLanguage: "en"
+        relevanceLanguage: lang,
+        regionCode: lang === 'ru' ? 'RU' : 'US'
       }
     });
 
-    return response.data.items.map((item: { id: { videoId: string }; snippet: { title: string; thumbnails: { high?: { url: string }; default?: { url: string } }; channelTitle: string; publishedAt: string } }) => ({
+    return response.data.items.map((item: any) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
@@ -58,15 +59,11 @@ export const searchYouTubeVideos = async (query: string, maxResults = 5): Promis
   }
 };
 
-export const getGameMedia = async (gameName: string) => {
-  const [ost, reviewsEn, reviewsRu] = await Promise.all([
-    searchYouTubeVideos(`${gameName} OST`, 3),
-    searchYouTubeVideos(`${gameName} review`, 3),
-    searchYouTubeVideos(`${gameName} обзор игры`, 3)
+export const getGameMedia = async (gameName: string, lang: string = 'en') => {
+  const [ost, reviews] = await Promise.all([
+    searchYouTubeVideos(`${gameName} OST`, 3, lang),
+    searchYouTubeVideos(lang === 'ru' ? `${gameName} обзор игры` : `${gameName} review`, 6, lang)
   ]);
-
-  // Merge and deduplicate reviews, or just combine them
-  const allReviews = [...reviewsRu, ...reviewsEn];
   
-  return { ost, reviews: allReviews };
+  return { ost, reviews };
 };
