@@ -4,7 +4,7 @@
 
 **PlayHub** — это современное веб-приложение для геймеров, позволяющее превратить вашу игровую библиотеку в структурированную коллекцию с глубокой аналитикой, рекомендациями и поиском лучших цен.
 
-![PlayHub Preview](https://via.placeholder.com/1200x600?text=PlayHub+Project+Preview](https://github.com/saduwka/GameCollectionTSX/issues/21#issue-5415128392)
+![PlayHub Preview](https://via.placeholder.com/1200x600?text=PlayHub+Project+Preview)
 
 ---
 
