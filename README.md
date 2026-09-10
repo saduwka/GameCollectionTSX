@@ -1,5 +1,7 @@
 # 🎮 PlayHub
 
+🔗 **[Live Demo](https://gamecollection-ff71a.web.app)**
+
 **PlayHub** — это современное веб-приложение для геймеров, позволяющее превратить вашу игровую библиотеку в структурированную коллекцию с глубокой аналитикой, рекомендациями и поиском лучших цен.
 
 ![PlayHub Preview](https://via.placeholder.com/1200x600?text=PlayHub+Project+Preview)
@@ -23,11 +25,11 @@
 ### 💰 Покупки и Ретро
 - **Price Comparison:** Сравнение цен в реальном времени через CheapShark API (Steam, GOG, Epic и др.).
 - **Subscription Tags:** Метки доступности игр в Xbox Game Pass и PS Plus.
-- **Retro Integration:** Быстрые ссылки на Internet Archive для классических игр (MS-DOS и старые консоли).
+- **Retro Integration:** быстрые ссылки на Internet Archive для классических игр (MS-DOS и старые консоли).
 
 ### 👥 Социальные функции
 - **Public Profiles:** Делитесь своей коллекцией с друзьями через уникальную ссылку.
-- **Hardware Profile:** Укажите свои консоли и девайсы для персонализации выдачи.
+- **Hardware Profile:** укажите свои консоли и девайсы для персонализации выдачи.
 
 ---
 
@@ -63,7 +65,7 @@
    # ... и другие параметры Firebase
    ```
 
-4. **Запустите проект:**
+4. **запустите проект:**
    ```bash
    npm run dev
    ```
