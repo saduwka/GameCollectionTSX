@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -80,7 +80,6 @@ const Shelf: React.FC<ShelfProps> = ({
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { user, authLoading } = useAuth();
 
   const { data: trending = [], isLoading: trendingLoading } = useQuery({
@@ -118,7 +117,7 @@ const HomePage: React.FC = () => {
   const isAuthenticated = !authLoading && !!user;
 
   return (
-    <div className={styles.homePage}>
+    <div className={styles.homePage} data-seo-ready="true">
       <PageMeta
         title="PlayHub"
         description={t('home.meta_description')}
@@ -133,32 +132,20 @@ const HomePage: React.FC = () => {
             {t('home.hero_description')}
           </p>
           <div className={styles.heroButtons}>
-            <button
-              className={styles.btnPrimary}
-              onClick={() => navigate("/games")}
-            >
+            <Link className={styles.btnPrimary} to="/games">
               {t('home.cta_catalog')}
-            </button>
-            <button
-              className={styles.btnMatch}
-              onClick={() => navigate("/match")}
-            >
+            </Link>
+            <Link className={styles.btnMatch} to="/match">
               {t('home.cta_match')}
-            </button>
+            </Link>
             {isAuthenticated ? (
-              <button
-                className={styles.btnSecondary}
-                onClick={() => navigate("/me")}
-              >
+              <Link className={styles.btnSecondary} to="/me">
                 {t('home.cta_recommendations')}
-              </button>
+              </Link>
             ) : (
-              <button
-                className={styles.btnSecondary}
-                onClick={() => navigate("/platforms")}
-              >
+              <Link className={styles.btnSecondary} to="/platforms">
                 {t('home.cta_platforms')}
-              </button>
+              </Link>
             )}
           </div>
           {!isAuthenticated && !authLoading && (

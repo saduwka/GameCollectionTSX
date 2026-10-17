@@ -44,6 +44,7 @@ export interface Game {
   background_image_additional?: string;
   coverUrl: string;
   rating: number;
+  ratings_count?: number;
   playtime?: number;
   platforms: GamePlatform[];
   released: string;
@@ -69,6 +70,7 @@ export interface RawGame {
   background_image: string;
   background_image_additional?: string;
   rating: number;
+  ratings_count?: number;
   playtime?: number;
   released: string;
   metacritic?: number | null;

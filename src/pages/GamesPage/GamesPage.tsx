@@ -1,6 +1,6 @@
 // FILE: src/pages/GamesPage/GamesPage.tsx
 import React, { useEffect, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { fetchGames } from "../../services/games/fetchGames";
@@ -11,6 +11,8 @@ import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
+import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import styles from "./GamesPage.module.scss";
 
 const STORAGE_KEY = "playhub_filters";
@@ -34,13 +36,14 @@ const ORDERING_MAP: Record<SortKey, string> = {
 
 const GamesPage: React.FC = () => {
   const { t } = useTranslation();
+  const { slug } = useParams<{ slug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const filter = (searchParams.get("filter") as SortKey) || "popular";
   const currentPage = parseInt(searchParams.get("page") || "1");
   const selectedYear = searchParams.get("year") || "";
   const selectedYearTo = searchParams.get("yearTo") || "";
-  const selectedGenreId = searchParams.get("genre") || "";
+  const selectedGenreId = slug || searchParams.get("genre") || "";
   const selectedPlatformId = searchParams.get("platform") || "";
   const selectedDeveloperId = searchParams.get("developer") || "";
   const selectedTagId = searchParams.get("tag") || "";
@@ -116,6 +119,7 @@ const GamesPage: React.FC = () => {
 
   // Сохранение фильтров в localStorage
   useEffect(() => {
+    if (slug) return;
     const filters = {
       year: selectedYear,
       yearTo: selectedYearTo,
@@ -125,10 +129,11 @@ const GamesPage: React.FC = () => {
       metacritic: selectedMetacritic,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  }, [selectedYear, selectedYearTo, selectedGenreId, selectedPlatformId, selectedPlaytime, selectedMetacritic]);
+  }, [slug, selectedYear, selectedYearTo, selectedGenreId, selectedPlatformId, selectedPlaytime, selectedMetacritic]);
 
   // Восстановление фильтров при первом входе (если URL пустой)
   useEffect(() => {
+    if (slug) return;
     if (searchParams.toString() === "") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -145,7 +150,7 @@ const GamesPage: React.FC = () => {
         }
       }
     }
-  }, [searchParams, setSearchParams]);
+  }, [slug, searchParams, setSearchParams]);
 
   const handlePageChange = (newPage: number) => {
     updateParams({ page: newPage });
@@ -178,15 +183,20 @@ const GamesPage: React.FC = () => {
     (selectedPlaytime ? 1 : 0) +
     (selectedMetacritic ? 1 : 0);
 
+  const genreName = genres.find((genre) => genre.slug === selectedGenreId || genre.id === selectedGenreId)?.name;
+  const heading = slug && genreName ? genreName : t("common.games");
+  const seoReady = !loading && !isError && games.length > 0 && (!slug || !!genreName);
+
   return (
-    <div className={styles.gamesPage}>
+    <div className={styles.gamesPage} data-seo-ready={seoReady ? "true" : "false"}>
       <PageMeta
-        title={t('catalog.title')}
-        description={t('catalog.description')}
+        title={slug && genreName ? t("info.genre_title", { name: genreName }) : t("catalog.title")}
+        description={slug && genreName ? t("info.genre_description", { name: genreName }) : t("catalog.description")}
       />
+      {slug && games.length > 0 && <JsonLd data={itemListJsonLd(games)} />}
       <div className={styles.content}>
         <div className={styles.headerRow}>
-          <h1 className={styles.heading}>{t('common.games')}</h1>
+          <h1 className={styles.heading}>{heading}</h1>
           {hasAnyFilter && (
             <button className={styles.clearButton} onClick={handleClearFilters}>
               {t('common.clear')}
@@ -261,7 +271,8 @@ const GamesPage: React.FC = () => {
       </button>
     )}
   </div>
-)}
+        )}
+        <RawgCredit />
       </div>
     </div>
   );

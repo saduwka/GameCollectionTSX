@@ -7,6 +7,8 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import GameCard from "../../components/GameCard/GameCard";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
+import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import {
   getPlatformDetails,
   getGamesForPlatform
@@ -113,7 +115,7 @@ const PlatformPage: FC = () => {
   }
 
   return (
-    <div className={styles.platformPage}>
+    <div className={styles.platformPage} data-seo-ready={!loadingGames && games.length > 0 && platformDetails?.name ? "true" : "false"}>
       <PageMeta
         title={platformDetails?.name || t('platforms_page.title')}
         description={
@@ -123,6 +125,7 @@ const PlatformPage: FC = () => {
         }
         image={platformDetails?.image_background || platformDetails?.image || undefined}
       />
+      {games.length > 0 && <JsonLd data={itemListJsonLd(games)} />}
       <button
         className={styles.backButton}
         onClick={() => window.history.back()}
@@ -135,7 +138,9 @@ const PlatformPage: FC = () => {
           <img 
             src={platformDetails?.image_background || platformDetails?.image || wikiData?.thumbnail} 
             alt="" 
-            className={styles.heroBg} 
+            className={styles.heroBg}
+            width={1280}
+            height={720}
           />
         )}
         <div className={styles.heroOverlay}>
@@ -169,7 +174,7 @@ const PlatformPage: FC = () => {
               )}
             </div>
             {wikiData.thumbnail && (
-              <img src={wikiData.thumbnail} alt={wikiData.title} className={styles.wikiImage} />
+              <img src={wikiData.thumbnail} alt={wikiData.title} className={styles.wikiImage} loading="lazy" width={320} height={320} />
             )}
           </div>
         ) : (
@@ -251,6 +256,7 @@ const PlatformPage: FC = () => {
           </button>
         </div>
       )}
+      <RawgCredit />
     </div>
   );
 };

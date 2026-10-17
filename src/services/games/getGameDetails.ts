@@ -34,6 +34,7 @@ export async function getGameDetails(id: string): Promise<Game> {
     background_image: gameData.background_image || "",
     background_image_additional: gameData.background_image_additional || "",
     rating: gameData.rating ?? 0,
+    ratings_count: gameData.ratings_count,
     playtime: gameData.playtime || 0,
     metacritic: gameData.metacritic || null,
     platforms: (gameData.platforms || []).map((p) => ({

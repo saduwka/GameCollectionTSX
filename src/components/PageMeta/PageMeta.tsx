@@ -1,5 +1,6 @@
 // FILE: src/components/PageMeta/PageMeta.tsx
 import { Helmet } from "react-helmet-async";
+import { SITE_ORIGIN } from "../../site";
 
 interface PageMetaProps {
   /** Уникальная часть title. Будет автоматически дополнена " — PlayHub". */
@@ -8,8 +9,10 @@ interface PageMetaProps {
   description?: string;
   /** OG image URL (картинка для соцсетей). */
   image?: string;
-  /** Канонический URL страницы. По умолчанию текущий location.href. */
+  /** Канонический URL страницы. По умолчанию origin + pathname, без query и hash. */
   url?: string;
+  /** Не дописывать « — PlayHub», если title уже полный. */
+  exactTitle?: boolean;
   /** OG type — обычно "website", для страниц игр можно "article". */
   type?: "website" | "article";
 }
@@ -24,11 +27,12 @@ const PageMeta = ({
   image,
   url,
   type = "website",
+  exactTitle = false,
 }: PageMetaProps) => {
-  const fullTitle = title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}`;
+  const fullTitle = exactTitle || title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
   const pageUrl =
     url ||
-    (typeof window !== "undefined" ? window.location.href : undefined);
+    (typeof window !== "undefined" ? `${SITE_ORIGIN}${window.location.pathname}` : SITE_ORIGIN);
 
   return (
     <Helmet prioritizeSeoTags>

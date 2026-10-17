@@ -21,6 +21,8 @@ const ProfilePage = lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const PublicCollectionPage = lazy(() => import("./pages/PublicCollectionPage/PublicCollectionPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
 const MatchPage = lazy(() => import("./pages/MatchPage/MatchPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage/AboutPage"));
+const FaqPage = lazy(() => import("./pages/FaqPage/FaqPage"));
 import LoadingErrorMessage from "./components/LoadingErrorMessage/LoadingErrorMessage";
 const RouteFallback = () => {
   return (
@@ -56,6 +58,9 @@ return (
               <Route path="/game/:id" element={<GamePage />} />
               <Route path="/game/:id/:platformId" element={<GamePage />} />
               <Route path="/games" element={<GamesPage />} />
+              <Route path="/genre/:slug" element={<GamesPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/faq" element={<FaqPage />} />
               <Route path="/platforms" element={<PlatformsPage />} />
               <Route path="/platform/:id" element={<PlatformDetails />} />
               <Route path="/search" element={<SearchPage />} />

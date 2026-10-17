@@ -52,6 +52,9 @@ const GameCard = ({ game, hideCompareButton = false }: GameCardProps) => {
         src={game.background_image}
         alt={game.name}
         className={styles.gameCardImg}
+        loading="lazy"
+        width={640}
+        height={360}
       />
       <div className={styles.description}>
         <h3 className={styles.heading}>{game.name}</h3>

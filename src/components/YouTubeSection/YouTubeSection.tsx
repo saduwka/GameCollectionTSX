@@ -30,7 +30,7 @@ const YouTubeSection: React.FC<YouTubeSectionProps> = ({ title, videos, loading 
               className={styles.videoCard}
             >
               <div className={styles.thumbnailWrapper}>
-                <img src={video.thumbnail} alt={video.title} className={styles.thumbnail} />
+                <img src={video.thumbnail} alt={video.title} className={styles.thumbnail} loading="lazy" width={480} height={360} />
                 <div className={styles.playIcon}>▶</div>
               </div>
               <div className={styles.info}>

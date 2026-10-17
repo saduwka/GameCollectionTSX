@@ -48,8 +48,8 @@
 
 1. **Клонируйте репозиторий:**
    ```bash
-   git clone https://github.com/your-username/playhub.git
-   cd playhub
+   git clone https://github.com/saduwka/GameCollectionTSX.git
+   cd GameCollectionTSX
    ```
 
 2. **Установите зависимости:**

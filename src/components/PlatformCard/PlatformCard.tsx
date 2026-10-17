@@ -41,6 +41,8 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ platform }) => {
           alt={platform.name}
           className={styles.platformCardImg}
           loading="lazy"
+          width={640}
+          height={180}
           onError={() => setImgFailed(true)}
         />
       ) : (

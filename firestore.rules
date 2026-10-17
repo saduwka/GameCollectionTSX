@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function settingsDoc(uid) {
+      return get(/databases/$(database)/documents/user_settings/$(uid));
+    }
+
+    // A missing settings doc can be read as an empty snapshot so the client
+    // can tell "not found" from "private". isPublic == false stays owner-only.
+    // Missing isPublic keeps the current public-read behavior.
+    match /user_settings/{uid} {
+      allow get: if isOwner(uid)
+        || resource == null
+        || resource.data.isPublic != false;
+      allow list: if false;
+      allow create, update, delete: if isOwner(uid);
+    }
+
+    // Games stay readable unless the owner explicitly sets isPublic to false.
+    match /user_collections/{uid}/games/{gameId} {
+      allow read: if isOwner(uid)
+        || (exists(/databases/$(database)/documents/user_settings/$(uid))
+            && settingsDoc(uid).data.isPublic != false);
+      allow create, update, delete: if isOwner(uid);
+    }
+  }
+}

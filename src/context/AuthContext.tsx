@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
+import { collectionKeys, invalidateUserLibrary } from "../services/collection/queryKeys";
+import { hasGuestData, syncGuestData } from "../services/collection/syncGuestData";
 
 interface AuthContextType {
   user: User | null;
@@ -12,17 +15,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const previousUserRef = useRef<User | null>(null);
+  const hasSeenAuth = useRef(false);
 
   useEffect(() => {
-    // Слушаем состояние авторизации. 
-    // onAuthStateChanged вызывается сразу при инициализации с текущим юзером или null.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      const previous = previousUserRef.current;
+      const becameUser = hasSeenAuth.current && previous === null && currentUser !== null;
+      const initialWithGuest = !hasSeenAuth.current && currentUser !== null && hasGuestData();
+      previousUserRef.current = currentUser;
+      hasSeenAuth.current = true;
       setUser(currentUser);
       setAuthLoading(false);
+
+      if (!currentUser || (!becameUser && !initialWithGuest)) return;
+
+      void syncGuestData()
+        .then(async (changed) => {
+          if (!changed) return;
+          await invalidateUserLibrary(queryClient, currentUser.uid);
+          await queryClient.invalidateQueries({ queryKey: collectionKeys.devices(currentUser.uid) });
+          await queryClient.invalidateQueries({ queryKey: collectionKeys.settings(currentUser.uid) });
+        })
+        .catch((error) => {
+          console.error("Guest sync failed", error);
+        });
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider value={{ user, authLoading }}>

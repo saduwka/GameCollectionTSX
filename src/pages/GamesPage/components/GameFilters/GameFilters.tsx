@@ -20,7 +20,7 @@ interface GameFiltersProps {
   setSelectedPlaytime: (range: string) => void;
   selectedMetacritic: string;
   setSelectedMetacritic: (m: string) => void;
-  genres: { id: string; name: string }[];
+  genres: { id: string; name: string; slug?: string }[];
   platforms: { id: string | number; name: string }[];
   totalCount?: number;
   activeFilterCount: number;
@@ -250,7 +250,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
             {genres.map((genre) => {
               const isActive = selectedGenreId
                 .split(",")
-                .includes(genre.id.toString());
+                .some((value) => value === genre.id.toString() || (!!genre.slug && value === genre.slug));
               return (
                 <button
                   key={genre.id}

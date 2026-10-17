@@ -147,6 +147,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Link to="/platforms" className={styles.navLink} onClick={onClose}>
               {t('common.platforms')}
             </Link>
+            <Link to="/about" className={styles.navLink} onClick={onClose}>
+              {t("common.about")}
+            </Link>
+            <Link to="/faq" className={styles.navLink} onClick={onClose}>
+              {t("common.faq")}
+            </Link>
             <Link to="/match" className={styles.navLink} onClick={onClose}>
               {t('common.game_match')}
             </Link>

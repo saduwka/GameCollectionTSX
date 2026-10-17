@@ -23,7 +23,45 @@ export interface CollectedGame {
   hoursPlayed?: number;
   playingOn?: string; // Platform name/ID
   completedAt?: number;
+  playtime?: number;
 }
+
+export interface UserSettings {
+  my_devices?: number[];
+  displayName?: string;
+  photoURL?: string;
+  isPublic?: boolean;
+}
+
+const collectionPayload = (game: {
+  id: number;
+  name: string;
+  background_image: string;
+  genres: string[];
+  status?: GameStatus;
+  rating?: number;
+  note?: string;
+  hoursPlayed?: number;
+  playingOn?: string;
+  completedAt?: number;
+}) => {
+  const payload: Record<string, unknown> = {
+    id: game.id,
+    name: game.name,
+    background_image: game.background_image,
+    genres: game.genres,
+    status: game.status || "Backlog",
+    note: game.note || "",
+    hoursPlayed: game.hoursPlayed || 0,
+    playingOn: game.playingOn || "",
+    completedAt: game.completedAt ?? null,
+    addedAt: Date.now(),
+  };
+  if (typeof game.rating === "number" && game.rating > 0) {
+    payload.rating = game.rating;
+  }
+  return payload;
+};
 
 const COLLECTION_NAME = "user_collections";
 
@@ -43,16 +81,30 @@ export const addToCollection = async (game: {
   if (!user) throw new Error("User must be logged in");
 
   const gameRef = doc(db, COLLECTION_NAME, user.uid, "games", game.id.toString());
-  await setDoc(gameRef, {
-    ...game,
-    status: game.status || "Backlog",
-    rating: game.rating || 0,
-    note: game.note || "",
-    hoursPlayed: game.hoursPlayed || 0,
-    playingOn: game.playingOn || "",
-    completedAt: game.completedAt || null,
-    addedAt: Date.now()
-  });
+  await setDoc(gameRef, collectionPayload(game));
+};
+
+export const addToCollectionIfMissing = async (game: {
+  id: number;
+  name: string;
+  background_image: string;
+  genres: string[];
+  status?: GameStatus;
+  rating?: number;
+  note?: string;
+  hoursPlayed?: number;
+  playingOn?: string;
+  completedAt?: number;
+}): Promise<boolean> => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User must be logged in");
+
+  const gameRef = doc(db, COLLECTION_NAME, user.uid, "games", game.id.toString());
+  const existing = await getDoc(gameRef);
+  if (existing.exists()) return false;
+
+  await setDoc(gameRef, collectionPayload(game), { merge: true });
+  return true;
 };
 
 export const updateGameMetadata = async (gameId: number, data: { 
@@ -112,6 +164,24 @@ export const saveUserDevices = async (deviceIds: number[]) => {
 
   const settingsRef = doc(db, "user_settings", user.uid);
   await setDoc(settingsRef, { my_devices: deviceIds }, { merge: true });
+};
+
+export const getUserSettings = async (uid?: string): Promise<UserSettings | null> => {
+  const effectiveUid = uid || auth.currentUser?.uid;
+  if (!effectiveUid) return null;
+
+  const settingsRef = doc(db, "user_settings", effectiveUid);
+  const docSnap = await getDoc(settingsRef);
+  if (!docSnap.exists()) return null;
+  return docSnap.data() as UserSettings;
+};
+
+export const saveUserSettings = async (data: Partial<UserSettings>) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User must be logged in");
+
+  const settingsRef = doc(db, "user_settings", user.uid);
+  await setDoc(settingsRef, data, { merge: true });
 };
 
 export const getUserCollection = async (uid?: string): Promise<CollectedGame[]> => {

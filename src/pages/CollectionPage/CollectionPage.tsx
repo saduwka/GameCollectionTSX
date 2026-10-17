@@ -1,11 +1,13 @@
 // FILE: src/pages/CollectionPage/CollectionPage.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { getUserCollection } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
+import { collectionKeys } from "../../services/collection/queryKeys";
+import BacklogPicker from "./BacklogPicker";
 import { fetchGames } from "../../services/games/fetchGames";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
@@ -22,8 +24,8 @@ const CollectionPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
 
-  const { data: fullCollection = [], isLoading: loading } = useQuery({
-    queryKey: ["userCollection", user?.uid],
+  const { data: fullCollection = [], isLoading: loading, isError } = useQuery({
+    queryKey: collectionKeys.user(user?.uid ?? "guest"),
     queryFn: () => getUserCollection(),
     enabled: !!user,
   });
@@ -48,7 +50,7 @@ const CollectionPage: React.FC = () => {
   }, [fullCollection]);
 
   const { data: recommendations = [], isLoading: recLoading } = useQuery({
-    queryKey: ["recommendations", topGenres],
+    queryKey: [...collectionKeys.recommendations, user?.uid, topGenres],
     queryFn: async () => {
       if (topGenres.length === 0) return [];
       const genreId = topGenres[0].toLowerCase().replace(/ /g, "-");
@@ -67,8 +69,11 @@ const CollectionPage: React.FC = () => {
     return fullCollection.filter(g => g.status === status).length;
   };
 
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/");
+  }, [authLoading, user, navigate]);
+
   if (!authLoading && !user) {
-    navigate("/");
     return null;
   }
 
@@ -96,9 +101,9 @@ const CollectionPage: React.FC = () => {
 
       <LoadingErrorMessage 
         loading={loading && fullCollection.length === 0} 
-        error={null} 
-        noResults={!loading && filteredCollection.length === 0} 
-        message={selectedStatus === "All" ? "Your collection is empty." : `No games with status "${selectedStatus}".`} 
+        error={isError ? t("collection.load_error") : null} 
+        noResults={!loading && !isError && filteredCollection.length === 0} 
+        message={selectedStatus === "All" ? t("collection.empty") : t("collection.empty_status", { status: selectedStatus })} 
       />
 
       {loading && fullCollection.length === 0 && (
@@ -109,8 +114,9 @@ const CollectionPage: React.FC = () => {
         </div>
       )}
 
-      {!loading && (
+      {!loading && !isError && (
         <>
+          <BacklogPicker collection={fullCollection} topGenres={topGenres} />
           <div className={styles.gamesGrid}>
             {filteredCollection.map((game) => {
               const gameObj: Game = {

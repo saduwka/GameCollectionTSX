@@ -121,6 +121,76 @@
 .wishlist { background-color: #e91e63; color: white; }
 .dropped { background-color: #f44336; color: white; }
 
+.backlogPicker {
+  margin-bottom: 36px;
+}
+
+.backlogCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.backlogLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.backlogImage {
+  width: 64px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.backlogActions {
+  display: flex;
+  gap: 8px;
+}
+
+.backlogActions button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: #646cff;
+  color: white;
+}
+
+.ownerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ownerAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  color: #ccc;
+}
+
 .recommendationsSection {
   border-top: 1px solid #333;
   margin-top: 60px;

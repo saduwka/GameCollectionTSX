@@ -1,7 +1,7 @@
 // FILE: src/pages/GamePage/GamePage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import DOMPurify from "dompurify";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,7 @@ import {
   updateGameMetadata
 } from "../../services/collection/collectionService";
 import type { GameStatus } from "../../services/collection/collectionService";
+import { invalidateUserLibrary } from "../../services/collection/queryKeys";
 import type { Game } from "../../types/game";
 import { useAuth } from "../../context/AuthContext";
 import { useComparison } from "../../context/ComparisonContext";
@@ -23,6 +24,8 @@ import ImageModal from "../../components/ImageModal/ImageModal";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import GamePageSkeleton from "../../components/Skeleton/GamePageSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import JsonLd, { videoGameJsonLd } from "../../components/JsonLd/JsonLd";
+import RawgCredit from "../../components/RawgCredit/RawgCredit";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
@@ -35,6 +38,7 @@ const GamePage: React.FC = () => {
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(platformId || null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
   const { t, i18n } = useTranslation();
 
@@ -125,6 +129,7 @@ const GamePage: React.FC = () => {
 
     if (!gameDetails) return;
 
+    const previousCompletedAt = completedAt;
     setIsCollectionActionLoading(true);
     try {
       if (collectionStatus) {
@@ -135,6 +140,7 @@ const GamePage: React.FC = () => {
           setCompletedAt(new Date(now).toISOString().split('T')[0]);
         }
         await updateGameMetadata(gameDetails.id, updates);
+        await invalidateUserLibrary(queryClient, user.uid);
         toast.success(t('game_page.toasts.status_updated', { status: newStatus }));
       } else {
         const now = Date.now();
@@ -150,12 +156,14 @@ const GamePage: React.FC = () => {
           playingOn: playingOn || (platformId ? gameDetails.platforms.find(p => p.platform.id === parseInt(platformId))?.platform.name : ""),
           completedAt: newStatus === "Completed" ? now : undefined
         });
+        await invalidateUserLibrary(queryClient, user.uid);
         toast.success(t('game_page.toasts.added_to_collection', { name: gameDetails.name }));
         if (newStatus === "Completed") setCompletedAt(new Date(now).toISOString().split('T')[0]);
       }
       refetchCollection();
     } catch (err) {
       console.error("Status update error:", err);
+      setCompletedAt(previousCompletedAt);
       toast.error(t('game_page.toasts.update_failed'));
     } finally {
       setIsCollectionActionLoading(false);
@@ -163,43 +171,72 @@ const GamePage: React.FC = () => {
   };
 
   const handleMetadataUpdate = async (updates: Parameters<typeof updateGameMetadata>[1]) => {
-    if (!user || !collectionStatus) return;
+    if (!user || !id || !collectionStatus) {
+      throw new Error("Cannot save");
+    }
     try {
-      await updateGameMetadata(parseInt(id!), updates);
+      await updateGameMetadata(parseInt(id, 10), updates);
+      await invalidateUserLibrary(queryClient, user.uid);
       refetchCollection();
     } catch (err) {
       console.error("Metadata update error:", err);
       toast.error(t('game_page.toasts.save_failed'));
+      throw err;
     }
   };
 
-  const handleRatingChange = (rating: number) => {
+  const handleRatingChange = async (rating: number) => {
+    const previous = personalRating;
     setPersonalRating(rating);
-    handleMetadataUpdate({ rating });
-    toast.success(t('game_page.toasts.rating_set', { rating }));
+    try {
+      await handleMetadataUpdate({ rating });
+      toast.success(t('game_page.toasts.rating_set', { rating }));
+    } catch {
+      setPersonalRating(previous);
+    }
   };
 
-  const handleNoteSave = () => {
-    handleMetadataUpdate({ note: personalNote });
-    toast.success(t('game_page.toasts.notes_saved'));
+  const handleNoteSave = async () => {
+    const previous = personalNote;
+    try {
+      await handleMetadataUpdate({ note: personalNote });
+      toast.success(t('game_page.toasts.notes_saved'));
+    } catch {
+      setPersonalNote(previous);
+    }
   };
 
-  const handleHoursChange = (val: string) => {
+  const handleHoursChange = async (val: string) => {
     const hours = parseFloat(val) || 0;
+    const previous = hoursPlayed;
     setHoursPlayed(hours);
-    handleMetadataUpdate({ hoursPlayed: hours });
+    try {
+      await handleMetadataUpdate({ hoursPlayed: hours });
+    } catch {
+      setHoursPlayed((current) => (current === hours ? previous : current));
+    }
   };
 
-  const handlePlatformSelect = (platformName: string) => {
+  const handlePlatformSelect = async (platformName: string) => {
+    const previous = playingOn;
     setPlayingOn(platformName);
-    handleMetadataUpdate({ playingOn: platformName });
-    toast.success(t('game_page.toasts.platform_set', { name: platformName }));
+    try {
+      await handleMetadataUpdate({ playingOn: platformName });
+      toast.success(t('game_page.toasts.platform_set', { name: platformName }));
+    } catch {
+      setPlayingOn(previous);
+    }
   };
 
-  const handleCompletionDateChange = (dateStr: string) => {
+  const handleCompletionDateChange = async (dateStr: string) => {
+    const previous = completedAt;
     setCompletedAt(dateStr);
     const timestamp = dateStr ? new Date(dateStr).getTime() : null;
-    handleMetadataUpdate({ completedAt: timestamp });
+    try {
+      await handleMetadataUpdate({ completedAt: timestamp });
+    } catch {
+      setCompletedAt(previous);
+    }
   };
 
   const handleRemoveFromCollection = async () => {
@@ -208,6 +245,7 @@ const GamePage: React.FC = () => {
     setIsCollectionActionLoading(true);
     try {
       await removeFromCollection(gameDetails.id);
+      await invalidateUserLibrary(queryClient, user.uid);
       toast.success(t('game_page.toasts.removed_from_collection'));
       refetchCollection();
     } catch (err) {
@@ -236,12 +274,16 @@ const GamePage: React.FC = () => {
   return (
     <>
       {game && (
-        <PageMeta
-          title={game.name}
-          description={metaDescription}
-          image={game.background_image}
-          type="article"
-        />
+        <>
+          <PageMeta
+            title={`${game.name} — обзор, оценки, где купить | PlayHub`}
+            description={metaDescription}
+            image={game.background_image}
+            type="article"
+            exactTitle
+          />
+          <JsonLd data={videoGameJsonLd(game)} />
+        </>
       )}
       <LoadingErrorMessage
         loading={false}
@@ -251,7 +293,7 @@ const GamePage: React.FC = () => {
       />
 
       {!loading && !isError && gameDetails && (
-        <div className={styles.gamePageContainer}>
+        <div className={styles.gamePageContainer} data-seo-ready="true">
           <div className={styles.topActions}>
             <button onClick={() => navigate(-1)} className={styles.backButton}>
               ← Back
@@ -596,6 +638,9 @@ const GamePage: React.FC = () => {
                         className={styles.screenshotImage}
                         src={src}
                         alt={`${gameDetails.name} screenshot ${index + 1}`}
+                        loading="lazy"
+                        width={1280}
+                        height={720}
                         onClick={() => setModalIndex(index)}
                       />
                     ))}
@@ -651,7 +696,10 @@ const GamePage: React.FC = () => {
                     <img 
                       src={addition.background_image} 
                       alt={addition.name} 
-                      className={styles.relatedImage} 
+                      className={styles.relatedImage}
+                      loading="lazy"
+                      width={320}
+                      height={180}
                     />
                     <span className={styles.relatedName}>{addition.name}</span>
                   </Link>
@@ -673,7 +721,10 @@ const GamePage: React.FC = () => {
                     <img 
                       src={seriesGame.background_image} 
                       alt={seriesGame.name} 
-                      className={styles.relatedImage} 
+                      className={styles.relatedImage}
+                      loading="lazy"
+                      width={320}
+                      height={180}
                     />
                     <span className={styles.relatedName}>{seriesGame.name}</span>
                   </Link>
@@ -681,6 +732,8 @@ const GamePage: React.FC = () => {
               </div>
             </div>
           )}
+
+          <RawgCredit />
 
           {modalIndex !== null && (
             <ImageModal

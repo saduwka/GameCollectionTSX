@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { getUserCollection } from "../../services/collection/collectionService";
-import type { GameStatus } from "../../services/collection/collectionService";
+import { getUserCollection, getUserSettings, type CollectedGame, type GameStatus } from "../../services/collection/collectionService";
+import { collectionKeys } from "../../services/collection/queryKeys";
+import { getCollectionStats } from "../../services/collection/stats";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
@@ -11,103 +12,129 @@ import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "../CollectionPage/CollectionPage.module.scss";
 import type { Game } from "../../types/game";
 
-const STATUS_OPTIONS: (GameStatus | "All")[] = ["All", "Playing", "Completed", "Backlog", "Wishlist", "Liked", "Dropped"];
+const SECTIONS: { status: GameStatus; label: "section_playing" | "section_completed" | "section_wishlist" }[] = [
+  { status: "Playing", label: "section_playing" },
+  { status: "Completed", label: "section_completed" },
+  { status: "Wishlist", label: "section_wishlist" },
+];
+
+const isPermissionDenied = (error: unknown) => {
+  const code = (error as { code?: string } | null)?.code;
+  return code === "permission-denied";
+};
+
+const toCardGame = (game: CollectedGame): Game => ({
+  id: game.id,
+  name: game.name,
+  background_image: game.background_image,
+  genres: game.genres,
+  coverUrl: game.background_image,
+  rating: game.rating || 0,
+  platforms: [],
+  released: "",
+  screenshots: [],
+  trailers: [],
+  stores: [],
+  playtime: game.playtime || 0,
+  added: 0,
+  description: "",
+});
 
 const PublicCollectionPage: React.FC = () => {
   const { t } = useTranslation();
   const { uid } = useParams<{ uid: string }>();
-  const [selectedStatus, setSelectedStatus] = useState<GameStatus | "All">("All");
 
-  const { data: fullCollection = [], isLoading: loading } = useQuery({
-    queryKey: ["publicCollection", uid],
-    queryFn: () => getUserCollection(uid!),
+  const settingsQuery = useQuery({
+    queryKey: collectionKeys.publicSettings(uid ?? ""),
+    queryFn: () => getUserSettings(uid),
     enabled: !!uid,
+    retry: false,
   });
 
-  const filteredCollection = useMemo(() => {
-    if (selectedStatus === "All") return fullCollection;
-    return fullCollection.filter(g => g.status === selectedStatus);
-  }, [fullCollection, selectedStatus]);
+  const isPrivate = settingsQuery.data?.isPublic === false || isPermissionDenied(settingsQuery.error);
+  const isMissing = settingsQuery.isSuccess && settingsQuery.data == null;
+  const canLoadGames = settingsQuery.isSuccess && settingsQuery.data != null && settingsQuery.data.isPublic !== false;
 
-  const getStatusCount = (status: GameStatus | "All") => {
-    if (status === "All") return fullCollection.length;
-    return fullCollection.filter(g => g.status === status).length;
-  };
+  const collectionQuery = useQuery({
+    queryKey: collectionKeys.publicCollection(uid ?? ""),
+    queryFn: () => getUserCollection(uid!),
+    enabled: canLoadGames,
+    retry: false,
+  });
+
+  const collection = collectionQuery.data ?? [];
+  const stats = getCollectionStats(collection);
+  const ownerName = settingsQuery.data?.displayName || t("collection.public_title");
+  const description = stats.topGames.length
+    ? `${ownerName}: ${stats.topGames.map((game) => game.name).join(", ")}`
+    : t("collection.public_description");
+
+  const blockedMessage = isPrivate
+    ? t("collection.private")
+    : isMissing
+      ? t("collection.not_found")
+      : settingsQuery.isError
+        ? t("collection.unavailable")
+        : null;
 
   return (
     <div className={styles.collectionPage}>
       <PageMeta
-        title={t('collection.public_title')}
-        description={t('collection.public_description')}
+        title={ownerName}
+        description={description}
+        image={stats.topGames[0]?.image || settingsQuery.data?.photoURL}
       />
-      <h1 className={styles.title}>{t('collection.public_title')}</h1>
-      <p style={{ textAlign: "center", color: "#aaa", marginBottom: "30px" }}>
-        {t('common.results').split(' ')[0]} {uid?.substring(0, 8)}...
-      </p>
+      <h1 className={styles.title}>{ownerName}</h1>
 
-      <div className={styles.statusFilters}>
-        {STATUS_OPTIONS.map(status => (
-          <button
-            key={status}
-            className={`${styles.filterTab} ${selectedStatus === status ? styles.activeTab : ""}`}
-            onClick={() => setSelectedStatus(status)}
-          >
-            {status === "All" ? t('home.see_all').split(' ')[0] : status} <span className={styles.count}>{getStatusCount(status)}</span>
-          </button>
-        ))}
-      </div>
+      {settingsQuery.data && !isPrivate && (
+        <div className={styles.ownerRow}>
+          {settingsQuery.data.photoURL && (
+            <img src={settingsQuery.data.photoURL} alt="" className={styles.ownerAvatar} />
+          )}
+        </div>
+      )}
 
-      <LoadingErrorMessage 
-        loading={loading && fullCollection.length === 0} 
-        error={null} 
-        noResults={!loading && filteredCollection.length === 0} 
-        message={t('search.empty_state_hint').split(' ')[0] + ' ' + t('common.nothing_found').split(' ')[0].toLowerCase()} 
+      <LoadingErrorMessage
+        loading={settingsQuery.isLoading}
+        error={blockedMessage || (collectionQuery.isError ? t("collection.unavailable") : null)}
+        noResults={canLoadGames && collectionQuery.isSuccess && collection.length === 0}
+        message={t("collection.empty")}
       />
 
-      {loading && fullCollection.length === 0 && (
+      {canLoadGames && collectionQuery.isLoading && (
         <div className={styles.gamesGrid}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <GameCardSkeleton key={i} />
+          {Array.from({ length: 8 }).map((_, index) => (
+            <GameCardSkeleton key={index} />
           ))}
         </div>
       )}
 
-      {!loading && (
-        <div className={styles.gamesGrid}>
-          {filteredCollection.map((game) => {
-            const gameObj: Game = {
-              id: game.id,
-              name: game.name,
-              background_image: game.background_image,
-              genres: game.genres,
-              coverUrl: game.background_image,
-              rating: game.rating || 0,
-              platforms: [],
-              released: "",
-              screenshots: [],
-              trailers: [],
-              stores: [],
-              playtime: 0,
-              added: 0,
-              description: ""
-            };
+      {canLoadGames && collectionQuery.isSuccess && collection.length > 0 && (
+        <>
+          <div className={styles.statsRow}>
+            <span>{t("collection.avg_rating")}: {stats.avgRating}</span>
+            <span>{t("collection.total_hours")}: {stats.totalHours}</span>
+            {stats.topGenres.length > 0 && (
+              <span>{t("collection.top_genres")}: {stats.topGenres.join(", ")}</span>
+            )}
+          </div>
+          {SECTIONS.map((section) => {
+            const games = collection.filter((game) => game.status === section.status);
+            if (games.length === 0) return null;
             return (
-              <div key={game.id} className={styles.gameCardContainer}>
-                <Link to={`/game/${game.id}`} className={styles.gameCardWrapper}>
-                  <GameCard game={gameObj} />
-                  {game.rating && game.rating > 0 ? (
-                    <div className={styles.personalRatingBadge}>
-                      ★ {game.rating}
-                    </div>
-                  ) : null}
-                </Link>
-                <div className={`${styles.statusBadge} ${styles[(game.status || "Backlog").toLowerCase()]}`}>
-                  {game.status}
+              <section key={section.status}>
+                <h2 className={styles.subtitle}>{t(`collection.${section.label}`)}</h2>
+                <div className={styles.gamesGrid}>
+                  {games.map((game) => (
+                    <Link key={game.id} to={`/game/${game.id}`} className={styles.gameCardWrapper}>
+                      <GameCard game={toCardGame(game)} />
+                    </Link>
+                  ))}
                 </div>
-              </div>
+              </section>
             );
           })}
-        </div>
+        </>
       )}
     </div>
   );

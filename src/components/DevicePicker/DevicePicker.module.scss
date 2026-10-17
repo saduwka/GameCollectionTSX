@@ -1,0 +1,48 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: #2a2a2a;
+  color: #ddd;
+  border: 1px solid #444;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.chipActive {
+  background: #646cff;
+  border-color: #646cff;
+  color: white;
+}
+
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1e1e1e;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.hint {
+  margin: 0;
+  color: #888;
+  font-size: 0.85rem;
+}

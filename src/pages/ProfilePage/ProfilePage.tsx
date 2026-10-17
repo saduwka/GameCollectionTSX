@@ -1,13 +1,18 @@
 // FILE: src/pages/ProfilePage/ProfilePage.tsx
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
-  getUserDevices, 
-  saveUserDevices 
+  getUserSettings,
+  saveUserSettings,
 } from "../../services/collection/collectionService";
+import { collectionKeys } from "../../services/collection/queryKeys";
+import { getCollectionStats } from "../../services/collection/stats";
+import { useMyDevices } from "../../hooks/useMyDevices";
+import type { DeviceChoice } from "../../services/platforms/deviceStore";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from './ProfilePage.module.scss';
@@ -19,10 +24,15 @@ interface PlatformInfo {
 }
 
 const ProfilePage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const [myDevicesLocal, setMyDevicesLocal] = useState<PlatformInfo[] | null>(null);
+  const { devices, save, isLoading: devicesLoading } = useMyDevices();
+  const [myDevicesLocal, setMyDevicesLocal] = useState<DeviceChoice[] | null>(null);
   const [showAllPlatforms, setShowAllPlatforms] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [savingDevices, setSavingDevices] = useState(false);
   
   // Platform Search State
   const [platformSearch, setPlatformSearch] = useState("");
@@ -31,14 +41,14 @@ const ProfilePage: React.FC = () => {
 
   // Queries
   const { data: collection = [] } = useQuery({
-    queryKey: ["userCollection", user?.uid],
+    queryKey: collectionKeys.user(user?.uid ?? "guest"),
     queryFn: () => getUserCollection(),
     enabled: !!user,
   });
 
-  const { data: serverDevices = [] } = useQuery({
-    queryKey: ["userDevices", user?.uid],
-    queryFn: () => getUserDevices(),
+  const { data: settings } = useQuery({
+    queryKey: collectionKeys.settings(user?.uid ?? "guest"),
+    queryFn: () => getUserSettings(),
     enabled: !!user,
   });
 
@@ -60,29 +70,20 @@ const ProfilePage: React.FC = () => {
     enabled: platformSearch.length > 1,
   });
 
-  // Sync server devices to local state once loaded
-  const myDevices = useMemo(() => {
-    if (myDevicesLocal !== null) return myDevicesLocal;
-    if (serverDevices.length > 0 && allPlatforms.length > 0) {
-      return allPlatforms.filter(p => serverDevices.includes(p.id));
-    }
-    return [];
-  }, [myDevicesLocal, serverDevices, allPlatforms]);
-
-  // Mutations
-  const saveDevicesMutation = useMutation({
-    mutationFn: (deviceIds: number[]) => saveUserDevices(deviceIds),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userDevices", user?.uid] });
-      toast.success("Settings saved!");
-    },
-    onError: () => {
-      toast.error("Failed to save settings.");
-    },
+  const myDevices = (myDevicesLocal ?? devices).map((device) => {
+    const known = allPlatforms.find((platform) => platform.id === device.id);
+    return known ? { id: device.id, name: known.name } : device;
   });
 
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/");
+  }, [authLoading, user, navigate]);
+
+  useEffect(() => {
+    if (settings) setIsPublic(settings.isPublic !== false);
+  }, [settings]);
+
   if (!authLoading && !user) {
-    navigate("/");
     return null;
   }
 
@@ -100,36 +101,66 @@ const ProfilePage: React.FC = () => {
     setMyDevicesLocal(myDevices.filter(d => d.id !== id));
   };
 
-  const handleSaveDevices = () => {
-    saveDevicesMutation.mutate(myDevices.map(d => d.id));
-  };
-
-  const handleShareCollection = () => {
-    if (user) {
-      const url = `${window.location.origin}/collection/${user.uid}`;
-      navigator.clipboard.writeText(url);
-      toast.success("Public link copied to clipboard!");
+  const handleSaveDevices = async () => {
+    setSavingDevices(true);
+    try {
+      await save(myDevices);
+      setMyDevicesLocal(null);
+      toast.success(t("profile.settings_saved"));
+    } catch {
+      toast.error(t("profile.settings_failed"));
+    } finally {
+      setSavingDevices(false);
     }
   };
 
-  const stats = {
-    total: collection.length,
-    playing: collection.filter(g => g.status === "Playing").length,
-    completed: collection.filter(g => g.status === "Completed").length,
-    backlog: collection.filter(g => g.status === "Backlog").length,
-    avgRating: collection.filter(g => (g.rating || 0) > 0).length 
-      ? (collection.reduce((acc, g) => acc + (g.rating || 0), 0) / collection.filter(g => (g.rating || 0) > 0).length).toFixed(1)
-      : "N/A",
-    totalHours: collection.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0)
+  const persistPrivacy = async (nextPublic: boolean) => {
+    if (!user) return;
+    setSavingSettings(true);
+    setIsPublic(nextPublic);
+    try {
+      await saveUserSettings({
+        isPublic: nextPublic,
+        displayName: user.displayName || "",
+        photoURL: user.photoURL || "",
+      });
+      await queryClient.invalidateQueries({ queryKey: collectionKeys.settings(user.uid) });
+      await queryClient.invalidateQueries({ queryKey: collectionKeys.publicSettings(user.uid) });
+      toast.success(t("profile.settings_saved"));
+    } catch {
+      setIsPublic(!nextPublic);
+      toast.error(t("profile.settings_failed"));
+    } finally {
+      setSavingSettings(false);
+    }
   };
+
+  const handleShareCollection = async () => {
+    if (!user) return;
+    try {
+      await saveUserSettings({
+        isPublic,
+        displayName: user.displayName || "",
+        photoURL: user.photoURL || "",
+      });
+      await queryClient.invalidateQueries({ queryKey: collectionKeys.settings(user.uid) });
+      const url = `${window.location.origin}/collection/${user.uid}`;
+      await navigator.clipboard.writeText(url);
+      toast.success(t("profile.link_copied"));
+    } catch {
+      toast.error(t("profile.settings_failed"));
+    }
+  };
+
+  const stats = getCollectionStats(collection);
 
   if (authLoading) return null;
 
   return (
     <div className={styles.profilePage}>
       <PageMeta
-        title={user?.displayName ? `Профиль — ${user.displayName}` : "Профиль"}
-        description="Ваш профиль PlayHub: устройства, коллекция и настройки."
+        title={user?.displayName ? t("profile.title_with_name", { name: user.displayName }) : t("profile.title")}
+        description={t("profile.description")}
       />
       <header className={styles.header}>
         <img src={user?.photoURL || ""} alt="Avatar" className={styles.avatar} />
@@ -218,20 +249,36 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
         
+        <div className={styles.privacyBox}>
+          <label className={styles.privacyToggle}>
+            <input
+              type="checkbox"
+              checked={isPublic}
+              disabled={savingSettings}
+              onChange={(event) => void persistPrivacy(event.target.checked)}
+            />
+            {t("profile.privacy")}
+          </label>
+          <p className={styles.sectionDesc}>{isPublic ? t("profile.privacy_on") : t("profile.privacy_off")}</p>
+          <p className={styles.sectionDesc}>
+            {t("profile.preview")}: {user?.displayName} · {stats.total} · {stats.topGenres.join(", ")}
+          </p>
+        </div>
+
         <div className={styles.actionButtons}>
           <button 
             className={styles.saveButton} 
             onClick={handleSaveDevices}
-            disabled={saveDevicesMutation.isPending || isSearching}
+            disabled={savingDevices || devicesLoading || isSearching}
           >
-            {saveDevicesMutation.isPending ? "Saving..." : "Save Hardware Settings"}
+            {savingDevices ? t("common.loading") : t("profile.save_devices")}
           </button>
           
           <button 
             className={styles.shareButton}
-            onClick={handleShareCollection}
+            onClick={() => void handleShareCollection()}
           >
-            🔗 Share Public Collection
+            {t("profile.share")}
           </button>
         </div>
       </section>

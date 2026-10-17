@@ -7,6 +7,7 @@ import PlatformCardSkeleton from "../../components/Skeleton/PlatformCardSkeleton
 import Skeleton from "../../components/Skeleton/Skeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import styles from './PlatformsPage.module.scss';
 import type { Platform } from "../../types/game";
 
@@ -26,7 +27,7 @@ function PlatformsPage() {
   });
 
   return (
-    <div className={styles.platformsPage}>
+    <div className={styles.platformsPage} data-seo-ready={!isLoading && !isError && parentPlatforms.length > 0 ? "true" : "false"}>
       <PageMeta
         title={t('platforms_page.title')}
         description={t('platforms_page.description')}
@@ -67,6 +68,7 @@ function PlatformsPage() {
             </div>
           </div>
         ))}
+        <RawgCredit />
       </div>
     </div>
   );

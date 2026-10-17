@@ -87,6 +87,10 @@
 .btnPrimary,
 .btnSecondary,
 .btnMatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   padding: 14px 28px;
   border-radius: 10px;
   font-size: 15px;

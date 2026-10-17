@@ -11,6 +11,7 @@ export interface SwipeRecord {
   genres: string[];
   tags: string[];
   timestamp: number;
+  background_image?: string;
 }
 
 const STORAGE_KEY = "playhub:swipes:v1";

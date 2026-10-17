@@ -25,7 +25,10 @@
     "game": "game",
     "games_plural_1": "games",
     "games_plural_2": "games",
-    "open_menu": "Open menu"
+    "open_menu": "Open menu",
+    "rawg_credit": "Game data provided by",
+    "about": "About",
+    "faq": "FAQ"
   },
   "home": {
     "meta_description": "PlayHub — a catalog of 500,000+ games. Smart search, comparison, personal collection, and recommendations based on your interests.",
@@ -87,7 +90,15 @@
     "refresh_recommendations": "Refresh recommendations",
     "refreshing": "Refreshing...",
     "refresh_action": "↻ Refresh",
-    "add_more_hint": "Add more games to your collection — recommendations will become more accurate"
+    "add_more_hint": "Add more games to your collection — recommendations will become more accurate",
+    "ranking_note": "This is genre ranking based on your likes, ratings, and platforms.",
+    "reason": {
+      "genre": "Genre: {{name}} — common among your likes",
+      "platform": "Available on your platforms",
+      "similar_to": "Similar to {{name}}",
+      "trending": "Trending on your platforms",
+      "community": "Community hit"
+    }
   },
   "match": {
     "title": "Game Match",
@@ -98,12 +109,32 @@
     "check_collection": "Check your collection.",
     "login_hint": "Log in to see your likes on all devices.",
     "dislike": "Dislike",
-    "like": "Like"
+    "like": "Like",
+    "devices_title": "What do you play on?",
+    "devices_hint": "Picks will match the platforms you choose.",
+    "devices_continue": "Continue",
+    "devices_skip": "All platforms",
+    "picks_title": "Your picks",
+    "picks_hint": "Genre ranking from your swipes and platforms. Rejected games stay out.",
+    "continue_swiping": "Keep swiping",
+    "add_wishlist": "Wishlist",
+    "add_backlog": "Backlog",
+    "saved_guest": "We'll add this to your collection after you sign in",
+    "pick_saved": "{{name}} saved"
   },
   "profile": {
     "title": "Profile",
     "title_with_name": "Profile — {{name}}",
-    "description": "Your PlayHub profile: devices, collection, and settings."
+    "description": "Your PlayHub profile: devices, collection, and settings.",
+    "share": "Share",
+    "privacy": "Public collection",
+    "privacy_on": "Anyone with the link can open it",
+    "privacy_off": "Collection is hidden",
+    "link_copied": "Link copied",
+    "preview": "This is what others will see",
+    "save_devices": "Save devices",
+    "settings_saved": "Settings saved",
+    "settings_failed": "Could not save settings"
   },
   "compare": {
     "title": "Compare Games",
@@ -151,11 +182,49 @@
       "next": "Next"
     }
   },
+  "info": {
+    "about_title": "About",
+    "about_description": "PlayHub helps you decide what to play: a catalog, swipes, and a personal collection.",
+    "about_p1": "PlayHub is a game catalog with a personal collection. You can browse cards, compare releases, and mark what you finished, what you are playing, and what is still on the wishlist.",
+    "about_p2": "The swipe picker uses your platforms and likes. It is genre ranking from your ratings, not a separate model. After you sign in, swipes and chosen devices are stored in the collection.",
+    "about_p3": "Names, covers, genres, and community scores come from RAWG. PlayHub pages describe how the service works and do not replace the original game description.",
+    "faq_title": "FAQ",
+    "faq_description": "Short answers about the collection, the picker, and RAWG data.",
+    "faq_q1": "Do I need an account?",
+    "faq_a1": "The catalog and swipes work without an account. A guest's platforms and likes stay in the browser. After Google sign-in they move into the collection and do not overwrite games you already saved.",
+    "faq_q2": "Where does game data come from?",
+    "faq_a2": "Names, covers, genres, platforms, and the community score come from RAWG. Pages that show this data link back to the source.",
+    "faq_q3": "How does the picker work?",
+    "faq_a3": "After a few swipes PlayHub shows games in similar genres on the platforms you chose. Cards you rejected in the same session do not come back.",
+    "genre_title": "{{name}} — game picks",
+    "genre_description": "{{name}} games in the PlayHub catalog: community scores, platforms, and cards from RAWG."
+  },
   "collection": {
     "title": "My Collection",
     "description": "Your personal game collection: completed, in progress, wishlist, and backlog on PlayHub.",
     "public_title": "User Collection",
-    "public_description": "Public game collection of a PlayHub user."
+    "public_description": "Public game collection of a PlayHub user.",
+    "load_error": "Could not load your collection.",
+    "unavailable": "This collection is temporarily unavailable.",
+    "private": "This collection is private.",
+    "not_found": "Collection not found.",
+    "empty": "Your collection is empty.",
+    "empty_status": "No games with status \"{{status}}\".",
+    "backlog_title": "What to play from your backlog",
+    "backlog_empty": "No matching games in your backlog.",
+    "skip": "Skip",
+    "start_playing": "Start playing",
+    "now_playing": "{{name}} is now playing",
+    "section_playing": "Playing",
+    "section_completed": "Completed",
+    "section_wishlist": "Wishlist",
+    "top_genres": "Top genres",
+    "avg_rating": "Average rating",
+    "total_hours": "Total hours"
+  },
+  "devices": {
+    "popular": "Popular",
+    "search": "Find a platform"
   },
   "not_found": {
     "title": "Page Not Found",
