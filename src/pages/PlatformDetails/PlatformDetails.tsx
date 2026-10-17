@@ -9,6 +9,7 @@ import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
+import { RAWG_DETAIL_STALE_TIME, RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import {
   getPlatformDetails,
   getGamesForPlatform
@@ -47,6 +48,7 @@ const PlatformPage: FC = () => {
     queryKey: ["platform", id],
     queryFn: () => getPlatformDetails(id!),
     enabled: !!id,
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const funFact = platformDetails ? getConsoleFact(platformDetails.slug) : null;
@@ -73,12 +75,14 @@ const PlatformPage: FC = () => {
   const { data: genres = [] } = useQuery({
     queryKey: ["genres"],
     queryFn: getGenres,
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const { data: gamesData, isLoading: loadingGames, error: gamesError } = useQuery({
     queryKey: ["platformGames", id, page, selectedGenre, ordering],
     queryFn: () => getGamesForPlatform(id!, page, selectedGenre, ordering),
     enabled: !!id,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const games = gamesData?.results || [];

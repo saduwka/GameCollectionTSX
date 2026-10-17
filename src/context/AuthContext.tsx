@@ -4,6 +4,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
 import { collectionKeys, invalidateUserLibrary } from "../services/collection/queryKeys";
 import { hasGuestData, syncGuestData } from "../services/collection/syncGuestData";
+import { ensurePublicProfile } from "../services/collection/collectionService";
 
 interface AuthContextType {
   user: User | null;
@@ -18,6 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const queryClient = useQueryClient();
   const previousUserRef = useRef<User | null>(null);
   const hasSeenAuth = useRef(false);
+  const migratedUid = useRef<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -28,6 +30,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hasSeenAuth.current = true;
       setUser(currentUser);
       setAuthLoading(false);
+
+      if (currentUser && migratedUid.current !== currentUser.uid) {
+        migratedUid.current = currentUser.uid;
+        void ensurePublicProfile().catch((error) => {
+          migratedUid.current = null;
+          console.error("Public profile migration failed", error);
+        });
+      }
 
       if (!currentUser || (!becameUser && !initialWithGuest)) return;
 

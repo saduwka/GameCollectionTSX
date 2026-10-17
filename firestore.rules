@@ -5,27 +5,40 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    function settingsDoc(uid) {
-      return get(/databases/$(database)/documents/user_settings/$(uid));
+    function publicProfile(uid) {
+      return get(/databases/$(database)/documents/public_profiles/$(uid));
     }
 
-    // A missing settings doc can be read as an empty snapshot so the client
-    // can tell "not found" from "private". isPublic == false stays owner-only.
-    // Missing isPublic keeps the current public-read behavior.
+    function isPublicProfile(uid) {
+      return exists(/databases/$(database)/documents/public_profiles/$(uid))
+        && publicProfile(uid).data.isPublic == true;
+    }
+
+    function validPublicProfile() {
+      return request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'isPublic'])
+        && request.resource.data.displayName is string
+        && request.resource.data.photoURL is string
+        && request.resource.data.isPublic is bool;
+    }
+
     match /user_settings/{uid} {
-      allow get: if isOwner(uid)
-        || resource == null
-        || resource.data.isPublic != false;
+      allow read, write: if isOwner(uid);
+    }
+
+    match /public_profiles/{uid} {
+      allow get: if isOwner(uid) || resource.data.isPublic == true;
       allow list: if false;
+      allow create, update: if isOwner(uid) && validPublicProfile();
+      allow delete: if isOwner(uid);
+    }
+
+    match /user_collections/{uid}/games/{gameId} {
+      allow read: if isOwner(uid) || isPublicProfile(uid);
       allow create, update, delete: if isOwner(uid);
     }
 
-    // Games stay readable unless the owner explicitly sets isPublic to false.
-    match /user_collections/{uid}/games/{gameId} {
-      allow read: if isOwner(uid)
-        || (exists(/databases/$(database)/documents/user_settings/$(uid))
-            && settingsDoc(uid).data.isPublic != false);
-      allow create, update, delete: if isOwner(uid);
+    match /user_collections/{uid}/private/{gameId} {
+      allow read, write: if isOwner(uid);
     }
   }
 }

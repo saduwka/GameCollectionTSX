@@ -4,6 +4,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useComparison } from "../../context/ComparisonContext";
 import { getGameDetails } from "../../services/games/getGameDetails";
+import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from './ComparePage.module.scss';
@@ -68,7 +69,7 @@ const ComparePage: React.FC = () => {
     queries: comparisonList.map((game) => ({
       queryKey: ["gameDetails", game.id],
       queryFn: () => getGameDetails(String(game.id)),
-      staleTime: 10 * 60 * 1000,
+      staleTime: RAWG_DETAIL_STALE_TIME,
     })),
   });
 

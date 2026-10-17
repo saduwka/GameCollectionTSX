@@ -6,14 +6,15 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { 
   getUserCollection, 
-  getUserSettings,
-  saveUserSettings,
+  getPublicProfile,
+  savePublicProfile,
 } from "../../services/collection/collectionService";
 import { collectionKeys } from "../../services/collection/queryKeys";
 import { getCollectionStats } from "../../services/collection/stats";
 import { useMyDevices } from "../../hooks/useMyDevices";
 import type { DeviceChoice } from "../../services/platforms/deviceStore";
 import { searchPlatforms, getPlatforms } from "../../services/platforms/getPlatformsList";
+import { RAWG_DETAIL_STALE_TIME, RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from './ProfilePage.module.scss';
 import { toast } from "react-hot-toast";
@@ -30,7 +31,7 @@ const ProfilePage: React.FC = () => {
   const { devices, save, isLoading: devicesLoading } = useMyDevices();
   const [myDevicesLocal, setMyDevicesLocal] = useState<DeviceChoice[] | null>(null);
   const [showAllPlatforms, setShowAllPlatforms] = useState(false);
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingDevices, setSavingDevices] = useState(false);
   
@@ -46,9 +47,9 @@ const ProfilePage: React.FC = () => {
     enabled: !!user,
   });
 
-  const { data: settings } = useQuery({
-    queryKey: collectionKeys.settings(user?.uid ?? "guest"),
-    queryFn: () => getUserSettings(),
+  const { data: publicProfile } = useQuery({
+    queryKey: collectionKeys.publicSettings(user?.uid ?? "guest"),
+    queryFn: () => getPublicProfile(),
     enabled: !!user,
   });
 
@@ -58,6 +59,7 @@ const ProfilePage: React.FC = () => {
       const raw = await getPlatforms();
       return raw.map(p => ({ id: p.id, name: p.name }));
     },
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const { data: searchResults = [], isFetching: isSearching } = useQuery({
@@ -68,6 +70,7 @@ const ProfilePage: React.FC = () => {
       return results.slice(0, 20).map(p => ({ id: p.id, name: p.name }));
     },
     enabled: platformSearch.length > 1,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const myDevices = (myDevicesLocal ?? devices).map((device) => {
@@ -80,8 +83,8 @@ const ProfilePage: React.FC = () => {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    if (settings) setIsPublic(settings.isPublic !== false);
-  }, [settings]);
+    if (publicProfile) setIsPublic(publicProfile.isPublic === true);
+  }, [publicProfile]);
 
   if (!authLoading && !user) {
     return null;
@@ -119,7 +122,7 @@ const ProfilePage: React.FC = () => {
     setSavingSettings(true);
     setIsPublic(nextPublic);
     try {
-      await saveUserSettings({
+      await savePublicProfile({
         isPublic: nextPublic,
         displayName: user.displayName || "",
         photoURL: user.photoURL || "",
@@ -138,7 +141,7 @@ const ProfilePage: React.FC = () => {
   const handleShareCollection = async () => {
     if (!user) return;
     try {
-      await saveUserSettings({
+      await savePublicProfile({
         isPublic,
         displayName: user.displayName || "",
         photoURL: user.photoURL || "",

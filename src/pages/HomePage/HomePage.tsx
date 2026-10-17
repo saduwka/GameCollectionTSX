@@ -9,6 +9,7 @@ import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import { useAuth } from "../../context/AuthContext";
 import { getPopularGames } from "../../services/games/getPopularGames";
 import { fetchGames } from "../../services/games/fetchGames";
+import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import type { Game } from "../../types/game";
 import PageMeta from "../../components/PageMeta/PageMeta";
 
@@ -88,6 +89,7 @@ const HomePage: React.FC = () => {
       const result = await getPopularGames();
       return result.slice(0, 4);
     },
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const { data: topRated = [], isLoading: topRatedLoading } = useQuery({
@@ -96,6 +98,7 @@ const HomePage: React.FC = () => {
       const data = await fetchGames(1, "-metacritic");
       return data.games.slice(0, 4);
     },
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const { data: rpgPicks = [], isLoading: rpgLoading } = useQuery({
@@ -104,6 +107,7 @@ const HomePage: React.FC = () => {
       const data = await fetchGames(1, "-rating", undefined, "role-playing-games-rpg");
       return data.games.slice(0, 4);
     },
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const { data: indieGems = [], isLoading: indieLoading } = useQuery({
@@ -112,6 +116,7 @@ const HomePage: React.FC = () => {
       const data = await fetchGames(1, "-rating", undefined, "indie");
       return data.games.slice(0, 4);
     },
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const isAuthenticated = !authLoading && !!user;

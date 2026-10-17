@@ -1,15 +1,10 @@
-// FILE: src/services/games/getPopularGames.ts
+import apiClient from "../apiClient";
 import type { Game, RawGame } from "../../types/game";
 
 export async function getPopularGames(): Promise<Game[]> {
-  const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-  const res = await fetch(`https://api.rawg.io/api/games?ordering=-rating&page_size=10&key=${API_KEY}`);
-
-  if (!res.ok) {
-    throw new Error(`Error fetching popular games: ${res.statusText}`);
-  }
-
-  const data: { results: RawGame[] } = await res.json();
+  const { data } = await apiClient.get<{ results: RawGame[] }>("/games", {
+    params: { ordering: "-rating", page_size: 10 },
+  });
 
   return data.results.map((game: RawGame) => ({
     id: game.id,
@@ -23,7 +18,7 @@ export async function getPopularGames(): Promise<Game[]> {
       platform: {
         id: p.platform.id,
         name: p.platform.name,
-        slug: p.platform.slug || "", 
+        slug: p.platform.slug || "",
       },
       released_at: p.released_at,
       requirements: p.requirements,

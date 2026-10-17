@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { getUserCollection, getUserSettings, type CollectedGame, type GameStatus } from "../../services/collection/collectionService";
+import { getUserCollection, getPublicProfile, type CollectedGame, type GameStatus } from "../../services/collection/collectionService";
 import { collectionKeys } from "../../services/collection/queryKeys";
 import { getCollectionStats } from "../../services/collection/stats";
 import GameCard from "../../components/GameCard/GameCard";
@@ -17,11 +17,6 @@ const SECTIONS: { status: GameStatus; label: "section_playing" | "section_comple
   { status: "Completed", label: "section_completed" },
   { status: "Wishlist", label: "section_wishlist" },
 ];
-
-const isPermissionDenied = (error: unknown) => {
-  const code = (error as { code?: string } | null)?.code;
-  return code === "permission-denied";
-};
 
 const toCardGame = (game: CollectedGame): Game => ({
   id: game.id,
@@ -46,14 +41,13 @@ const PublicCollectionPage: React.FC = () => {
 
   const settingsQuery = useQuery({
     queryKey: collectionKeys.publicSettings(uid ?? ""),
-    queryFn: () => getUserSettings(uid),
+    queryFn: () => getPublicProfile(uid),
     enabled: !!uid,
     retry: false,
   });
 
-  const isPrivate = settingsQuery.data?.isPublic === false || isPermissionDenied(settingsQuery.error);
-  const isMissing = settingsQuery.isSuccess && settingsQuery.data == null;
-  const canLoadGames = settingsQuery.isSuccess && settingsQuery.data != null && settingsQuery.data.isPublic !== false;
+  const canLoadGames = settingsQuery.isSuccess && settingsQuery.data?.isPublic === true;
+  const isBlocked = !settingsQuery.isLoading && !canLoadGames && (!!uid);
 
   const collectionQuery = useQuery({
     queryKey: collectionKeys.publicCollection(uid ?? ""),
@@ -64,18 +58,12 @@ const PublicCollectionPage: React.FC = () => {
 
   const collection = collectionQuery.data ?? [];
   const stats = getCollectionStats(collection);
-  const ownerName = settingsQuery.data?.displayName || t("collection.public_title");
+  const ownerName = (canLoadGames && settingsQuery.data?.displayName) || t("collection.public_title");
   const description = stats.topGames.length
     ? `${ownerName}: ${stats.topGames.map((game) => game.name).join(", ")}`
     : t("collection.public_description");
 
-  const blockedMessage = isPrivate
-    ? t("collection.private")
-    : isMissing
-      ? t("collection.not_found")
-      : settingsQuery.isError
-        ? t("collection.unavailable")
-        : null;
+  const blockedMessage = isBlocked ? t("collection.private") : null;
 
   return (
     <div className={styles.collectionPage}>
@@ -86,7 +74,7 @@ const PublicCollectionPage: React.FC = () => {
       />
       <h1 className={styles.title}>{ownerName}</h1>
 
-      {settingsQuery.data && !isPrivate && (
+      {canLoadGames && settingsQuery.data && (
         <div className={styles.ownerRow}>
           {settingsQuery.data.photoURL && (
             <img src={settingsQuery.data.photoURL} alt="" className={styles.ownerAvatar} />

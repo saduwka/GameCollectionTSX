@@ -1,0 +1,17 @@
+{
+  "name": "functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.4.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3"
+  }
+}

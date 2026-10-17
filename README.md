@@ -58,15 +58,16 @@
    ```
 
 3. **Настройте переменные окружения:**
-   Создайте файл `.env` в корневой директории и добавьте ваши ключи:
+   Создайте файл `.env` в корневой директории и добавьте ключи Firebase (`VITE_FIREBASE_API_KEY` и остальные).
+   Ключ RAWG в клиентский бандл не попадает. Для локального эмулятора положите его в `functions/.secret.local`:
    ```env
-   VITE_RAWG_API_KEY=your_rawg_key
-   VITE_FIREBASE_API_KEY=your_firebase_key
-   # ... и другие параметры Firebase
+   RAWG_API_KEY=your_rawg_key
    ```
 
-4. **запустите проект:**
+4. **Запустите эмулятор функции и приложение:**
    ```bash
+   cd functions && npm install && npm run build && cd ..
+   npx firebase emulators:start --only functions
    npm run dev
    ```
 

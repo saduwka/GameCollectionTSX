@@ -13,6 +13,7 @@ import GameFilters from "./components/GameFilters/GameFilters";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
+import { RAWG_DETAIL_STALE_TIME, RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import styles from "./GamesPage.module.scss";
 
 const STORAGE_KEY = "playhub_filters";
@@ -54,6 +55,7 @@ const GamesPage: React.FC = () => {
   const { data: genres = [] } = useQuery({
     queryKey: ["genres"],
     queryFn: getGenres,
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const { data: platforms = [] } = useQuery({
@@ -62,6 +64,7 @@ const GamesPage: React.FC = () => {
       const list = await getPlatforms();
       return list.sort((a, b) => a.name.localeCompare(b.name));
     },
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const ordering = ORDERING_MAP[filter] ?? "-added";
@@ -98,6 +101,7 @@ const GamesPage: React.FC = () => {
         selectedMetacritic,
         selectedYearTo
       ),
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const games = gamesData?.games || [];

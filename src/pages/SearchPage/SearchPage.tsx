@@ -8,6 +8,7 @@ import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import { fetchGames } from "../../services/search/searchServices";
+import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import type { Game } from "../../types/game";
 import styles from "./SearchPage.module.scss";
@@ -31,6 +32,7 @@ const SearchPage: React.FC = () => {
     queryKey: ["search", urlQuery],
     queryFn: () => fetchGames(urlQuery),
     enabled: !!urlQuery,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const handleSearch = (e?: React.FormEvent) => {

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { fetchGames } from "../../services/games/fetchGames";
+import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import {
   recordSwipe,
   getAllSwipes,
@@ -54,7 +55,7 @@ const MatchPage = () => {
       return page.games;
     },
     enabled: confirmed,
-    staleTime: 1000 * 60 * 60,
+    staleTime: RAWG_LIST_STALE_TIME * 2,
   });
 
   const { data: personalPool = [], isLoading: isPersonalLoading } = useQuery({
@@ -69,7 +70,7 @@ const MatchPage = () => {
       return pages.flatMap((page) => page.games);
     },
     enabled: confirmed && genresForPool.length > 0,
-    staleTime: 1000 * 60 * 30,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const pool = useMemo(() => {

@@ -6,6 +6,7 @@ import {
   getGuestDevices,
   rememberDeviceNames,
 } from "../platforms/deviceStore";
+import { mergeGuestEntries } from "./mergeGuestEntries";
 import {
   addToCollectionIfMissing,
   getUserDevices,
@@ -15,32 +16,17 @@ import {
 export const hasGuestData = () =>
   getAllSwipes().length > 0 || getGuestPicks().length > 0 || getGuestDevices().length > 0;
 
-export const syncGuestData = async (): Promise<boolean> => {
+let pendingSync: Promise<boolean> | null = null;
+
+const runSync = async (): Promise<boolean> => {
   const user = auth.currentUser;
   if (!user || !hasGuestData()) return false;
 
-  const swipes = getAllSwipes();
-  const picks = getGuestPicks();
+  const games = mergeGuestEntries(getAllSwipes(), getGuestPicks());
   const devices = getGuestDevices();
 
-  for (const swipe of swipes) {
-    await addToCollectionIfMissing({
-      id: swipe.gameId,
-      name: swipe.gameName,
-      background_image: swipe.background_image || "",
-      genres: swipe.genres || [],
-      status: swipe.action === "like" ? "Liked" : "Not Interested",
-    });
-  }
-
-  for (const pick of picks) {
-    await addToCollectionIfMissing({
-      id: pick.id,
-      name: pick.name,
-      background_image: pick.background_image,
-      genres: pick.genres,
-      status: pick.status,
-    });
+  for (const game of games) {
+    await addToCollectionIfMissing(game);
   }
 
   if (devices.length > 0) {
@@ -54,4 +40,12 @@ export const syncGuestData = async (): Promise<boolean> => {
   clearGuestPicks();
   clearGuestDevices();
   return true;
+};
+
+export const syncGuestData = (): Promise<boolean> => {
+  if (pendingSync) return pendingSync;
+  pendingSync = runSync().finally(() => {
+    pendingSync = null;
+  });
+  return pendingSync;
 };

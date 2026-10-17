@@ -26,6 +26,7 @@ import GamePageSkeleton from "../../components/Skeleton/GamePageSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { videoGameJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
+import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
@@ -67,6 +68,7 @@ const GamePage: React.FC = () => {
     queryKey: ["game", id],
     queryFn: () => getGameDetails(id!),
     enabled: !!id,
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   const currentPlatformInfo = (selectedPlatformId || platformId) && gameDetails

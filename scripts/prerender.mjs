@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { stripShellSeo, validatePrerenderedHtml } from "./prerenderHtml.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE_FILE = path.join(ROOT, "cache/rawg/urls.json");
@@ -13,11 +14,16 @@ const PREVIEW_ORIGIN = "http://127.0.0.1:4173";
 const STATIC_ROUTES = ["/", "/about", "/faq", "/games", "/platforms"];
 
 const readRawgKey = async () => {
-  const env = await readFile(path.join(ROOT, ".env"), "utf8");
-  const line = env.split("\n").find((entry) => entry.startsWith("VITE_RAWG_API_KEY="));
-  const key = line?.slice("VITE_RAWG_API_KEY=".length).trim();
-  if (!key) throw new Error("VITE_RAWG_API_KEY is missing from .env");
-  return key;
+  if (process.env.RAWG_API_KEY?.trim()) return process.env.RAWG_API_KEY.trim();
+  try {
+    const secretFile = await readFile(path.join(ROOT, "functions/.secret.local"), "utf8");
+    const line = secretFile.split("\n").find((entry) => entry.startsWith("RAWG_API_KEY="));
+    const key = line?.slice("RAWG_API_KEY=".length).trim();
+    if (key) return key;
+  } catch {
+    // URL cache can be reused without a key
+  }
+  throw new Error("RAWG_API_KEY is missing from the environment");
 };
 
 const rawg = async (key, pathname) => {
@@ -68,39 +74,6 @@ const outputFile = (route) => {
   return path.join(DIST, route.replace(/^\//, ""), "index.html");
 };
 
-const attr = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? "";
-
-const sameText = (left, right) =>
-  left.replaceAll("&nbsp;", " ").replaceAll("\u00a0", " ").replace(/\s+/g, " ").trim() ===
-  right.replaceAll("&nbsp;", " ").replaceAll("\u00a0", " ").replace(/\s+/g, " ").trim();
-
-// The Vite shell already has a generic title and description. React 19 leaves those
-// tags in place when Helmet adds page tags, so drop only the shell copies.
-const stripShellSeo = (html, shell) => {
-  const shellHead = shell.slice(shell.indexOf("<head>") + 6, shell.indexOf("</head>"));
-  const shellTitle = shellHead.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "";
-  const shellMetas = [...shellHead.matchAll(/<meta\b[^>]*>/g)].map((match) => match[0]);
-
-  return html.replace(/<title>[\s\S]*?<\/title>|<meta\b[^>]*>/g, (tag) => {
-    if (tag.startsWith("<title>")) {
-      const text = tag.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "";
-      return sameText(text, shellTitle) ? "" : tag;
-    }
-
-    const name = attr(tag, "name") || attr(tag, "property");
-    if (!name || !(name === "description" || name.startsWith("og:") || name.startsWith("twitter:"))) {
-      return tag;
-    }
-
-    const content = attr(tag, "content");
-    const fromShell = shellMetas.some((meta) => {
-      const shellName = attr(meta, "name") || attr(meta, "property");
-      return shellName === name && sameText(attr(meta, "content"), content);
-    });
-    return fromShell ? "" : tag;
-  });
-};
-
 const waitForPreview = async () => {
   const started = Date.now();
   let lastError = "no response";
@@ -142,6 +115,7 @@ try {
   const browser = await chromium.launch();
   const context = await browser.newContext({ locale: "ru-RU" });
   const failures = [];
+  const written = [];
 
   for (const route of ordered) {
     const page = await context.newPage();
@@ -149,10 +123,12 @@ try {
       await page.goto(`${PREVIEW_ORIGIN}${route}`, { waitUntil: "domcontentloaded", timeout: 45000 });
       await page.waitForSelector('[data-seo-ready="true"]', { timeout: 45000 });
       await page.waitForSelector("h1", { timeout: 10000 });
-      const html = stripShellSeo(await page.content(), shell);
+      const html = stripShellSeo(await page.content());
+      validatePrerenderedHtml(html, route);
       const file = outputFile(route);
       await mkdir(path.dirname(file), { recursive: true });
       await writeFile(file, html);
+      written.push(route);
       console.log(`prerendered ${route}`);
     } catch (error) {
       failures.push(`${route}: ${error instanceof Error ? error.message : String(error)}`);
@@ -163,7 +139,7 @@ try {
   }
 
   await browser.close();
-  await writeFile(path.join(DIST, "sitemap.xml"), sitemap(routes));
+  await writeFile(path.join(DIST, "sitemap.xml"), sitemap(written));
 
   if (failures.length > 0) {
     console.error(failures.join("\n"));

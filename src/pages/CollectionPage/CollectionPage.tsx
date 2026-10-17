@@ -9,6 +9,7 @@ import type { GameStatus } from "../../services/collection/collectionService";
 import { collectionKeys } from "../../services/collection/queryKeys";
 import BacklogPicker from "./BacklogPicker";
 import { fetchGames } from "../../services/games/fetchGames";
+import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
@@ -62,6 +63,7 @@ const CollectionPage: React.FC = () => {
         .slice(0, 10);
     },
     enabled: fullCollection.length > 0 && topGenres.length > 0,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const getStatusCount = (status: GameStatus | "All") => {

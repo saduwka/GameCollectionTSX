@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { searchPlatforms } from "../../services/platforms/getPlatformsList";
+import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import { POPULAR_PLATFORMS, type DeviceChoice } from "../../services/platforms/deviceStore";
 import styles from "./DevicePicker.module.scss";
 
@@ -21,6 +22,7 @@ const DevicePicker = ({ selected, onChange }: DevicePickerProps) => {
       return results.slice(0, 12).map((platform) => ({ id: platform.id, name: platform.name }));
     },
     enabled: search.length > 1,
+    staleTime: RAWG_LIST_STALE_TIME,
   });
 
   const toggle = (device: DeviceChoice) => {

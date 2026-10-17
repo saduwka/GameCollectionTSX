@@ -8,6 +8,7 @@ import Skeleton from "../../components/Skeleton/Skeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
+import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
 import styles from './PlatformsPage.module.scss';
 import type { Platform } from "../../types/game";
 
@@ -24,6 +25,7 @@ function PlatformsPage() {
   const { data: parentPlatforms = [], isLoading, error, isError } = useQuery<ParentPlatform[]>({
     queryKey: ["parentPlatforms"],
     queryFn: getParentPlatforms,
+    staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
   return (
