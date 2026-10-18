@@ -59,17 +59,24 @@
 
 3. **Настройте переменные окружения:**
    Создайте файл `.env` в корневой директории и добавьте ключи Firebase (`VITE_FIREBASE_API_KEY` и остальные).
-   Ключ RAWG в клиентский бандл не попадает. Для локального эмулятора положите его в `functions/.secret.local`:
+   Ключ RAWG в клиентский бандл не попадает. Адрес прокси:
+   ```env
+   VITE_RAWG_PROXY_URL=http://127.0.0.1:8787
+   ```
+   Сам ключ положите в `workers/rawg-proxy/.dev.vars` (файл не коммитится):
    ```env
    RAWG_API_KEY=your_rawg_key
    ```
 
-4. **Запустите эмулятор функции и приложение:**
+4. **Запустите прокси и приложение:**
    ```bash
-   cd functions && npm install && npm run build && cd ..
-   npx firebase emulators:start --only functions
+   cd workers/rawg-proxy && npm install && npx wrangler dev
+   ```
+   В другом терминале из корня репозитория:
+   ```bash
    npm run dev
    ```
+   Боевой адрес Worker (`https://playhub-rawg.<аккаунт>.workers.dev`) подставляется в `VITE_RAWG_PROXY_URL` после `npx wrangler login`, `npx wrangler secret put RAWG_API_KEY` и `npx wrangler deploy`. Сайт и правила Firestore выкладываются отдельно: `firebase deploy --only firestore:rules,hosting`.
 
 ---
 

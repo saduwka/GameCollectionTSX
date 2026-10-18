@@ -13,22 +13,22 @@ const PREVIEW_ORIGIN = "http://127.0.0.1:4173";
 
 const STATIC_ROUTES = ["/", "/about", "/faq", "/games", "/platforms"];
 
-const readRawgKey = async () => {
-  if (process.env.RAWG_API_KEY?.trim()) return process.env.RAWG_API_KEY.trim();
+const readProxyUrl = async () => {
+  const fromProcess = process.env.RAWG_PROXY_URL?.trim() || process.env.VITE_RAWG_PROXY_URL?.trim();
+  if (fromProcess) return fromProcess.replace(/\/$/, "");
   try {
-    const secretFile = await readFile(path.join(ROOT, "functions/.secret.local"), "utf8");
-    const line = secretFile.split("\n").find((entry) => entry.startsWith("RAWG_API_KEY="));
-    const key = line?.slice("RAWG_API_KEY=".length).trim();
-    if (key) return key;
+    const envFile = await readFile(path.join(ROOT, ".env"), "utf8");
+    const line = envFile.split("\n").find((entry) => entry.startsWith("VITE_RAWG_PROXY_URL="));
+    const value = line?.slice("VITE_RAWG_PROXY_URL=".length).trim();
+    if (value) return value.replace(/\/$/, "");
   } catch {
-    // URL cache can be reused without a key
+    // URL cache can be reused without the proxy
   }
-  throw new Error("RAWG_API_KEY is missing from the environment");
+  throw new Error("VITE_RAWG_PROXY_URL is missing from the environment");
 };
 
-const rawg = async (key, pathname) => {
-  const separator = pathname.includes("?") ? "&" : "?";
-  const response = await fetch(`https://api.rawg.io/api${pathname}${separator}key=${encodeURIComponent(key)}`);
+const rawg = async (proxyUrl, pathname) => {
+  const response = await fetch(`${proxyUrl}${pathname}`);
   if (!response.ok) throw new Error(`RAWG ${pathname} failed: ${response.status}`);
   return response.json();
 };
@@ -43,12 +43,12 @@ const loadRoutes = async () => {
     // cache is created on the first successful fetch
   }
 
-  const key = await readRawgKey();
+  const proxyUrl = await readProxyUrl();
   const [firstPage, secondPage, platforms, genres] = await Promise.all([
-    rawg(key, "/games?ordering=-added&page_size=40&page=1"),
-    rawg(key, "/games?ordering=-added&page_size=40&page=2"),
-    rawg(key, "/platforms?ordering=-games_count&page_size=10"),
-    rawg(key, "/genres?page_size=10"),
+    rawg(proxyUrl, "/games?ordering=-added&page_size=40&page=1"),
+    rawg(proxyUrl, "/games?ordering=-added&page_size=40&page=2"),
+    rawg(proxyUrl, "/platforms?ordering=-games_count&page_size=10"),
+    rawg(proxyUrl, "/genres?page_size=10"),
   ]);
 
   const routes = {

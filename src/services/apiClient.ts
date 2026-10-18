@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "/api/rawg",
+  baseURL: import.meta.env.VITE_RAWG_PROXY_URL,
 });
 
 export default apiClient;

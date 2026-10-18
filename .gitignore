@@ -16,9 +16,8 @@ build_output.txt
 
 # Environment variables
 .env
-functions/.secret.local
-functions/lib
-functions/node_modules
+.dev.vars
+.wrangler
 .env.local
 .env.development.local
 .env.test.local
@@ -34,3 +33,7 @@ functions/node_modules
 *.njsproj
 *.sln
 *.sw?
+
+.dev.vars*
+!.dev.vars.example
+!.env.example

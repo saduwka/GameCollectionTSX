@@ -9,7 +9,7 @@
     "build:seo": "npm run build && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "tsx --test tests/mergeGuestEntries.test.ts tests/prerenderHtml.test.ts",
+    "test": "tsx --test tests/mergeGuestEntries.test.ts tests/prerenderHtml.test.ts tests/rawgProxy.test.ts",
     "test:rules": "firebase emulators:exec --only auth,firestore --project gamecollection-ff71a \"tsx --test --test-concurrency=1 tests/firestore.rules.test.ts tests/collectionTransaction.test.ts\""
   },
   "dependencies": {

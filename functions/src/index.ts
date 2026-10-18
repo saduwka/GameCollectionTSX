@@ -1,1 +1,0 @@
-export { rawgProxy } from "./rawgProxy";

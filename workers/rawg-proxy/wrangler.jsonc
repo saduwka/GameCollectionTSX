@@ -1,0 +1,8 @@
+{
+  "name": "playhub-rawg",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-03",
+  "vars": {
+    "ALLOWED_ORIGINS": "https://gamecollection-ff71a.web.app,https://gamecollection-ff71a.firebaseapp.com,http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1:4173"
+  }
+}
