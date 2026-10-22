@@ -8,6 +8,7 @@ import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from './ComparePage.module.scss';
+import { gamePath, gamesPath } from "../../seo/canonicalUrl";
 import type { Game } from "../../types/game";
 
 interface AttributeRow {
@@ -113,12 +114,11 @@ const ComparePage: React.FC = () => {
     return (
       <div className={styles.empty}>
         <PageMeta title={t('compare.title')} description={t('compare.description')} />
-        <div className={styles.emptyEmoji} aria-hidden="true">⚖️</div>
-        <h1 className={styles.emptyTitle}>{t('compare.removed').split(' ')[0]} {t('common.nothing_found').toLowerCase()}</h1>
+        <h1 className={styles.emptyTitle}>{t('compare.empty_none')}</h1>
         <p className={styles.emptyMessage}>
           {t('compare.description')}
         </p>
-        <button className={styles.btnPrimary} onClick={() => navigate("/games")}>
+        <button className={styles.btnPrimary} onClick={() => navigate(gamesPath())}>
           {t('common.games')}
         </button>
       </div>
@@ -129,12 +129,11 @@ const ComparePage: React.FC = () => {
     return (
       <div className={styles.empty}>
         <PageMeta title={t('compare.title')} description={t('compare.description')} />
-        <div className={styles.emptyEmoji} aria-hidden="true">🎮</div>
-        <h1 className={styles.emptyTitle}>{t('common.game')} {t('common.searching').split(' ')[0]}</h1>
+        <h1 className={styles.emptyTitle}>{t('compare.need_another')}</h1>
         <p className={styles.emptyMessage}>
           {t('compare.description')}
         </p>
-        <button className={styles.btnPrimary} onClick={() => navigate("/games")}>
+        <button className={styles.btnPrimary} onClick={() => navigate(gamesPath())}>
           {t('common.games')}
         </button>
       </div>
@@ -169,12 +168,12 @@ const ComparePage: React.FC = () => {
           <thead>
             <tr>
               <th className={styles.attrCol} scope="col">
-                {t('common.error').charAt(0).toUpperCase() + t('common.error').slice(1)}...
+                {t('compare.attribute')}
               </th>
               {games.map((game) => (
                 <th key={game.id} className={styles.gameCol} scope="col">
                   <div className={styles.gameHeader}>
-                    <Link to={`/game/${game.id}`} className={styles.gameImageLink}>
+                    <Link to={gamePath(game.id)} className={styles.gameImageLink}>
                       <img
                         src={game.background_image || game.coverUrl}
                         alt={game.name}
@@ -182,7 +181,7 @@ const ComparePage: React.FC = () => {
                         loading="lazy"
                       />
                     </Link>
-                    <Link to={`/game/${game.id}`} className={styles.gameName}>
+                    <Link to={gamePath(game.id)} className={styles.gameName}>
                       {game.name}
                     </Link>
                     <button

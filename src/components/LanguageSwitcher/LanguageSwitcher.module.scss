@@ -1,24 +1,28 @@
-@use "../../assets/styles/variables" as *;
-
 .switcher {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--faint);
+  border-radius: var(--r-s);
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
   font-weight: 600;
-  transition: all 0.2s ease;
-  min-width: 44px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: $primary-color;
+    border-color: var(--dim);
+    color: var(--ink);
   }
 
-  &:active {
-    transform: translateY(1px);
+  &:focus-visible {
+    outline: 2px solid var(--hot);
+    outline-offset: 2px;
   }
 }

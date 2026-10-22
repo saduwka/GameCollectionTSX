@@ -3,8 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { getUserDevices, saveUserDevices } from "../services/collection/collectionService";
 import { collectionKeys } from "../services/collection/queryKeys";
+import { getPlatformDetails } from "../services/platforms/getPlatformsList";
+import { RAWG_DETAIL_STALE_TIME } from "../services/rawgCache";
 import {
   getGuestDevices,
+  hasDeviceName,
   isDevicesConfirmed,
   markDevicesConfirmed,
   namesForDeviceIds,
@@ -25,12 +28,40 @@ export const useMyDevices = () => {
     enabled: !!user,
   });
 
-  const serverDevices = useMemo(
-    () => namesForDeviceIds(serverQuery.data ?? []),
-    [serverQuery.data]
+  const storedIds = user ? (serverQuery.data ?? []) : guestDevices.map((device) => device.id);
+  const namedDevices = useMemo(
+    () => namesForDeviceIds(storedIds),
+    [storedIds]
   );
+  const missingIds = namedDevices.filter((device) => !hasDeviceName(device.name)).map((device) => device.id);
 
-  const devices = user ? serverDevices : guestDevices;
+  const namesQuery = useQuery({
+    queryKey: ["deviceNames", missingIds],
+    queryFn: async () => {
+      const settled = await Promise.all(
+        missingIds.map(async (id) => {
+          try {
+            const platform = await getPlatformDetails(String(id));
+            return platform.name ? { id, name: platform.name } : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      const found = settled.filter((device): device is DeviceChoice => device !== null);
+      if (found.length > 0) rememberDeviceNames(found);
+      return found;
+    },
+    enabled: missingIds.length > 0,
+    staleTime: RAWG_DETAIL_STALE_TIME,
+  });
+
+  const devices = useMemo(() => {
+    const resolved = new Map((namesQuery.data ?? []).map((device) => [device.id, device.name]));
+    return namedDevices
+      .map((device) => ({ ...device, name: hasDeviceName(device.name) ? device.name : resolved.get(device.id) || "" }))
+      .filter((device) => hasDeviceName(device.name));
+  }, [namedDevices, namesQuery.data]);
 
   const save = async (next: DeviceChoice[]) => {
     rememberDeviceNames(next);
@@ -51,7 +82,7 @@ export const useMyDevices = () => {
 
   return {
     devices,
-    deviceIds: devices.map((device) => device.id),
+    deviceIds: storedIds,
     save,
     confirm,
     confirmed: confirmed || devices.length > 0,

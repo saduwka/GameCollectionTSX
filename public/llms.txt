@@ -1,0 +1,21 @@
+# PlayHub
+
+> PlayHub помогает выбрать одну игру на вечер: по времени, платформе и настроению. Каталог игр, ручные подборки и билет на вечер.
+
+## Основные разделы
+- [Каталог игр](https://gamecollection-ff71a.web.app/games/): игры с фильтрами
+- [Платформы](https://gamecollection-ff71a.web.app/platforms/): десять платформ каталога
+- [Короткие игры на вечер](https://gamecollection-ff71a.web.app/collections/short-evening/): ручная подборка с причиной для каждой игры
+- [Во что поиграть вдвоём на ПК](https://gamecollection-ff71a.web.app/collections/coop-pc/)
+- [Спокойные игры после работы](https://gamecollection-ff71a.web.app/collections/relax/)
+- [Игры, похожие на Hades](https://gamecollection-ff71a.web.app/collections/like-hades/)
+- [Игры с сильным сюжетом](https://gamecollection-ff71a.web.app/collections/story-driven/)
+- [Подбор игры на вечер](https://gamecollection-ff71a.web.app/): билет по времени, платформе и настроению
+- [О проекте](https://gamecollection-ff71a.web.app/about/)
+- [Вопросы](https://gamecollection-ff71a.web.app/faq/)
+
+## Данные
+Названия, обложки, жанры, платформы и оценки сообщества берутся из RAWG. Оценки показываются со шкалой.
+
+## Sitemap
+https://gamecollection-ff71a.web.app/sitemap-index.xml

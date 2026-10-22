@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { gamePath } from "../../seo/canonicalUrl";
 import { useAuth } from "../../context/AuthContext";
 import { fetchGames } from "../../services/games/fetchGames";
 import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
@@ -26,6 +27,8 @@ import DevicePicker from "../../components/DevicePicker/DevicePicker";
 import type { DeviceChoice } from "../../services/platforms/deviceStore";
 import SwipeCard, { type SwipeCardHandle } from "../../components/SwipeCard/SwipeCard";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import Ticket from "../../components/ui/Ticket";
+import Button from "../../components/ui/Button";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-hot-toast";
 import type { Game } from "../../types/game";
@@ -118,6 +121,17 @@ const MatchPage = () => {
     if (!topGame) return;
     cardRefs.current.get(topGame.id)?.swipe(direction);
   };
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      if (event.key === "ArrowLeft") triggerSwipe("left");
+      if (event.key === "ArrowRight") triggerSwipe("right");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   const handleSwiped = useCallback(
     async (direction: "left" | "right", game: Game) => {
@@ -256,7 +270,7 @@ const MatchPage = () => {
   if (!confirmed) {
     return (
       <div className={styles.page}>
-        <PageMeta title={t("match.devices_title")} description={t("match.devices_hint")} />
+        <PageMeta title={t("match.devices_title")} description={t("match.devices_hint")} noindex />
         <h1 className={styles.title}>{t("match.devices_title")}</h1>
         <p className={styles.matchDescription}>{t("match.devices_hint")}</p>
         <DevicePicker selected={draftDevices} onChange={setDraftDevices} />
@@ -285,7 +299,7 @@ const MatchPage = () => {
 
   return (
     <div className={styles.page}>
-      <PageMeta title={t("match.title")} description={t("match.description")} />
+      <PageMeta title={t("match.title")} description={t("match.description")} noindex />
 
       <header className={styles.header}>
         <div>
@@ -293,8 +307,8 @@ const MatchPage = () => {
         </div>
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{totalSwipes}</span>
-            <span className={styles.statLabel}>{t("common.searching").split(" ")[0]}</span>
+            <span className={styles.statValue}>{t("match.progress", { current: showPicks ? PICKS_AFTER_SWIPES : totalSwipes % PICKS_AFTER_SWIPES, total: PICKS_AFTER_SWIPES })}</span>
+            <span className={styles.statLabel}>{t("match.swipes_label")}</span>
           </div>
           <div className={styles.stat}>
             <span className={styles.statValue}>{likeCount}</span>
@@ -305,7 +319,7 @@ const MatchPage = () => {
 
       {currentTopGenres.length > 0 && (
         <div className={styles.tasteRow}>
-          <span className={styles.tasteLabel}>{t("compare.genres").split(" ")[0]}:</span>
+          <span className={styles.tasteLabel}>{t("match.genres_label")}</span>
           {currentTopGenres.map((genre) => (
             <span key={genre} className={styles.tasteChip}>{genre}</span>
           ))}
@@ -316,29 +330,31 @@ const MatchPage = () => {
         <section className={styles.picks}>
           <p className={styles.matchDescription}>{t("match.picks_hint")}</p>
           {picksLoading && <p>{t("common.loading")}</p>}
-          {visiblePicks.map((game) => (
-            <article key={game.id} className={styles.pickCard}>
-              <Link to={`/game/${game.id}`} className={styles.pickLink}>
-                {game.background_image && (
-                  <img src={game.background_image} alt="" className={styles.pickImage} />
-                )}
-                <div>
-                  <h2>{game.name}</h2>
-                  <p>{t(`recommendations.reason.${game.reasonKey}`, game.reasonParams)}</p>
-                </div>
-              </Link>
-              <div className={styles.pickActions}>
-                <button type="button" onClick={() => handleSavePick(game, "Wishlist")}>
-                  {t("match.add_wishlist")}
-                </button>
-                <button type="button" onClick={() => handleSavePick(game, "Backlog")}>
-                  {t("match.add_backlog")}
-                </button>
-              </div>
-            </article>
+          {visiblePicks.map((game, index) => (
+            <Ticket
+              key={game.id}
+              compact={index > 0}
+              kicker={index === 0 ? t("landing.ticket") : t("landing.another")}
+              title={game.name}
+              meta={<span>{game.genres?.[0] || "—"}</span>}
+              why={t(`recommendations.reason.${game.reasonKey}`, game.reasonParams)}
+              foot={
+                <Link to={gamePath(game.id)}>{t("landing.open")}</Link>
+              }
+            />
           ))}
+          <Button onClick={() => visiblePicks.forEach((game) => void handleSavePick(game, "Wishlist"))}>
+            {t("match.save_all")}
+          </Button>
           <button type="button" className={styles.ghostBtn} onClick={() => setPicksDismissed(true)}>
             {t("match.continue_swiping")}
+          </button>
+          <button
+            type="button"
+            className={styles.ghostBtn}
+            onClick={() => void navigator.clipboard.writeText(visiblePicks.map((game) => game.name).join("\n"))}
+          >
+            {t("landing.copy")}
           </button>
         </section>
       ) : (
@@ -350,7 +366,6 @@ const MatchPage = () => {
             </div>
           ) : stack.length === 0 ? (
             <div className={styles.emptyBox}>
-              <div className={styles.emptyEmoji}>🎯</div>
               <h2>{t("match.empty_state")}</h2>
               <p>
                 {t("match.empty_state")} {user ? t("match.check_collection") : t("match.login_hint")}
@@ -393,28 +408,34 @@ const MatchPage = () => {
       {!showPicks && stack.length > 0 && (
         <>
           <div className={styles.actionRow}>
-            <button
-              type="button"
-              className={`${styles.actionBtn} ${styles.nopeBtn}`}
-              aria-label={t("match.dislike")}
-              onClick={() => triggerSwipe("left")}
-            >
-              ✕
-            </button>
-            <button
-              type="button"
-              className={`${styles.actionBtn} ${styles.likeBtn}`}
-              aria-label={t("match.like")}
-              onClick={() => triggerSwipe("right")}
-            >
-              ♥
-            </button>
+            <div className={styles.actionItem}>
+              <button
+                type="button"
+                className={`${styles.actionBtn} ${styles.nopeBtn}`}
+                aria-label={t("match.not_mine")}
+                onClick={() => triggerSwipe("left")}
+              >
+                ✕
+              </button>
+              <span>{t("match.not_mine")}</span>
+            </div>
+            <div className={styles.actionItem}>
+              <button
+                type="button"
+                className={`${styles.actionBtn} ${styles.likeBtn}`}
+                aria-label={t("match.want")}
+                onClick={() => triggerSwipe("right")}
+              >
+                ♥
+              </button>
+              <span>{t("match.want")}</span>
+            </div>
           </div>
           <p className={styles.matchDescription}>{t("match.description")}</p>
           {!user && totalSwipes >= 3 && (
             <div className={styles.guestHint}>
-              <span>💡 </span>
-              <Link to="/profile">{t("auth.login_google").split(" ")[0]}</Link>, {t("match.login_hint").split(",")[1]}
+              <Link to="/profile">{t("auth.login_google")}</Link>
+              <span> {t("match.login_hint")}</span>
             </div>
           )}
           {totalSwipes > 0 && (

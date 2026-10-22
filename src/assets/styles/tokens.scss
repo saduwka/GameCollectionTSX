@@ -1,0 +1,105 @@
+// PlayHub design tokens — «Билет на вечер»
+
+:root {
+  --paper: #0e0f12;
+  --paper-2: #14161b;
+  --paper-3: #1a1d23;
+  --faint: #2a2d34;
+  --faint-2: #363a43;
+
+  --ink: #ececec;
+  --dim: #8a8f99;
+  --mute: #5c616b;
+
+  --hot: #ffd166;
+  --hot-ink: #111111;
+  --hot-dim: rgba(255, 209, 102, 0.14);
+
+  --ticket: #f5f1e8;
+  --ticket-ink: #111111;
+  --ticket-dim: #555555;
+  --ticket-rule: #bbbbbb;
+
+  --st-playing: #7bd88f;
+  --st-completed: #7fb2ff;
+  --st-backlog: #8a8f99;
+  --st-wishlist: #e8a0f0;
+  --st-dropped: #f08a8a;
+  --st-liked: #ffd166;
+  --st-noint: #5c616b;
+
+  --ok: #7bd88f;
+  --err: #f08a8a;
+
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --fs-xs: 12px;
+  --fs-s: 13px;
+  --fs-m: 15px;
+  --fs-l: 18px;
+  --fs-xl: 28px;
+  --fs-2xl: 44px;
+  --fs-hero: clamp(40px, 8.5vw, 96px);
+  --lh-tight: 1.02;
+  --lh: 1.4;
+  --lh-loose: 1.55;
+  --track-label: 0.12em;
+
+  --r-xs: 3px;
+  --r-s: 4px;
+  --r-m: 6px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-14: 56px;
+
+  --container: 1040px;
+  --gutter: 20px;
+
+  --t-fast: 0.12s;
+  --t-base: 0.18s;
+  --t-swap: 0.25s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0s;
+    --t-base: 0s;
+    --t-swap: 0s;
+  }
+}
+
+@mixin label {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+@mixin rule {
+  border-top: 1px solid var(--faint);
+}
+
+@mixin dashed {
+  border-top: 1px dashed var(--ticket-rule);
+}
+
+@mixin focus {
+  outline: 2px solid var(--hot);
+  outline-offset: 2px;
+}
+
+@mixin perforated($r: 9px) {
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent $r, #000 $r + 0.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent $r, #000 $r + 0.5px) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 50%, transparent $r, #000 $r + 0.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent $r, #000 $r + 0.5px) right / 51% 100% no-repeat;
+}

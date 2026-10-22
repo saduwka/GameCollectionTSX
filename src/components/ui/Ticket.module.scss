@@ -1,0 +1,93 @@
+@use "../../assets/styles/tokens" as *;
+
+.ticket {
+  background: var(--ticket);
+  color: var(--ticket-ink);
+  border-radius: var(--r-m);
+  padding: 22px 24px 18px;
+  font-family: var(--mono);
+  @include perforated;
+}
+
+.compact {
+  padding: 16px 18px 14px;
+
+  .title {
+    font-size: 22px;
+  }
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ticket-dim);
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--ticket-rule);
+}
+
+.title {
+  margin: 16px 0 8px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 36px);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: var(--fs-s);
+  color: #444;
+}
+
+.why {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ticket-rule);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #222;
+}
+
+.whyLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ticket-rule);
+  font-size: 11px;
+  color: #666;
+}
+
+.barcode {
+  height: 28px;
+  flex: 1;
+  max-width: 180px;
+  margin-left: auto;
+  background: repeating-linear-gradient(
+    90deg,
+    #111 0 2px,
+    transparent 2px 4px,
+    #111 4px 5px,
+    transparent 5px 8px
+  );
+}

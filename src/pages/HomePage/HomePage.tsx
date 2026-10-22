@@ -1,266 +1,347 @@
-import React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import styles from "./HomePage.module.scss";
-import GameCard from "../../components/GameCard/GameCard";
-import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
-import { useAuth } from "../../context/AuthContext";
-import { getPopularGames } from "../../services/games/getPopularGames";
-import { fetchGames } from "../../services/games/fetchGames";
-import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
-import type { Game } from "../../types/game";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import JsonLd, { websiteJsonLd } from "../../components/JsonLd/JsonLd";
+import { collections } from "../../data/collections";
+import { aboutPath, collectionPath, faqPath, gamePath, gamesPath, genrePath, platformsPath } from "../../seo/canonicalUrl";
+import { genres as listedGenres } from "../../../scripts/publicLinks.mjs";
+import ErrorState from "../../components/ui/ErrorState";
+import { useAuth } from "../../context/AuthContext";
+import { whyOverrides } from "../../content/whyOverrides";
+import { getUserCollection } from "../../services/collection/collectionService";
+import { hydrateShelfTags } from "../../services/collection/hydrateShelf";
+import { collectionKeys } from "../../services/collection/queryKeys";
+import { fetchTonight } from "../../services/recommendations/fetchTonight";
+import { markSeen, readSeen } from "../../services/recommendations/seenStore";
+import { composeTonight, type Mood, type ReasonCode, type TonightGame, type TonightTime } from "../../services/recommendations/tonightScore";
+import BoardingPass from "./BoardingPass";
+import styles from "./HomePage.module.scss";
 
-interface ShelfProps {
-  title: string;
-  subtitle?: string;
-  ctaLabel?: string;
-  ctaTo?: string;
-  isLoading: boolean;
-  items: Game[];
-  renderItem: (item: Game) => React.ReactNode;
-  skeletonCount?: number;
-}
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
+const PLATFORMS: Record<string, number[]> = {
+  pc: [4],
+  ps: [187, 18],
+  xbox: [186, 1],
+  switch: [7],
+  deck: [4],
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
+const MOODS: Mood[] = ["calm", "deep", "finish", "coop"];
+const TIMES: TonightTime[] = [30, 120, 300];
+const PLATS = ["pc", "ps", "xbox", "switch", "deck"] as const;
 
-const Shelf: React.FC<ShelfProps> = ({
-  title,
-  subtitle,
-  ctaLabel,
-  ctaTo,
-  isLoading,
-  items,
-  renderItem,
-  skeletonCount = 4,
-}) => (
-  <section className={styles.shelf}>
-    <header className={styles.shelfHeader}>
-      <div>
-        <h2 className={styles.shelfTitle}>{title}</h2>
-        {subtitle && <p className={styles.shelfSubtitle}>{subtitle}</p>}
-      </div>
-      {ctaLabel && ctaTo && (
-        <Link to={ctaTo} className={styles.shelfCta}>
-          {ctaLabel} →
-        </Link>
-      )}
-    </header>
-    <motion.div 
-      className={styles.shelfGrid}
-      variants={containerVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-    >
-      {isLoading
-        ? Array.from({ length: skeletonCount }).map((_, i) => (
-            <GameCardSkeleton key={i} />
-          ))
-        : items.map(item => (
-            <motion.div key={item.id} variants={itemVariants}>
-              {renderItem(item)}
-            </motion.div>
-          ))}
-    </motion.div>
-  </section>
-);
+const monthsOnShelf = (addedAt?: number) => Math.max(1, Math.round((Date.now() - (addedAt || Date.now())) / (1000 * 60 * 60 * 24 * 30)));
 
-const HomePage: React.FC = () => {
-  const { t } = useTranslation();
-  const { user, authLoading } = useAuth();
+const HomePage = () => {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const hydrated = useRef(false);
+  const { data: collection = [] } = useQuery({
+    queryKey: collectionKeys.user(user?.uid ?? "guest"),
+    queryFn: () => getUserCollection(),
+    enabled: !!user,
+  });
+  const [time, setTime] = useState<TonightTime>(120);
+  const [plat, setPlat] = useState<(typeof PLATS)[number]>("pc");
+  const [openPlatforms, setOpenPlatforms] = useState(false);
+  const [mood, setMood] = useState<Mood>("finish");
+  const [index, setIndex] = useState(0);
+  const [exhausted, setExhausted] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const [seen, setSeen] = useState<number[]>(() => readSeen());
 
-  const { data: trending = [], isLoading: trendingLoading } = useQuery({
-    queryKey: ["popularGames"],
-    queryFn: async () => {
-      const result = await getPopularGames();
-      return result.slice(0, 4);
-    },
-    staleTime: RAWG_LIST_STALE_TIME,
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setSeen(readSeen());
+    setIndex(0);
+    setExhausted(false);
+  }, [mood, time, plat, openPlatforms]);
+
+  useEffect(() => {
+    if (!user || hydrated.current || collection.length === 0) return;
+    hydrated.current = true;
+    hydrateShelfTags(collection).then((count) => {
+      if (count > 0) queryClient.invalidateQueries({ queryKey: collectionKeys.user(user.uid) });
+    });
+  }, [user, collection, queryClient]);
+
+  const platforms = openPlatforms ? [] : PLATFORMS[plat];
+  const exclude = collection.map((game) => game.id).slice(0, 200);
+
+  const tonight = useQuery({
+    queryKey: ["tonight", mood, time, platforms.join(","), exclude.join(","), seen.join(",")],
+    queryFn: () => fetchTonight({ mood, time, platforms, exclude, seen }),
+    staleTime: 10 * 60 * 1000,
   });
 
-  const { data: topRated = [], isLoading: topRatedLoading } = useQuery({
-    queryKey: ["topRatedGames"],
-    queryFn: async () => {
-      const data = await fetchGames(1, "-metacritic");
-      return data.games.slice(0, 4);
-    },
-    staleTime: RAWG_LIST_STALE_TIME,
-  });
+  const composed = useMemo(
+    () => composeTonight(tonight.data?.results ?? [], collection, mood, time, platforms),
+    [tonight.data, collection, mood, time, platforms],
+  );
+  const ticket = composed.games[index];
+  const shelfGame = ticket ? collection.find((game) => game.id === ticket.id) : undefined;
 
-  const { data: rpgPicks = [], isLoading: rpgLoading } = useQuery({
-    queryKey: ["genrePicks", "role-playing-games-rpg"],
-    queryFn: async () => {
-      const data = await fetchGames(1, "-rating", undefined, "role-playing-games-rpg");
-      return data.games.slice(0, 4);
-    },
-    staleTime: RAWG_LIST_STALE_TIME,
-  });
+  useEffect(() => {
+    if (ticket) markSeen(ticket.id);
+  }, [ticket]);
 
-  const { data: indieGems = [], isLoading: indieLoading } = useQuery({
-    queryKey: ["genrePicks", "indie"],
-    queryFn: async () => {
-      const data = await fetchGames(1, "-rating", undefined, "indie");
-      return data.games.slice(0, 4);
-    },
-    staleTime: RAWG_LIST_STALE_TIME,
-  });
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const clock = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  const late = hour < 6;
+  const progress = late ? 1 : hour < 18 ? 0 : (hour * 60 + minute - 18 * 60) / (6 * 60);
+  const leftMinutes = Math.max(0, 24 * 60 - (hour * 60 + minute));
+  const clockNote = late ? t("landing.late") : hour < 18 ? t("landing.before") : t("landing.evening");
 
-  const isAuthenticated = !authLoading && !!user;
+  const reasonText = (code: ReasonCode, game: TonightGame, months: number) => {
+    const key = `tonight.reasons.${code.replace(/:/g, "_").replace(/-/g, "_")}`;
+    return t(key, {
+      min: Math.max(15, Math.round((game.playtime || 0.5) * 60)),
+      h: game.playtime || 1,
+      score: game.metacritic || game.rating,
+      months,
+      tag: (code.split(":")[1] || "").replace(/-/g, " "),
+    });
+  };
+
+  const why = (game: TonightGame) => {
+    const months = monthsOnShelf(collection.find((item) => item.id === game.id)?.addedAt);
+    const lines: string[] = [];
+    const override = whyOverrides[game.id];
+    if (override) lines.push(i18n.language.startsWith("en") ? override.en : override.ru);
+    for (const code of game.reasons) {
+      if (lines.length >= 2) break;
+      if (code === "shelf:age") continue;
+      lines.push(reasonText(code, game, months));
+    }
+    return lines.slice(0, 2);
+  };
+
+  const lengthLabel = (game: TonightGame) => {
+    if (game.playtime > 0 && game.playtime <= 2) return t("landing.len_min", { count: Math.round(game.playtime * 60) });
+    if (game.playtime > 2 && game.playtime <= 8) return t("landing.len_short", { count: game.playtime });
+    if (game.playtime > 8 && game.playtime <= 20) return t("landing.len_parts", { count: game.playtime });
+    if (game.playtime > 20) return t("landing.len_long", { count: game.playtime });
+    return t("landing.len_parts", { count: 0 });
+  };
+
+  const next = () => {
+    if (index + 1 >= composed.games.length) {
+      setExhausted(true);
+      return;
+    }
+    setIndex((value) => value + 1);
+  };
+
+  const widen = () => {
+    setTime(300);
+    setOpenPlatforms(true);
+    setExhausted(false);
+  };
+
+  const copyTicket = async () => {
+    if (!ticket) return;
+    const text = [ticket.name, ...why(ticket), "PlayHub"].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const lines = ticket ? why(ticket) : [];
+  const months = monthsOnShelf(shelfGame?.addedAt);
+  const more = composed.games.slice(index + 1, index + 6);
 
   return (
-    <div className={styles.homePage} data-seo-ready="true">
-      <PageMeta
-        title="PlayHub"
-        description={t('home.meta_description')}
-      />
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <span className={styles.heroBadge}>🎮 PlayHub</span>
-          <h1 className={styles.heroTitle}>
-            {t('home.hero_title')}
-          </h1>
-          <p className={styles.heroDescription}>
-            {t('home.hero_description')}
-          </p>
-          <div className={styles.heroButtons}>
-            <Link className={styles.btnPrimary} to="/games">
-              {t('home.cta_catalog')}
-            </Link>
-            <Link className={styles.btnMatch} to="/match">
-              {t('home.cta_match')}
-            </Link>
-            {isAuthenticated ? (
-              <Link className={styles.btnSecondary} to="/me">
-                {t('home.cta_recommendations')}
-              </Link>
-            ) : (
-              <Link className={styles.btnSecondary} to="/platforms">
-                {t('home.cta_platforms')}
-              </Link>
-            )}
-          </div>
-          {!isAuthenticated && !authLoading && (
-            <p className={styles.heroHint}>
-              {t('home.hero_hint')}
+    <div className={styles.page} data-seo-ready="true">
+      <PageMeta title={t("landing.title")} description={t("landing.meta")} exactTitle />
+      <JsonLd data={websiteJsonLd()} />
+      <div className={styles.evening}>
+        <span className={styles.clock}>{clock}</span>
+        <div className={styles.line} aria-hidden="true">
+          <i className={styles.fill} style={{ width: `${Math.round(progress * 100)}%` }} />
+          <i className={styles.now} style={{ left: `${Math.round(progress * 100)}%` }} />
+        </div>
+        <div className={styles.labels}>
+          <span>18:00</span>
+          <span>{clockNote}</span>
+          <span>00:00</span>
+        </div>
+        {hour >= 18 && !late ? (
+          <p className={styles.left}>{t("landing.left", { hours: Math.floor(leftMinutes / 60), minutes: leftMinutes % 60 })}</p>
+        ) : null}
+      </div>
+
+      <div className={styles.head}>
+        <h1 className={styles.title}>
+          <span className={styles.q}>{t("landing.question")}</span>
+          {ticket ? <span className={styles.a}>{`${ticket.name}.`}</span> : null}
+        </h1>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.key}>{t("landing.time")}</span>
+        <div className={styles.opts}>
+          {TIMES.map((value) => (
+            <button key={value} type="button" className={styles.opt} aria-pressed={time === value} onClick={() => setTime(value)}>
+              {t(`landing.time_${value}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={styles.row}>
+        <span className={styles.key}>{t("landing.platform")}</span>
+        <div className={styles.opts}>
+          {PLATS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              className={styles.opt}
+              aria-pressed={!openPlatforms && plat === value}
+              onClick={() => {
+                setOpenPlatforms(false);
+                setPlat(value);
+              }}
+            >
+              {t(`landing.plat_${value}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={styles.row}>
+        <span className={styles.key}>{t("landing.mood")}</span>
+        <div className={styles.opts}>
+          {MOODS.map((value) => (
+            <button key={value} type="button" className={styles.opt} aria-pressed={mood === value} onClick={() => setMood(value)}>
+              {t(`landing.mood_${value}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tonight.isError ? (
+        <ErrorState onRetry={() => tonight.refetch()} />
+      ) : tonight.isLoading ? (
+        <BoardingPass />
+      ) : !ticket ? (
+        <p className={styles.rules}>{t("landing.empty_why")}</p>
+      ) : (
+        <div className={styles.wrap}>
+          <article className={styles.ticket}>
+            <header className={styles.headRow}>
+              <span>{t("landing.ticket")}</span>
+              <span>
+                {composed.fromShelf && shelfGame
+                  ? `${t("landing.from_shelf")} · ${t("landing.shelf_age", { count: months })}`
+                  : composed.shelfMiss
+                    ? t("tonight.shelf_miss")
+                    : t("landing.seat")}
+              </span>
+            </header>
+            <h2 className={styles.game}>{ticket.name}</h2>
+            <p className={styles.meta}>
+              <span>{lengthLabel(ticket)}</span>
+              <span>{openPlatforms ? t("landing.platform") : t(`landing.plat_${plat}`)}</span>
+              <span>{t(`landing.mood_${mood}`)}</span>
             </p>
-          )}
+            <p className={styles.why}>
+              <span className={styles.whyLabel}>{t("landing.why")}</span>
+              {lines[0]}
+              {lines[1] ? <> {lines[1]}</> : null}
+            </p>
+            <footer className={styles.foot}>
+              <span>{t("landing.rawg", { value: ticket.rating ? ticket.rating.toFixed(1) : "—" })}</span>
+              <span className={styles.barcode} aria-hidden="true" />
+            </footer>
+          </article>
+          <div className={styles.side}>
+            <Link className={styles.go} to={gamePath(ticket.id)}>
+              {t("landing.take")}
+              <span>{t("landing.open")}</span>
+            </Link>
+            {exhausted ? (
+              <button type="button" className={styles.alt} onClick={widen}>
+                {t("tonight.widen")}
+              </button>
+            ) : (
+              <button type="button" className={styles.alt} onClick={next}>
+                {t("landing.another")}
+              </button>
+            )}
+            <button type="button" className={styles.alt} onClick={copyTicket}>
+              {copied ? t("landing.copied") : t("landing.copy")}
+            </button>
+            {exhausted ? <p className={styles.rules}>{t("tonight.thats_all")}</p> : null}
+          </div>
+        </div>
+      )}
+
+      {more.length > 0 ? (
+        <section className={styles.more}>
+          <h2 className={styles.moreTitle}>{t("landing.more")}</h2>
+          <div className={styles.moreRow}>
+            {more.map((game) => (
+              <Link key={game.id} to={gamePath(game.id)} className={styles.moreCard}>
+                <span>{game.name}</span>
+                <span>{lengthLabel(game)}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className={styles.about}>
+        <h2 className={styles.moreTitle}>{t("common.catalog")}</h2>
+        <div className={styles.paths}>
+          <Link to={gamesPath()}>{t("common.games")}</Link>
+          <Link to={platformsPath()}>{t("common.platforms")}</Link>
+          {listedGenres.map((genre) => (
+            <Link key={genre.slug} to={genrePath(genre.slug)}>
+              {i18n.language.startsWith("en") ? genre.en : genre.ru}
+            </Link>
+          ))}
         </div>
       </section>
 
-      <Shelf
-        title={t('home.trending_title')}
-        subtitle={t('home.trending_subtitle')}
-        ctaLabel={t('home.see_all')}
-        ctaTo="/games"
-        isLoading={trendingLoading}
-        items={trending}
-        renderItem={(game) => (
-          <Link to={`/game/${game.id}`} key={game.id} className={styles.cardLink}>
-            <GameCard game={game} />
-          </Link>
-        )}
-      />
-
-      <Shelf
-        title={t('home.top_metacritic_title')}
-        subtitle={t('home.top_metacritic_subtitle')}
-        isLoading={topRatedLoading}
-        items={topRated}
-        renderItem={(game) => (
-          <Link to={`/game/${game.id}`} key={game.id} className={styles.cardLink}>
-            <GameCard game={game} />
-          </Link>
-        )}
-      />
-
-      <Link to="/match" className={styles.matchBanner}>
-        <div className={styles.matchBannerStack} aria-hidden="true">
-          <span className={`${styles.matchCard} ${styles.matchCard3}`} />
-          <span className={`${styles.matchCard} ${styles.matchCard2}`} />
-          <span className={`${styles.matchCard} ${styles.matchCard1}`}>
-            <span className={styles.matchCardEmoji}>🎮</span>
-          </span>
-        </div>
-        <div className={styles.matchBannerContent}>
-          <span className={styles.matchBannerBadge}>{t('home.match_banner_badge')}</span>
-          <h2 className={styles.matchBannerTitle}>
-            {t('home.match_banner_title')}
-          </h2>
-          <p className={styles.matchBannerText}>
-            {t('home.match_banner_text')}
-          </p>
-        </div>
-        <span className={styles.matchBannerArrow}>→</span>
-      </Link>
-
-      <Shelf
-        title={t('home.best_rpg_title')}
-        subtitle={t('home.best_rpg_subtitle')}
-        isLoading={rpgLoading}
-        items={rpgPicks}
-        renderItem={(game) => (
-          <Link to={`/game/${game.id}`} key={game.id} className={styles.cardLink}>
-            <GameCard game={game} />
-          </Link>
-        )}
-      />
-
-      <Shelf
-        title={t('home.indie_gems_title')}
-        subtitle={t('home.indie_gems_subtitle')}
-        isLoading={indieLoading}
-        items={indieGems}
-        renderItem={(game) => (
-          <Link to={`/game/${game.id}`} key={game.id} className={styles.cardLink}>
-            <GameCard game={game} />
-          </Link>
-        )}
-      />
-
-      <section className={styles.featuresStrip}>
-        <Link to="/games" className={styles.feature}>
-          <div className={styles.featureEmoji}>🔍</div>
-          <h3 className={styles.featureTitle}>{t('home.feature_search_title')}</h3>
-          <p className={styles.featureText}>
-            {t('home.feature_search_text')}
-          </p>
-        </Link>
-        <Link to="/platforms" className={styles.feature}>
-          <div className={styles.featureEmoji}>🎮</div>
-          <h3 className={styles.featureTitle}>{t('home.feature_platforms_title')}</h3>
-          <p className={styles.featureText}>
-            {t('home.feature_platforms_text')}
-          </p>
-        </Link>
-        <Link to={isAuthenticated ? "/collection" : "/games"} className={styles.feature}>
-          <div className={styles.featureEmoji}>📚</div>
-          <h3 className={styles.featureTitle}>{t('home.feature_collection_title')}</h3>
-          <p className={styles.featureText}>
-            {t('home.feature_collection_text')}
-          </p>
-        </Link>
-        <Link to="/compare" className={styles.feature}>
-          <div className={styles.featureEmoji}>⚖️</div>
-          <h3 className={styles.featureTitle}>{t('home.feature_compare_title')}</h3>
-          <p className={styles.featureText}>
-            {t('home.feature_compare_text')}
-          </p>
-        </Link>
+      <section className={styles.about}>
+        <p>{t("landing.about_1")}</p>
+        <p>{t("landing.about_2")}</p>
+        <p>{t("landing.about_3")}</p>
+        <p className={styles.paths}>
+          <Link to={gamesPath()}>{t("common.catalog")}</Link>
+          <Link to="/match">{t("common.game_match")}</Link>
+          <Link to="/search">{t("common.find_game")}</Link>
+        </p>
       </section>
+
+      <section className={styles.about}>
+        <h2 className={styles.moreTitle}>{t("landing.picks")}</h2>
+        <div className={styles.paths}>
+          {collections.map((collection) => (
+            <Link key={collection.slug} to={collectionPath(collection.slug)}>
+              {i18n.language.startsWith("en") ? collection.title.en : collection.title.ru}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <p className={styles.rules}>{t("landing.rules")}</p>
+      <div className={styles.bottom}>
+        <Link to={gamesPath()}>{t("common.catalog")}</Link>
+        <Link to={aboutPath()}>{t("common.about")}</Link>
+        <Link to={faqPath()}>{t("common.faq")}</Link>
+        <span>RAWG</span>
+      </div>
     </div>
   );
 };

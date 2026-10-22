@@ -8,27 +8,21 @@
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  margin-bottom: 50px;
-  background-color: #2a2a2a;
-  padding: 30px;
-  border-radius: 15px;
-  border: 1px solid #333;
+  margin-bottom: 28px;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid #646cff;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-s);
+  object-fit: cover;
 }
 
 .userMeta {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  flex: 1;
 }
 
 .username {
@@ -73,10 +67,10 @@
 }
 
 .devicesSection {
-  background-color: #2a2a2a;
-  padding: 30px;
-  border-radius: 15px;
-  border: 1px solid #333;
+  padding: 18px 0;
+  border-top: 1px solid var(--faint);
+  background: transparent;
+  border-radius: 0;
 }
 
 .sectionTitle {

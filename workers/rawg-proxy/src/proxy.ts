@@ -8,12 +8,15 @@ const PATH_ALLOW = [
   /^\/platforms\/\d+$/,
   /^\/platforms\/lists\/parents$/,
   /^\/genres$/,
+  /^\/tags$/,
+  /^\/tonight$/,
 ];
 
 const LIST_PATHS = [
   /^\/games$/,
   /^\/platforms$/,
   /^\/genres$/,
+  /^\/tags$/,
   /^\/platforms\/lists\/parents$/,
   /^\/games\/\d+\/(screenshots|movies|additions|game-series|stores)$/,
 ];

@@ -19,7 +19,8 @@ import { getPlatformWiki } from "../../services/platforms/wikiService";
 import { searchYouTubeVideos } from "../../services/media/youtubeService";
 import { getConsoleFact } from "../../services/platforms/factService";
 import type { Platform, Game } from "../../types/game";
-import styles from './PlatformDetails.module.scss';
+import { gamesPath, platformsPath } from "../../seo/canonicalUrl";
+import styles from "./PlatformDetails.module.scss";
 
 const PlatformPage: FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -130,6 +131,10 @@ const PlatformPage: FC = () => {
         image={platformDetails?.image_background || platformDetails?.image || undefined}
       />
       {games.length > 0 && <JsonLd data={itemListJsonLd(games)} />}
+      <nav className={styles.crumbs}>
+        <Link to={platformsPath()}>{t("platforms_page.title")}</Link>
+        <Link to={gamesPath()}>{t("common.games")}</Link>
+      </nav>
       <button
         className={styles.backButton}
         onClick={() => window.history.back()}

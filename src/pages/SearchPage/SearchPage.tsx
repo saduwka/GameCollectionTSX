@@ -10,6 +10,8 @@ import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErr
 import { fetchGames } from "../../services/search/searchServices";
 import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import EmptyState from "../../components/ui/EmptyState";
+import { gamePath } from "../../seo/canonicalUrl";
 import type { Game } from "../../types/game";
 import styles from "./SearchPage.module.scss";
 
@@ -73,6 +75,7 @@ const SearchPage: React.FC = () => {
             ? t('search.description_with_query', { query: urlQuery })
             : t('search.description_default')
         }
+        noindex
       />
       <form className={styles.searchForm} onSubmit={handleSearch}>
         <div className={styles.inputWrapper}>
@@ -100,10 +103,7 @@ const SearchPage: React.FC = () => {
       {isError && <LoadingErrorMessage loading={false} error={(error as Error).message} noResults={false} />}
 
       {!urlQuery ? (
-        <div className={styles.emptyState}>
-          <h2 className={styles.emptyTitle}>{t('search.empty_state_title')}</h2>
-          <p className={styles.emptyHint}>{t('search.empty_state_hint')}</p>
-        </div>
+        <EmptyState title={t("landing.empty_title")} text={t("search.empty_state_hint")} />
       ) : (
         <>
           <div className={styles.headerRow}>
@@ -129,6 +129,7 @@ const SearchPage: React.FC = () => {
                   key={option}
                   type="button"
                   className={`${styles.sortBtn} ${sortOption === option ? styles.sortBtnActive : ""}`}
+                  aria-pressed={sortOption === option}
                   onClick={() => setSortOption(option)}
                 >
                   {option === "relevance" && t('search.sort_relevance')}
@@ -144,15 +145,12 @@ const SearchPage: React.FC = () => {
               Array.from({ length: 12 }).map((_, i) => <GameCardSkeleton key={i} />)
             ) : games.length > 0 ? (
               sortedGames.map((game) => (
-                <Link key={game.id} to={`/game/${game.id}`} className={styles.gameLink}>
+                <Link key={game.id} to={gamePath(game.id)} className={styles.gameLink}>
                   <GameCard game={game as unknown as Game} />
                 </Link>
               ))
             ) : (
-              <div className={styles.emptyState}>
-                <h2 className={styles.emptyTitle}>{t('search.not_found_title', { query: urlQuery })}</h2>
-                <p className={styles.emptyHint}>{t('search.not_found_hint')}</p>
-              </div>
+              <EmptyState title={t("landing.empty_title")} text={t("search.not_found_hint")} />
             )}
           </div>
         </>

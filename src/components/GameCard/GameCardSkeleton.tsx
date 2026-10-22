@@ -4,9 +4,11 @@ import styles from "./GameCard.module.scss";
 
 const GameCardSkeleton: React.FC = () => {
   return (
-    <div className={styles.gameCard} style={{ backgroundColor: "#2a2a2a" }}>
-      <Skeleton width="100%" height="180px" borderRadius="0" />
-      <div className={styles.description} style={{ padding: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+    <div className={styles.gameCard}>
+      <div className={styles.cover}>
+        <Skeleton width="100%" height="100%" borderRadius="0" />
+      </div>
+      <div className={styles.body}>
         <Skeleton width="80%" height="1.2rem" />
         <Skeleton width="40%" height="0.9rem" />
       </div>

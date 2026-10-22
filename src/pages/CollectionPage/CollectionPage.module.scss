@@ -2,8 +2,8 @@
 @use "../../assets/styles/mixins" as *;
 
 .collectionPage {
-  padding: 40px;
-  max-width: 1200px;
+  padding: 32px 20px 48px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
@@ -24,28 +24,49 @@
 }
 
 .filterTab {
-  background: #2a2a2a;
-  color: #aaa;
-  border: 1px solid #444;
-  padding: 8px 16px;
-  border-radius: 20px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--faint);
+  border-radius: var(--r-s);
+  background: transparent;
+  color: var(--dim);
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font: inherit;
 }
 
 .filterTab:hover {
-  background: #333;
-  border-color: #646cff;
+  color: var(--ink);
+  border-color: var(--dim);
 }
 
 .activeTab {
-  background: #646cff;
-  color: white;
-  border-color: #646cff;
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.coverRow {
+  display: flex;
+  gap: 8px;
+}
+
+.coverThumb {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--r-xs);
+}
+
+.budget {
+  margin: 0 0 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
 }
 
 .count {
@@ -69,7 +90,11 @@
 .gamesGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 25px;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
 }
 
 .gameCardContainer {
@@ -215,4 +240,57 @@
     padding: 6px 12px;
     font-size: 0.8rem;
   }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.toolbar .statusFilters {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+  justify-content: flex-start;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: $text-secondary;
+  font-size: 0.9rem;
+}
+
+.sortSelect {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  background: $bg-card;
+  color: $text-main;
+  font: inherit;
+}
+
+.nextGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ownerHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }

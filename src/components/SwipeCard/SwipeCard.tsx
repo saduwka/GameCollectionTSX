@@ -78,11 +78,8 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
     // Описание: первые 180 символов без HTML-тегов
     const cleanDescription = (game.description || "")
       .replace(/<[^>]*>/g, "")
-      .slice(0, 180);
-
-    const year = game.released && game.released !== "Unknown"
-      ? game.released.split("-")[0]
-      : null;
+      .replace(/\s+/g, " ")
+      .trim();
 
     return (
       <motion.div
@@ -143,27 +140,14 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         {/* Контент карточки */}
         <div className={styles.content}>
           <h2 className={styles.title}>{game.name}</h2>
-
-          <div className={styles.metaRow}>
-            {game.rating > 0 && (
-              <span className={styles.rating}>⭐ {game.rating.toFixed(1)}</span>
-            )}
-            {year && <span className={styles.year}>{year}</span>}
-            {(game.playtime ?? 0) > 0 && (
-              <span className={styles.playtime}>🕐 ~{game.playtime}ч</span>
-            )}
-          </div>
-
-          {game.genres && game.genres.length > 0 && (
-            <div className={styles.genres}>
-              {game.genres.slice(0, 4).map((g) => (
-                <span key={g} className={styles.genreTag}>{g}</span>
-              ))}
-            </div>
+          {game.genres?.[0] && <p className={styles.description}>{game.genres[0]}</p>}
+          {game.platforms?.length > 0 && (
+            <p className={styles.description}>
+              {game.platforms.slice(0, 3).map((item) => item.platform.name).join(", ")}
+            </p>
           )}
-
           {cleanDescription && (
-            <p className={styles.description}>{cleanDescription}…</p>
+            <p className={styles.description}>{cleanDescription}</p>
           )}
         </div>
       </motion.div>

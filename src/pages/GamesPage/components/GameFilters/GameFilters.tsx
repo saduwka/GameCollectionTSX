@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { gamePath } from "../../../../seo/canonicalUrl";
 import { fetchRandomGame } from "../../../../services/games/fetchGames";
 import { getUserDevices } from "../../../../services/collection/collectionService";
+import Opt from "../../../../components/ui/Opt";
 import styles from "./GameFilters.module.scss";
 
 interface GameFiltersProps {
@@ -68,8 +70,8 @@ const GameFilters: React.FC<GameFiltersProps> = ({
     { label: t('catalog.filters.any_metacritic'), value: "" },
     { label: "60+", value: "60" },
     { label: "70+", value: "70" },
-    { label: `80+ (${t('home.top_metacritic_subtitle').split(' ')[0].toLowerCase()})`, value: "80" },
-    { label: `90+ (${t('home.indie_gems_title').split(' ')[0].toLowerCase()})`, value: "90" },
+    { label: t('catalog.filters.score_high'), value: "80" },
+    { label: t('catalog.filters.score_top'), value: "90" },
   ];
 
   const SORT_OPTIONS: { value: string; label: string }[] = [
@@ -112,7 +114,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
         platform: platform,
       });
       setIsRolling(false);
-      if (game) navigate(`/game/${game.id}`);
+      if (game) navigate(gamePath(game.id));
       else alert(t('catalog.filters.no_games_found'));
     }, 1500);
   };
@@ -121,28 +123,25 @@ const GameFilters: React.FC<GameFiltersProps> = ({
     <div className={styles.filters}>
       <div className={styles.topRow}>
         <div className={styles.sortGroup}>
-          <label className={styles.sortLabel} htmlFor="sort-select">{t('catalog.filters.sort_name').split(' ')[0]}:</label>
-          <select
-            id="sort-select"
-            className={styles.sortSelect}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
+          <span className={styles.sortLabel}>{t('catalog.filters.sort_label')}</span>
+          <div className={styles.opts}>
             {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <Opt key={opt.value} pressed={filter === opt.value} onClick={() => setFilter(opt.value)}>
+                {opt.label}
+              </Opt>
             ))}
-          </select>
+          </div>
         </div>
 
         <div className={styles.metaRow}>
           {totalCount !== undefined && (
             <span className={styles.countBadge} aria-live="polite">
-              {t('common.results').split(' ')[0]}: <strong>{formatNumber(totalCount)}</strong>
+              {t('catalog.filters.results_label')}: <strong>{formatNumber(totalCount)}</strong>
             </span>
           )}
           {activeFilterCount > 0 && (
             <span className={styles.activeBadge}>
-              {t('catalog.filters.sort_new').split(' ')[0]} {t('common.games_plural_1').split(' ')[0]}: {activeFilterCount}
+              {t('catalog.filters.active_filters')}: {activeFilterCount}
             </span>
           )}
           <button
@@ -152,7 +151,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
             aria-expanded={!isCollapsed}
             aria-controls="filters-body"
           >
-            {isCollapsed ? `▾ ${t('catalog.filters.show_filters')}` : `▴ ${t('catalog.filters.hide_filters')}`}
+            {isCollapsed ? t('catalog.filters.show_filters') : t('catalog.filters.hide_filters')}
           </button>
           <button
             type="button"
@@ -160,7 +159,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
             onClick={handleSurpriseMe}
             disabled={isRolling}
           >
-            {isRolling ? `🎲 ${t('recommendations.refreshing')}` : t('catalog.filters.surprise_me')}
+            {isRolling ? t('recommendations.refreshing') : t('catalog.filters.surprise_me')}
           </button>
         </div>
       </div>
@@ -178,7 +177,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
             >
-              <option value="">{t('catalog.filters.any_length').split(' ')[0]}</option>
+              <option value="">{t('catalog.filters.any')}</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -193,7 +192,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
               value={selectedYearTo}
               onChange={(e) => setSelectedYearTo(e.target.value)}
             >
-              <option value="">{t('catalog.filters.any_length').split(' ')[0]}</option>
+              <option value="">{t('catalog.filters.any')}</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -201,7 +200,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="platform-select">{t('common.platforms').slice(0, -1)}</label>
+            <label htmlFor="platform-select">{t('common.platforms')}</label>
             <select
               id="platform-select"
               className={styles.selectFilter}
@@ -216,31 +215,25 @@ const GameFilters: React.FC<GameFiltersProps> = ({
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="playtime-select">{t('compare.playtime_avg').split(' ')[1]}</label>
-            <select
-              id="playtime-select"
-              className={styles.selectFilter}
-              value={selectedPlaytime}
-              onChange={(e) => setSelectedPlaytime(e.target.value)}
-            >
+            <span className={styles.rowLabel}>{t('catalog.filters.playtime')}</span>
+            <div className={styles.opts}>
               {PLAYTIME_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <Opt key={opt.value || "any"} pressed={selectedPlaytime === opt.value} onClick={() => setSelectedPlaytime(opt.value)}>
+                  {opt.label}
+                </Opt>
               ))}
-            </select>
+            </div>
           </div>
 
           <div className={styles.filterItem}>
-            <label htmlFor="metacritic-select">Metacritic</label>
-            <select
-              id="metacritic-select"
-              className={styles.selectFilter}
-              value={selectedMetacritic}
-              onChange={(e) => setSelectedMetacritic(e.target.value)}
-            >
+            <span className={styles.rowLabel}>Metacritic</span>
+            <div className={styles.opts}>
               {METACRITIC_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <Opt key={opt.value || "any"} pressed={selectedMetacritic === opt.value} onClick={() => setSelectedMetacritic(opt.value)}>
+                  {opt.label}
+                </Opt>
               ))}
-            </select>
+            </div>
           </div>
         </div>
 
@@ -252,15 +245,9 @@ const GameFilters: React.FC<GameFiltersProps> = ({
                 .split(",")
                 .some((value) => value === genre.id.toString() || (!!genre.slug && value === genre.slug));
               return (
-                <button
-                  key={genre.id}
-                  type="button"
-                  className={`${styles.genreChip} ${isActive ? styles.activeChip : ""}`}
-                  onClick={() => handleGenreToggle(genre.id.toString())}
-                  aria-pressed={isActive}
-                >
+                <Opt key={genre.id} pressed={isActive} onClick={() => handleGenreToggle(genre.id.toString())}>
                   {genre.name}
-                </button>
+                </Opt>
               );
             })}
           </div>

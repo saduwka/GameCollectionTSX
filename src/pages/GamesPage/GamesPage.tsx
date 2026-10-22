@@ -1,19 +1,23 @@
 // FILE: src/pages/GamesPage/GamesPage.tsx
 import React, { useEffect, useCallback } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
+import { CATALOG_PAGE_SIZE, GENRE_PAGES, genres as listedGenres, platforms as listedPlatforms } from "../../../scripts/publicLinks.mjs";
+import { gamePath, gamesPagePath, gamesPath, genrePagePath, genrePath, platformPath, platformsPath, canonicalUrl } from "../../seo/canonicalUrl";
+import { SITE_ORIGIN } from "../../site";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameFilters from "./components/GameFilters/GameFilters";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
+import JsonLd, { breadcrumbJsonLd, itemListJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import { RAWG_DETAIL_STALE_TIME, RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
+import type { Game } from "../../types/game";
 import styles from "./GamesPage.module.scss";
 
 const STORAGE_KEY = "playhub_filters";
@@ -36,12 +40,15 @@ const ORDERING_MAP: Record<SortKey, string> = {
 };
 
 const GamesPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { slug } = useParams<{ slug?: string }>();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { slug, page: pageParam } = useParams<{ slug?: string; page?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+  const english = i18n.language.startsWith("en");
+
   const filter = (searchParams.get("filter") as SortKey) || "popular";
-  const currentPage = parseInt(searchParams.get("page") || "1");
+  const pathPage = pageParam ? Number.parseInt(pageParam, 10) : Number.NaN;
+  const currentPage = Number.isFinite(pathPage) && pathPage > 0 ? pathPage : parseInt(searchParams.get("page") || "1", 10);
   const selectedYear = searchParams.get("year") || "";
   const selectedYearTo = searchParams.get("yearTo") || "";
   const selectedGenreId = slug || searchParams.get("genre") || "";
@@ -50,8 +57,19 @@ const GamesPage: React.FC = () => {
   const selectedTagId = searchParams.get("tag") || "";
   const selectedPlaytime = searchParams.get("playtime") || "";
   const selectedMetacritic = searchParams.get("metacritic") || "";
+  const hasExtraFilter = !!(
+    selectedYear ||
+    selectedYearTo ||
+    selectedPlatformId ||
+    selectedDeveloperId ||
+    selectedTagId ||
+    selectedPlaytime ||
+    selectedMetacritic ||
+    filter !== "popular"
+  );
+  const plainCatalog = !slug && !hasExtraFilter;
+  const plainGenre = !!slug && !hasExtraFilter;
 
-  // Queries
   const { data: genres = [] } = useQuery({
     queryKey: ["genres"],
     queryFn: getGenres,
@@ -67,12 +85,25 @@ const GamesPage: React.FC = () => {
     staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
+  const catalogQuery = useQuery({
+    queryKey: ["seo-catalog"],
+    queryFn: async () => {
+      const response = await fetch("/catalog.json");
+      if (!response.ok) throw new Error(String(response.status));
+      return (await response.json()) as { games: Game[] };
+    },
+    enabled: plainCatalog,
+    retry: false,
+    staleTime: Infinity,
+  });
+
   const ordering = ORDERING_MAP[filter] ?? "-added";
+  const useLiveList = !plainCatalog || (catalogQuery.isError && import.meta.env.DEV);
 
   const {
     data: gamesData,
-    isLoading: loading,
-    isError,
+    isLoading: liveLoading,
+    isError: liveError,
     error,
   } = useQuery({
     queryKey: [
@@ -99,45 +130,36 @@ const GamesPage: React.FC = () => {
         selectedTagId,
         selectedPlaytime,
         selectedMetacritic,
-        selectedYearTo
+        selectedYearTo,
       ),
+    enabled: useLiveList,
     staleTime: RAWG_LIST_STALE_TIME,
   });
 
-  const games = gamesData?.games || [];
-  const hasMore = gamesData?.nextPageUrl !== null;
+  const catalogGames = catalogQuery.data?.games ?? [];
+  const catalogSlice = catalogGames.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE);
+  const usingCatalog = plainCatalog && !!catalogQuery.data;
+  const games = usingCatalog ? catalogSlice : gamesData?.games || [];
+  const loading = plainCatalog && !catalogQuery.isError ? catalogQuery.isLoading : liveLoading;
+  const isError = plainCatalog && !import.meta.env.DEV ? catalogQuery.isError : useLiveList ? liveError : false;
+  const hasMore = usingCatalog
+    ? currentPage * CATALOG_PAGE_SIZE < catalogGames.length
+    : gamesData?.nextPageUrl != null && (!slug || currentPage < GENRE_PAGES);
+
+  const basePath = slug ? genrePath(slug) : gamesPath();
 
   const updateParams = useCallback((newParams: Record<string, string | number>) => {
-    setSearchParams(prev => {
-      const params = new URLSearchParams(prev);
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value.toString());
-        } else {
-          params.delete(key);
-        }
-      });
-      return params;
-    }, { replace: true });
-  }, [setSearchParams]);
+    const params = new URLSearchParams(searchParams);
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value && key !== "page") params.set(key, value.toString());
+      else params.delete(key);
+    });
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`, { replace: true });
+  }, [basePath, navigate, searchParams]);
 
-  // Сохранение фильтров в localStorage
   useEffect(() => {
-    if (slug) return;
-    const filters = {
-      year: selectedYear,
-      yearTo: selectedYearTo,
-      genre: selectedGenreId,
-      platform: selectedPlatformId,
-      playtime: selectedPlaytime,
-      metacritic: selectedMetacritic,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  }, [slug, selectedYear, selectedYearTo, selectedGenreId, selectedPlatformId, selectedPlaytime, selectedMetacritic]);
-
-  // Восстановление фильтров при первом входе (если URL пустой)
-  useEffect(() => {
-    if (slug) return;
+    if (slug || pageParam) return;
     if (searchParams.toString() === "") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -154,16 +176,34 @@ const GamesPage: React.FC = () => {
         }
       }
     }
-  }, [slug, searchParams, setSearchParams]);
+  }, [pageParam, slug, searchParams, setSearchParams]);
 
-  const handlePageChange = (newPage: number) => {
-    updateParams({ page: newPage });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  useEffect(() => {
+    if (slug) return;
+    const filters = {
+      year: selectedYear,
+      yearTo: selectedYearTo,
+      genre: selectedGenreId,
+      platform: selectedPlatformId,
+      playtime: selectedPlaytime,
+      metacritic: selectedMetacritic,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+  }, [slug, selectedYear, selectedYearTo, selectedGenreId, selectedPlatformId, selectedPlaytime, selectedMetacritic]);
 
   const handleClearFilters = () => {
-    setSearchParams({ filter: "popular" });
     localStorage.removeItem(STORAGE_KEY);
+    navigate(basePath, { replace: true });
+  };
+
+  const pageHref = (page: number) => {
+    if (plainCatalog) return gamesPagePath(page);
+    if (plainGenre) return genrePagePath(slug, page);
+    const params = new URLSearchParams(searchParams);
+    if (page <= 1) params.delete("page");
+    else params.set("page", String(page));
+    const query = params.toString();
+    return `${basePath}${query ? `?${query}` : ""}`;
   };
 
   const hasAnyFilter = !!(
@@ -187,58 +227,92 @@ const GamesPage: React.FC = () => {
     (selectedPlaytime ? 1 : 0) +
     (selectedMetacritic ? 1 : 0);
 
-  const genreName = genres.find((genre) => genre.slug === selectedGenreId || genre.id === selectedGenreId)?.name;
+  const genreName = genres.find((genre) => genre.slug === selectedGenreId || String(genre.id) === selectedGenreId)?.name;
   const heading = slug && genreName ? genreName : t("common.games");
+  const baseTitle = slug && genreName ? t("info.genre_title", { name: genreName }) : t("catalog.title");
+  const baseDescription = slug && genreName ? t("info.genre_description", { name: genreName }) : t("catalog.description");
+  const title = currentPage > 1 ? t("catalog.page_title", { title: baseTitle, page: currentPage }) : baseTitle;
+  const description = currentPage > 1 ? t("catalog.page_description", { description: baseDescription, page: currentPage }) : baseDescription;
   const seoReady = !loading && !isError && games.length > 0 && (!slug || !!genreName);
+  const resultCount = usingCatalog ? catalogGames.length : gamesData?.count;
+  const resultPages = usingCatalog
+    ? Math.ceil(catalogGames.length / CATALOG_PAGE_SIZE)
+    : Math.max(1, Math.ceil((gamesData?.count || 0) / CATALOG_PAGE_SIZE));
+  const visibleGenres = listedGenres.filter((genre) => genre.slug !== slug);
 
   return (
     <div className={styles.gamesPage} data-seo-ready={seoReady ? "true" : "false"}>
-      <PageMeta
-        title={slug && genreName ? t("info.genre_title", { name: genreName }) : t("catalog.title")}
-        description={slug && genreName ? t("info.genre_description", { name: genreName }) : t("catalog.description")}
-      />
-      {slug && games.length > 0 && <JsonLd data={itemListJsonLd(games)} />}
+      <PageMeta title={title} description={description} />
+      {slug && genreName && (
+        <JsonLd
+          data={breadcrumbJsonLd([
+            { name: english ? "Home" : "Главная", url: `${SITE_ORIGIN}/` },
+            { name: t("common.games"), url: canonicalUrl(SITE_ORIGIN, gamesPath()) },
+            { name: genreName, url: canonicalUrl(SITE_ORIGIN, genrePath(slug)) },
+          ])}
+        />
+      )}
+      {games.length > 0 && <JsonLd data={itemListJsonLd(games)} />}
       <div className={styles.content}>
+        {slug && (
+          <nav className={styles.crumbs} aria-label="breadcrumb">
+            <Link to="/">{english ? "Home" : "Главная"}</Link>
+            <span aria-hidden="true">/</span>
+            <Link to={gamesPath()}>{t("common.games")}</Link>
+            <span aria-hidden="true">/</span>
+            <span>{genreName || slug}</span>
+          </nav>
+        )}
         <div className={styles.headerRow}>
           <h1 className={styles.heading}>{heading}</h1>
           {hasAnyFilter && (
             <button className={styles.clearButton} onClick={handleClearFilters}>
-              {t('common.clear')}
+              {t("common.clear")}
             </button>
           )}
         </div>
-        
+
         <GameFilters
           filter={filter}
-          setFilter={(f) => updateParams({ filter: f, page: 1 })}
+          setFilter={(next) => updateParams({ filter: next, page: 1 })}
           selectedYear={selectedYear}
-          setSelectedYear={(y) => updateParams({ year: y, page: 1 })}
+          setSelectedYear={(year) => updateParams({ year, page: 1 })}
           selectedYearTo={selectedYearTo}
-          setSelectedYearTo={(y) => updateParams({ yearTo: y, page: 1 })}
+          setSelectedYearTo={(year) => updateParams({ yearTo: year, page: 1 })}
           selectedGenreId={selectedGenreId}
-          setSelectedGenreId={(g) => updateParams({ genre: g, page: 1 })}
+          setSelectedGenreId={(genre) => updateParams({ genre, page: 1 })}
           selectedPlatformId={selectedPlatformId}
-          setSelectedPlatformId={(p) => updateParams({ platform: p, page: 1 })}
+          setSelectedPlatformId={(platform) => updateParams({ platform, page: 1 })}
           selectedPlaytime={selectedPlaytime}
           setSelectedPlaytime={(range) => updateParams({ playtime: range, page: 1 })}
           selectedMetacritic={selectedMetacritic}
-          setSelectedMetacritic={(m) => updateParams({ metacritic: m, page: 1 })}
+          setSelectedMetacritic={(score) => updateParams({ metacritic: score, page: 1 })}
           genres={genres}
           platforms={platforms}
-          totalCount={gamesData?.count}
+          totalCount={resultCount}
           activeFilterCount={activeFilterCount}
         />
 
+        {resultCount !== undefined && (
+          <p className={styles.resultLine}>
+            {t("collection.found_line", {
+              count: resultCount.toLocaleString(i18n.language.startsWith("ru") ? "ru-RU" : "en-US"),
+              page: currentPage,
+              pages: resultPages,
+            })}
+          </p>
+        )}
+
         <LoadingErrorMessage
           loading={loading && games.length === 0}
-          error={isError ? (error as Error).message : null}
+          error={isError ? (catalogQuery.error as Error)?.message || (error as Error)?.message || t("common.error") : null}
           noResults={!loading && !isError && games.length === 0}
         />
 
         {loading && games.length === 0 && (
           <div className={styles.gamesList}>
-            {Array.from({ length: 12 }).map((_, i) => (
-              <GameCardSkeleton key={i} />
+            {Array.from({ length: 12 }).map((_, index) => (
+              <GameCardSkeleton key={index} />
             ))}
           </div>
         )}
@@ -246,9 +320,9 @@ const GamesPage: React.FC = () => {
         {!loading && !isError && games.length > 0 && (
           <div className={styles.gamesList}>
             {games.map((game) => (
-              <Link 
-                key={game.id} 
-                to={selectedPlatformId ? `/game/${game.id}/${selectedPlatformId}` : `/game/${game.id}`} 
+              <Link
+                key={game.id}
+                to={selectedPlatformId ? `/game/${game.id}/${selectedPlatformId}` : gamePath(game.id)}
                 className={styles.gameCardContainer}
               >
                 <GameCard game={game} />
@@ -256,26 +330,46 @@ const GamesPage: React.FC = () => {
             ))}
           </div>
         )}
-{!loading && !isError && (
-  <div className={styles.pagination}>
-    <button
-      onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-      disabled={currentPage === 1}
-      className={styles.paginationButton}
-    >
-      {t('catalog.filters.previous')}
-    </button>
-    <span className={styles.pageNumber}>{currentPage}</span>
-    {hasMore && (
-      <button 
-        onClick={() => handlePageChange(currentPage + 1)}
-        className={styles.paginationButton}
-      >
-        {t('catalog.filters.next')}
-      </button>
-    )}
-  </div>
+        {!loading && !isError && (currentPage > 1 || hasMore) && (
+          <div className={styles.pagination}>
+            {currentPage > 1 ? (
+              <Link to={pageHref(currentPage - 1)} className={styles.paginationButton}>
+                {t("catalog.filters.previous")}
+              </Link>
+            ) : (
+              <span className={styles.paginationButton} aria-disabled="true">
+                {t("catalog.filters.previous")}
+              </span>
+            )}
+            <span className={styles.pageNumber}>{currentPage}</span>
+            {hasMore && (
+              <Link to={pageHref(currentPage + 1)} className={styles.paginationButton}>
+                {t("catalog.filters.next")}
+              </Link>
+            )}
+          </div>
         )}
+
+        <section className={styles.directory}>
+          <h2>{t("common.genres")}</h2>
+          <nav aria-label={t("common.genres")}>
+            <Link to={gamesPath()}>{t("catalog.all_games")}</Link>
+            {visibleGenres.map((genre) => (
+              <Link key={genre.slug} to={genrePath(genre.slug)}>
+                {english ? genre.en : genre.ru}
+              </Link>
+            ))}
+          </nav>
+          <h2>{t("common.platforms")}</h2>
+          <nav aria-label={t("common.platforms")}>
+            <Link to={platformsPath()}>{t("common.platforms")}</Link>
+            {listedPlatforms.map((platform) => (
+              <Link key={platform.id} to={platformPath(platform.id)}>
+                {platform.name}
+              </Link>
+            ))}
+          </nav>
+        </section>
         <RawgCredit />
       </div>
     </div>

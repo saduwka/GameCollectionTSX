@@ -76,7 +76,14 @@
    ```bash
    npm run dev
    ```
-   Боевой адрес Worker (`https://playhub-rawg.<аккаунт>.workers.dev`) подставляется в `VITE_RAWG_PROXY_URL` после `npx wrangler login`, `npx wrangler secret put RAWG_API_KEY` и `npx wrangler deploy`. Сайт и правила Firestore выкладываются отдельно: `firebase deploy --only firestore:rules,hosting`.
+   Боевой адрес Worker (`https://playhub-rawg.<аккаунт>.workers.dev`) подставляется в `VITE_RAWG_PROXY_URL` после `npx wrangler login`, `npx wrangler secret put RAWG_API_KEY` и `npx wrangler deploy`. Правила Firestore выкладываются отдельно: `firebase deploy --only firestore:rules`.
+
+5. **Выложите сайт с пререндером:**
+   ```bash
+   npm run build:seo
+   firebase deploy --only hosting
+   ```
+   `build:seo` собирает `dist`, прогоняет пререндер и пишет `sitemap-index.xml`. В `robots.txt` одна строка `Sitemap:` на этот индекс. Карту не нужно заново отправлять в Search Console при каждом деплое. Пререндер игр ограничен 300 адресами и останавливает новые карточки, если прогон игр идёт дольше 9 минут. Фактическое число смотри в строке `prerendered N urls`.
 
 ---
 

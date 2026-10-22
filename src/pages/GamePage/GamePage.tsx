@@ -24,9 +24,11 @@ import ImageModal from "../../components/ImageModal/ImageModal";
 import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import GamePageSkeleton from "../../components/Skeleton/GamePageSkeleton";
 import PageMeta from "../../components/PageMeta/PageMeta";
-import JsonLd, { videoGameJsonLd } from "../../components/JsonLd/JsonLd";
+import JsonLd, { breadcrumbJsonLd, videoGameJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
+import { canonicalUrl, gamePath, gamesPath, genrePath } from "../../seo/canonicalUrl";
+import { SITE_ORIGIN } from "../../site";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
@@ -34,9 +36,20 @@ import styles from './GamePage.module.scss';
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Liked", "Not Interested"];
 
+const firstSentence = (raw: string, fallback: string) => {
+  const text = raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const match = text.match(/^[^.!?]+[.!?]/);
+  return match ? match[0].trim() : fallback;
+};
+
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(platformId || null);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [wideLayout, setWideLayout] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+  );
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -104,6 +117,13 @@ const GamePage: React.FC = () => {
   const collectionStatus = collectionData?.status || null;
 
   useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setWideLayout(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
     if (collectionData) {
       setPersonalRating(collectionData.rating || 0);
       setPersonalNote(collectionData.note || "");
@@ -156,7 +176,12 @@ const GamePage: React.FC = () => {
           note: personalNote,
           hoursPlayed: hoursPlayed,
           playingOn: playingOn || (platformId ? gameDetails.platforms.find(p => p.platform.id === parseInt(platformId))?.platform.name : ""),
-          completedAt: newStatus === "Completed" ? now : undefined
+          completedAt: newStatus === "Completed" ? now : undefined,
+          tags: (gameDetails.tags || []).map((tag) => tag.slug).filter((slug): slug is string => Boolean(slug)).slice(0, 8),
+          playtime: gameDetails.playtime,
+          metacritic: gameDetails.metacritic,
+          ratings_count: gameDetails.ratings_count,
+          platforms: gameDetails.platforms.map((item) => item.platform.id).slice(0, 12),
         });
         await invalidateUserLibrary(queryClient, user.uid);
         toast.success(t('game_page.toasts.added_to_collection', { name: gameDetails.name }));
@@ -269,22 +294,33 @@ const GamePage: React.FC = () => {
   if (loading) return <GamePageSkeleton />;
 
   const game = gameDetails as Game | undefined;
-  const metaDescription = game?.description
-    ? `${game.description.replace(/<[^>]+>/g, "").slice(0, 160)}...`
-    : `${game?.name ?? ""} — обзор, оценки, скриншоты и трейлеры на PlayHub`;
+  const metaDescription = firstSentence(
+    game?.description || "",
+    `${game?.name ?? "Игра"} — обзор, платформы и похожие игры на PlayHub.`,
+  );
 
   return (
     <>
       {game && (
         <>
           <PageMeta
-            title={`${game.name} — обзор, оценки, где купить | PlayHub`}
+            title={`${game.name} — обзор, платформы, похожие игры | PlayHub`}
             description={metaDescription}
             image={game.background_image}
             type="article"
             exactTitle
           />
           <JsonLd data={videoGameJsonLd(game)} />
+          <JsonLd
+            data={breadcrumbJsonLd([
+              { name: t("common.home"), url: `${SITE_ORIGIN}/` },
+              { name: t("common.games"), url: canonicalUrl(SITE_ORIGIN, gamesPath()) },
+              ...(game.primaryGenre
+                ? [{ name: game.primaryGenre.name, url: canonicalUrl(SITE_ORIGIN, genrePath(game.primaryGenre.slug)) }]
+                : []),
+              { name: game.name, url: canonicalUrl(SITE_ORIGIN, gamePath(game.id)) },
+            ])}
+          />
         </>
       )}
       <LoadingErrorMessage
@@ -298,71 +334,85 @@ const GamePage: React.FC = () => {
         <div className={styles.gamePageContainer} data-seo-ready="true">
           <div className={styles.topActions}>
             <button onClick={() => navigate(-1)} className={styles.backButton}>
-              ← Back
+              {t("game_page.back")}
             </button>
             <button
               onClick={() => handleToggleCompare(gameDetails)}
               className={`${styles.compareButton} ${isInComparison(gameDetails.id) ? styles.compareButtonActive : ""}`}
               aria-pressed={isInComparison(gameDetails.id)}
             >
-              {isInComparison(gameDetails.id) ? "✓ In compare" : "⚖️ Add to compare"}
+              {isInComparison(gameDetails.id) ? t("game_page.in_compare") : t("compare.add_hint")}
             </button>
           </div>
 
-          <h1 className={styles.gamePageHeader}>
-            {gameDetails.name}
-            {currentPlatformInfo && (
-              <span className={styles.platformBadge}>
-                {" "}
-                [{currentPlatformInfo.platform.name}]
-              </span>
-            )}
-            
-            {gameDetails.platforms.length > 1 && (
-              <div className={styles.platformSelector}>
-                <label>View Version: </label>
-                <select 
-                  value={selectedPlatformId || ""} 
-                  onChange={(e) => setSelectedPlatformId(e.target.value || null)}
+          <nav className={styles.crumbs} aria-label="breadcrumb">
+            <Link to="/">{t("common.home")}</Link>
+            <span aria-hidden="true">/</span>
+            <Link to={gamesPath()}>{t("common.games")}</Link>
+            {gameDetails.primaryGenre ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <Link to={genrePath(gameDetails.primaryGenre.slug)}>{gameDetails.primaryGenre.name}</Link>
+              </>
+            ) : null}
+            <span aria-hidden="true">/</span>
+            <span>{gameDetails.name}</span>
+          </nav>
+          <h1 className={styles.gamePageHeader}>{gameDetails.name}</h1>
+          {gameDetails.platforms.length > 0 && (
+            <div className={styles.platformChips}>
+              <button
+                type="button"
+                className={!selectedPlatformId ? styles.platformChipActive : styles.platformChip}
+                onClick={() => setSelectedPlatformId(null)}
+              >
+                {t("game_page.general_info")}
+              </button>
+              {gameDetails.platforms.map((platform) => (
+                <button
+                  key={platform.platform.id}
+                  type="button"
+                  className={String(platform.platform.id) === selectedPlatformId ? styles.platformChipActive : styles.platformChip}
+                  onClick={() => setSelectedPlatformId(String(platform.platform.id))}
                 >
-                  <option value="">General Info</option>
-                  {gameDetails.platforms.map(p => (
-                    <option key={p.platform.id} value={p.platform.id}>{p.platform.name}</option>
-                  ))}
-                </select>
+                  {platform.platform.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.statusSection}>
+            <button
+              type="button"
+              className={styles.primaryAction}
+              onClick={() => setStatusMenuOpen((open) => !open)}
+              disabled={isCollectionActionLoading}
+            >
+              {collectionStatus ? t(`game_page.status.${collectionStatus}`) : t("game_page.add_to_collection")}
+            </button>
+            {statusMenuOpen && (
+              <div className={styles.statusMenu}>
+                {STATUS_OPTIONS.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => {
+                      setStatusMenuOpen(false);
+                      handleStatusChange(status);
+                    }}
+                  >
+                    {t(`game_page.status.${status}`)}
+                  </button>
+                ))}
               </div>
             )}
-            
-            <div className={styles.subscriptionBadges}>
-              {gameDetails.tags?.some(t => t.name.toLowerCase().includes("game pass")) && (
-                <span className={styles.gamePassBadge}>Game Pass</span>
-              )}
-              {gameDetails.tags?.some(t => t.name.toLowerCase().includes("ps plus")) && (
-                <span className={styles.psPlusBadge}>PS Plus</span>
-              )}
-            </div>
-          </h1>
+          </div>
 
           <div className={styles.gameWrapper}>
             <div className={styles.gamePageDetails}>
-              <div className={styles.statusSection}>
-                <label className={styles.statusLabel}>{t('game_page.collection_status')}</label>
-                <div className={styles.statusButtons}>
-                  {STATUS_OPTIONS.map(status => (
-                    <button
-                      key={status}
-                      className={`${styles.statusButton} ${collectionStatus === status ? styles.activeStatus : ""}`}
-                      onClick={() => handleStatusChange(status)}
-                      disabled={isCollectionActionLoading}
-                    >
-                      {t(`game_page.status.${status}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {collectionStatus && (
                 <div className={styles.personalSection}>
+                  <h2 className={styles.sectionHeading}>{t("game_page.my_game")}</h2>
                   <div className={styles.progressTracker}>
                     <div className={styles.inputGroup}>
                       <label className={styles.statusLabel}>{t('game_page.playing_on')}</label>
@@ -421,8 +471,8 @@ const GamePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className={styles.noteBox}>
-                    <label className={styles.statusLabel}>{t('game_page.my_notes')}</label>
+                  <details className={styles.noteBox}>
+                    <summary>{t('game_page.my_notes')}</summary>
                     <textarea 
                       className={styles.noteInput}
                       placeholder={t('game_page.note_placeholder')}
@@ -437,7 +487,7 @@ const GamePage: React.FC = () => {
                     >
                       {t('game_page.save_note')}
                     </button>
-                  </div>
+                  </details>
 
                   <button 
                     className={styles.removeButton}
@@ -478,7 +528,7 @@ const GamePage: React.FC = () => {
                   <strong>{t('game_page.details.developers')}</strong>{" "}
                   {gameDetails.developers.map((dev, i) => (
                     <React.Fragment key={dev.id}>
-                      <Link to={`/games?developer=${dev.id}`} className={styles.platformLink}>
+                      <Link to={`${gamesPath()}?developer=${dev.id}`} className={styles.platformLink}>
                         {dev.name}
                       </Link>
                       {i < gameDetails.developers!.length - 1 && ", "}
@@ -500,7 +550,7 @@ const GamePage: React.FC = () => {
                     {gameDetails.tags.slice(0, 15).map((tag) => (
                       <Link 
                         key={tag.id} 
-                        to={`/games?tag=${tag.id}`} 
+                        to={`${gamesPath()}?tag=${tag.id}`} 
                         className={styles.tagBadge}
                         style={{ textDecoration: "none" }}
                       >
@@ -515,18 +565,20 @@ const GamePage: React.FC = () => {
                 <strong>{t('game_page.details.description')}</strong>
                 {loadingWiki ? (
                   <p>{t('game_page.details.loading_wiki')}</p>
-                ) : gameWiki ? (
-                  <div className={styles.wikiBox}>
-                    <p>{gameWiki.extract}</p>
-                    {gameWiki.content_urls?.desktop.page && (
-                      <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">{t('game_page.details.read_more_wiki')}</a>
+                ) : (
+                  <div className={descriptionOpen ? styles.descriptionOpen : styles.descriptionClamp}>
+                    {gameWiki ? (
+                      <p>{gameWiki.extract}</p>
+                    ) : (
+                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(gameDetails.description) }} />
                     )}
                   </div>
-                ) : (
-                  <div
-                    className={styles.description}
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(gameDetails.description) }}
-                  />
+                )}
+                <button type="button" className={styles.textButton} onClick={() => setDescriptionOpen((open) => !open)}>
+                  {descriptionOpen ? t("common.collapse") : t("common.read_more")}
+                </button>
+                {gameWiki?.content_urls?.desktop.page && (
+                  <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">{t('game_page.details.read_more_wiki')}</a>
                 )}
               </div>
 
@@ -583,8 +635,9 @@ const GamePage: React.FC = () => {
 
               {/* Price Comparison */}
               {(dealsLoading || deals.length > 0) && (
+                <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+                  <summary>{t('game_page.details.best_deals')}</summary>
                 <div className={styles.dealsSection}>
-                  <strong>{t('game_page.details.best_deals')}</strong>
                   {dealsLoading ? (
                     <p className={styles.dealsLoader}>{t('game_page.details.searching_deals')}</p>
                   ) : (
@@ -607,11 +660,13 @@ const GamePage: React.FC = () => {
                     </div>
                   )}
                 </div>
+                </details>
               )}
 
               {gameDetails.stores && gameDetails.stores.length > 0 && (
+                <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+                  <summary>{t('game_page.details.official_stores')}</summary>
                 <div className={styles.storesSection}>
-                  <strong>{t('game_page.details.official_stores')}</strong>
                   <div className={styles.storesList}>
                     {gameDetails.stores.map((s) => (
                       <a
@@ -626,13 +681,15 @@ const GamePage: React.FC = () => {
                     ))}
                   </div>
                 </div>
+                </details>
               )}
             </div>
 
             <div className={styles.gameMediaContainer}>
               {allImages.length > 0 && (
+                <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+                  <summary>{t('game_page.details.gallery')}</summary>
                 <div className={styles.screenshotsSection}>
-                  <h2 className={styles.sectionHeading}>{t('game_page.details.gallery')}</h2>
                   <div className={styles.screenshotsGallery}>
                     {allImages.map((src, index) => (
                       <img
@@ -648,13 +705,15 @@ const GamePage: React.FC = () => {
                     ))}
                   </div>
                 </div>
+                </details>
               )}
             </div>
           </div>
 
           {trailers.length > 0 && (
+            <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+              <summary>{t('game_page.details.trailers')}</summary>
             <div className={styles.trailersSection}>
-              <h2 className={styles.sectionHeading}>{t('game_page.details.trailers')}</h2>
               <div className={styles.trailersGallery}>
                 {trailers.map((src, index) => (
                   <div key={index} className={styles.trailerItem}>
@@ -670,20 +729,26 @@ const GamePage: React.FC = () => {
                 ))}
               </div>
             </div>
+            </details>
           )}
 
-          {/* YouTube Media Section */}
+          <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+            <summary>{t('game_page.details.soundtracks')}</summary>
           <YouTubeSection 
             title={t('game_page.details.soundtracks')} 
             videos={youtubeMedia.ost} 
             loading={youtubeLoading} 
           />
+          </details>
 
+          <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
+            <summary>{t('game_page.details.reviews')}</summary>
           <YouTubeSection 
             title={t('game_page.details.reviews')} 
             videos={youtubeMedia.reviews} 
             loading={youtubeLoading} 
           />
+          </details>
 
           {gameDetails.additions && gameDetails.additions.length > 0 && (
             <div className={styles.relatedSection}>
@@ -691,7 +756,7 @@ const GamePage: React.FC = () => {
               <div className={styles.relatedGrid}>
                 {gameDetails.additions.map((addition) => (
                   <Link 
-                    to={`/game/${addition.id}`} 
+                    to={gamePath(addition.id)} 
                     key={addition.id} 
                     className={styles.relatedItem}
                   >
@@ -716,7 +781,7 @@ const GamePage: React.FC = () => {
               <div className={styles.relatedGrid}>
                 {gameDetails.game_series.map((seriesGame) => (
                   <Link 
-                    to={`/game/${seriesGame.id}`} 
+                    to={gamePath(seriesGame.id)} 
                     key={seriesGame.id} 
                     className={styles.relatedItem}
                   >

@@ -44,7 +44,6 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div className={styles.wrapper} role="alert" aria-live="assertive">
           <div className={styles.card}>
-            <div className={styles.emoji} aria-hidden="true">🎮💥</div>
             <h1 className={styles.title}>{t('common.error')}</h1>
             <p className={styles.message}>
               {t('not_found.description')}
@@ -56,7 +55,7 @@ class ErrorBoundary extends Component<Props, State> {
             )}
             <div className={styles.actions}>
               <button className={styles.btnPrimary} onClick={this.handleReload}>
-                {t('common.update_error').split(' ')[0]} {/* Placeholder for "Reload" */}
+                {t('common.reload')}
               </button>
               <button className={styles.btnSecondary} onClick={this.handleHome}>
                 {t('common.home')}

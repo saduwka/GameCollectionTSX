@@ -1,6 +1,8 @@
 // FILE: src/components/PageMeta/PageMeta.tsx
-import { Helmet } from "react-helmet-async";
+import { useLayoutEffect } from "react";
+import { canonicalUrl } from "../../seo/canonicalUrl";
 import { SITE_ORIGIN } from "../../site";
+import { syncDocumentMeta } from "./syncDocumentMeta";
 
 interface PageMetaProps {
   /** Уникальная часть title. Будет автоматически дополнена " — PlayHub". */
@@ -15,6 +17,8 @@ interface PageMetaProps {
   exactTitle?: boolean;
   /** OG type — обычно "website", для страниц игр можно "article". */
   type?: "website" | "article";
+  /** Закрыть страницу от индексации. Для пререндеренных публичных страниц не ставить. */
+  noindex?: boolean;
 }
 
 const SITE_NAME = "PlayHub";
@@ -28,34 +32,25 @@ const PageMeta = ({
   url,
   type = "website",
   exactTitle = false,
+  noindex = false,
 }: PageMetaProps) => {
   const fullTitle = exactTitle || title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
   const pageUrl =
     url ||
-    (typeof window !== "undefined" ? `${SITE_ORIGIN}${window.location.pathname}` : SITE_ORIGIN);
+    (typeof window !== "undefined" ? canonicalUrl(SITE_ORIGIN, window.location.pathname) : SITE_ORIGIN);
 
-  return (
-    <Helmet prioritizeSeoTags>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
+  useLayoutEffect(() => {
+    syncDocumentMeta({
+      title: fullTitle,
+      description,
+      url: pageUrl,
+      type,
+      image,
+      noindex,
+    });
+  }, [description, fullTitle, image, noindex, pageUrl, type]);
 
-      {/* Open Graph */}
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
-      <meta property="og:site_name" content={SITE_NAME} />
-      {pageUrl && <meta property="og:url" content={pageUrl} />}
-      {image && <meta property="og:image" content={image} />}
-
-      {/* Twitter Card */}
-      <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      {image && <meta name="twitter:image" content={image} />}
-
-      {pageUrl && <link rel="canonical" href={pageUrl} />}
-    </Helmet>
-  );
+  return null;
 };
 
 export default PageMeta;

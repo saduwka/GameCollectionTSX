@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { canonicalUrl } from "../../seo/canonicalUrl";
 import { SITE_ORIGIN } from "../../site";
 import type { Game } from "../../types/game";
 
@@ -12,6 +13,51 @@ const JsonLd = ({ data }: JsonLdProps) => (
   </Helmet>
 );
 
+export const websiteJsonLd = (description?: string) => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "PlayHub",
+  url: SITE_ORIGIN,
+  ...(description ? { description } : {}),
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE_ORIGIN}/search?query={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+});
+
+export const organizationJsonLd = (description: string) => ({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "PlayHub",
+  url: SITE_ORIGIN,
+  description,
+});
+
+export const faqPageJsonLd = (items: { question: string; answer: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: items.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+});
+
+export const breadcrumbJsonLd = (items: { name: string; url?: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    ...(item.url ? { item: item.url } : {}),
+  })),
+});
+
 export const itemListJsonLd = (games: { id: number; name: string }[]) => ({
   "@context": "https://schema.org",
   "@type": "ItemList",
@@ -19,7 +65,7 @@ export const itemListJsonLd = (games: { id: number; name: string }[]) => ({
     "@type": "ListItem",
     position: index + 1,
     name: game.name,
-    url: `${SITE_ORIGIN}/game/${game.id}`,
+    url: canonicalUrl(SITE_ORIGIN, `/game/${game.id}`),
   })),
 });
 

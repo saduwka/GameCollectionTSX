@@ -4,12 +4,8 @@
 .filters {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  background-color: $bg-card;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  border: 1px solid $border-color;
+  gap: 8px;
+  margin-bottom: 28px;
 }
 
 .topRow {
@@ -32,14 +28,27 @@
 
 .sortGroup {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.sortLabel {
-  font-size: 0.85rem;
-  color: $text-secondary;
-  font-weight: 600;
+.sortLabel,
+.rowLabel,
+.genreLabel {
+  min-width: 110px;
+  padding-top: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .sortSelect {
@@ -66,12 +75,11 @@
 }
 
 .countBadge {
-  font-size: 0.85rem;
-  color: $text-secondary;
-  padding: 6px 10px;
-  background: rgba(100, 108, 255, 0.08); // Keep for now
-  border: 1px solid rgba(100, 108, 255, 0.25);
-  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
 }
 
 .countBadge strong {
@@ -80,28 +88,12 @@
 }
 
 .activeBadge {
-  font-size: 0.8rem;
-  color: $text-main;
-  background: $primary-color;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.collapseButton {
-  background: transparent;
-  border: 1px solid $border-color;
-  color: $text-secondary;
-  font-size: 0.85rem;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.collapseButton:hover {
-  border-color: $primary-color;
-  color: $text-main;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--hot-ink);
+  background: var(--hot);
+  padding: 4px 8px;
+  border-radius: var(--r-xs);
 }
 
 .body {
@@ -120,18 +112,23 @@
   pointer-events: none;
 }
 
-.surpriseButton {
-  background: linear-gradient(45deg, $primary-color, #9c27b0);
-  font-weight: bold;
-  padding: 10px 25px;
-  border-radius: 25px;
-  transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+.surpriseButton,
+.collapseButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--faint);
+  border-radius: var(--r-s);
+  background: transparent;
+  color: var(--dim);
+  box-shadow: none;
 }
 
-.surpriseButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.5);
+.surpriseButton:hover:not(:disabled),
+.collapseButton:hover {
+  color: var(--ink);
+  border-color: var(--dim);
+  transform: none;
+  box-shadow: none;
 }
 
 .rolling {
@@ -145,15 +142,17 @@
 }
 
 .selectGroup {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 .filterItem {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--faint);
 }
 
 .filterItem label {
@@ -164,25 +163,22 @@
 }
 
 .selectFilter {
-  background-color: $bg-dark;
-  color: $text-main;
-  border: 1px solid $border-color;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  min-height: 40px;
+  background: var(--paper-3);
+  color: var(--ink);
+  border: 1px solid var(--faint);
+  padding: 8px 10px;
+  border-radius: var(--r-s);
+  font: inherit;
 }
 
 .genreSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.genreLabel {
-  font-size: 0.8rem;
-  color: $text-secondary;
-  font-weight: bold;
-  text-transform: uppercase;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--faint);
 }
 
 .genreChips {

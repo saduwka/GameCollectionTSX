@@ -4,14 +4,22 @@ import { stripShellSeo, validatePrerenderedHtml } from "../scripts/prerenderHtml
 
 const title = "PlayHub — каталог игр, сравнение и рекомендации";
 
+const hrefFor = (route = "/") => `https://gamecollection-ff71a.web.app${route === "/" ? "/" : route}`;
+
 const page = (route = "/") => `<!DOCTYPE html><html><head>
 <title data-seo-shell="true">${title}</title>
 <title>${title}</title>
 <meta data-seo-shell="true" name="description" content="shell description" />
 <meta name="description" content="page description" />
-<link rel="canonical" href="https://gamecollection-ff71a.web.app${route === "/" ? "/" : route}" />
+<link rel="canonical" href="${hrefFor(route)}" />
 <meta property="og:title" content="${title}" />
-<meta property="og:url" content="https://gamecollection-ff71a.web.app${route === "/" ? "/" : route}" />
+<meta property="og:description" content="page description" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="PlayHub" />
+<meta property="og:url" content="${hrefFor(route)}" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="${title}" />
+<meta name="twitter:description" content="page description" />
 </head><body><h1>Home</h1></body></html>`;
 
 describe("prerender html", () => {
@@ -22,6 +30,24 @@ describe("prerender html", () => {
     assert.equal(html.includes("shell description"), false);
     assert.equal(html.includes("page description"), true);
     assert.doesNotThrow(() => validatePrerenderedHtml(html, "/"));
+  });
+
+  it("rejects an empty description and a second canonical", () => {
+    const empty = stripShellSeo(page()).replace('content="page description"', 'content=""');
+    assert.throws(() => validatePrerenderedHtml(empty, "/"), /description/);
+    const doubled = `${stripShellSeo(page())}<link rel="canonical" href="https://gamecollection-ff71a.web.app/games" />`;
+    assert.throws(() => validatePrerenderedHtml(doubled, "/"), /canonical/);
+  });
+
+  it("requires the collection canonical to keep the trailing slash", () => {
+    const route = "/collections/short-evening";
+    const html = stripShellSeo(page(route));
+    assert.throws(() => validatePrerenderedHtml(html, route), /canonical/);
+    const slashed = html.replaceAll(
+      "https://gamecollection-ff71a.web.app/collections/short-evening",
+      "https://gamecollection-ff71a.web.app/collections/short-evening/",
+    );
+    assert.doesNotThrow(() => validatePrerenderedHtml(slashed, route));
   });
 
   it("rejects a localhost canonical and a missing h1", () => {

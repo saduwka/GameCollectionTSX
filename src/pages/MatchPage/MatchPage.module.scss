@@ -105,20 +105,32 @@
   margin-bottom: 18px;
 }
 
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
 .actionBtn {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: none;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--faint);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  color: $text-main;
+  box-shadow: none;
+  background: transparent;
+  color: var(--ink);
 }
 
 .actionBtn:hover {
@@ -130,12 +142,14 @@
 }
 
 .nopeBtn {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  background: transparent;
+  color: var(--ink);
 }
 
 .likeBtn {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-  color: $bg-dark;
+  background: var(--hot);
+  color: var(--hot-ink);
+  border-color: var(--hot);
 }
 
 .guestHint {
@@ -243,23 +257,27 @@
 }
 
 .primaryBtn {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-  color: $bg-dark;
-  padding: 10px 22px;
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 18px;
+  border-radius: var(--r-s);
+  background: var(--hot);
+  color: var(--hot-ink);
   font-weight: 700;
   text-decoration: none;
   margin-bottom: 10px;
 }
 
 .ghostBtn {
+  min-height: 44px;
   background: transparent;
-  color: $text-secondary;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 8px 18px;
-  border-radius: 12px;
+  color: var(--dim);
+  border: 1px solid var(--faint);
+  padding: 0 16px;
+  border-radius: var(--r-s);
   cursor: pointer;
-  font-size: 0.85rem;
+  font: inherit;
 }
 
 .ghostBtn:hover {

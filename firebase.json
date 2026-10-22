@@ -24,10 +24,22 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "source": "/sitemap.xml",
+        "destination": "/sitemap-index.xml",
+        "type": 301
+      },
+      {
+        "source": "/sitemap-platforms.xml",
+        "destination": "/sitemap-index.xml",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/spa.html"
       }
     ]
   }

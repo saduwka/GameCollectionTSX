@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -b && vite build",
-    "build:seo": "npm run build && node scripts/prerender.mjs",
+    "build:seo": "npm run build && node scripts/prerender.mjs && node scripts/checkCatalogCoverage.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "tsx --test tests/mergeGuestEntries.test.ts tests/prerenderHtml.test.ts tests/rawgProxy.test.ts",
+    "test": "tsx --test tests/canonicalUrl.test.ts tests/catalogCoverage.test.ts tests/mergeGuestEntries.test.ts tests/prerenderHtml.test.ts tests/publicLinks.test.ts tests/rawgProxy.test.ts tests/robots.test.ts tests/sitemap.test.ts tests/tonight.test.ts",
     "test:rules": "firebase emulators:exec --only auth,firestore --project gamecollection-ff71a \"tsx --test --test-concurrency=1 tests/firestore.rules.test.ts tests/collectionTransaction.test.ts\""
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "framer-motion": "^12.40.0",
     "i18next": "^26.3.1",
     "i18next-browser-languagedetector": "^8.2.1",
+    "lucide-react": "^1.59.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.0",
     "react-confirm-alert": "^3.0.6",

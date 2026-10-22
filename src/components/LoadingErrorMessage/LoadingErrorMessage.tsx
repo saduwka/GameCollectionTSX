@@ -1,5 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import EmptyState from "../ui/EmptyState";
+import ErrorState from "../ui/ErrorState";
 import styles from "./LoadingErrorMessage.module.scss";
 
 interface LoadingErrorMessageProps {
@@ -51,11 +53,11 @@ const LoadingErrorMessage: React.FC<LoadingErrorMessageProps> = ({
   }
 
   if (error) {
-    return <p className={styles.message}>{t('common.error')}: {error}</p>;
+    return <ErrorState title={t("ui.closed")} text={error} />;
   }
 
   if (noResults) {
-    return <p className={styles.message}>{message || t('common.nothing_found')}</p>;
+    return <EmptyState title={t("landing.empty_title")} text={message || t("common.nothing_found")} />;
   }
 
   return null;

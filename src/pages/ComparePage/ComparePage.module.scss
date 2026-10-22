@@ -165,19 +165,16 @@
 }
 
 .winnerCell {
-  background: rgba(107, 203, 119, 0.08);
-  color: #6bcb77;
-  font-weight: 700;
-  position: relative;
+  background: var(--hot-dim);
+  color: var(--ink);
+  font-weight: 600;
 }
 
-.winnerCell::after {
-  content: "★";
-  position: absolute;
-  top: 4px;
-  right: 8px;
-  font-size: 10px;
-  opacity: 0.6;
+.attrCell {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .loadingRow {
@@ -220,19 +217,19 @@
 }
 
 .btnPrimary {
-  background: #646cff;
-  color: #fff;
+  min-height: 56px;
+  background: var(--hot);
+  color: var(--hot-ink);
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 0 18px;
+  border-radius: var(--r-s);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .btnPrimary:hover {
-  background: #535bf2;
+  filter: brightness(1.05);
 }
 
 @media (max-width: 768px) {

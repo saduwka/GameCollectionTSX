@@ -5,7 +5,7 @@ import { auth, googleProvider } from "../../firebase";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
-const LoginButton = () => {
+const LoginButton = ({ compact = false }: { compact?: boolean }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,25 +27,23 @@ const LoginButton = () => {
   };
 
   return (
-    <div className="login-button-wrapper">
-      <button
-        className={styles.googleButton}
-        onClick={handleLogin}
-        disabled={isLoading}
-        aria-label={t("auth.login_google")}
-      >
-        <div className={styles.iconWrapper}>
-          <img
-            src="https://developers.google.com/identity/images/g-logo.png"
-            alt="Google logo"
-            className={styles.icon}
-          />
-        </div>
-        <span className={styles.buttonText}>
-          {isLoading ? t("auth.logging_in") : t("auth.login_google")}
-        </span>
-      </button>
-    </div>
+    <button
+      className={`${styles.googleButton} ${compact ? styles.compact : ""}`}
+      onClick={handleLogin}
+      disabled={isLoading}
+      aria-label={t("auth.login_google")}
+    >
+      <span className={styles.iconWrapper}>
+        <img
+          src="https://developers.google.com/identity/images/g-logo.png"
+          alt=""
+          className={styles.icon}
+        />
+      </span>
+      <span className={styles.buttonText}>
+        {isLoading ? t("auth.logging_in") : t("auth.login_google")}
+      </span>
+    </button>
   );
 };
 

@@ -8,6 +8,7 @@ import LoginButton from "../LoginButton/LoginButton";
 import LogoutButton from "../LogoutButton/LogoutButton";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 import styles from "./Sidebar.module.scss";
+import { aboutPath, faqPath, gamesPath, platformsPath } from "../../seo/canonicalUrl";
 import logo from "../../assets/logo/logo.svg";
 
 interface SidebarProps {
@@ -141,16 +142,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Link to="/" className={styles.navLink} onClick={onClose}>
               {t('common.home')}
             </Link>
-            <Link to="/games" className={styles.navLink} onClick={onClose}>
+            <Link to={gamesPath()} className={styles.navLink} onClick={onClose}>
               {t('common.games')}
             </Link>
-            <Link to="/platforms" className={styles.navLink} onClick={onClose}>
+            <Link to={platformsPath()} className={styles.navLink} onClick={onClose}>
               {t('common.platforms')}
             </Link>
-            <Link to="/about" className={styles.navLink} onClick={onClose}>
+            <Link to={aboutPath()} className={styles.navLink} onClick={onClose}>
               {t("common.about")}
             </Link>
-            <Link to="/faq" className={styles.navLink} onClick={onClose}>
+            <Link to={faqPath()} className={styles.navLink} onClick={onClose}>
               {t("common.faq")}
             </Link>
             <Link to="/match" className={styles.navLink} onClick={onClose}>

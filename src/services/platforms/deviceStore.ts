@@ -34,10 +34,15 @@ const readJson = <T>(key: string, fallback: T): T => {
 export const getDeviceNameMap = (): Record<string, string> =>
   readJson<Record<string, string>>(NAMES_KEY, {});
 
+const hashName = /^#\d+$/;
+
+export const hasDeviceName = (name?: string) => Boolean(name) && !hashName.test(name!);
+
 export const rememberDeviceNames = (devices: DeviceChoice[]) => {
   if (!isBrowser) return;
   const current = getDeviceNameMap();
   devices.forEach((device) => {
+    if (!hasDeviceName(device.name)) return;
     current[String(device.id)] = device.name;
   });
   try {
@@ -49,10 +54,11 @@ export const rememberDeviceNames = (devices: DeviceChoice[]) => {
 
 export const namesForDeviceIds = (ids: number[]): DeviceChoice[] => {
   const names = getDeviceNameMap();
-  return ids.map((id) => ({
-    id,
-    name: names[String(id)] || POPULAR_PLATFORMS.find((platform) => platform.id === id)?.name || `#${id}`,
-  }));
+  return ids.map((id) => {
+    const cached = names[String(id)];
+    const popular = POPULAR_PLATFORMS.find((platform) => platform.id === id)?.name;
+    return { id, name: hasDeviceName(cached) ? cached : popular || "" };
+  });
 };
 
 export const getGuestDevices = (): DeviceChoice[] => {

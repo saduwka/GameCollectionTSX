@@ -2,21 +2,17 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { getUserCollection, getPublicProfile, type CollectedGame, type GameStatus } from "../../services/collection/collectionService";
+import { getUserCollection, getPublicProfile, type CollectedGame } from "../../services/collection/collectionService";
 import { collectionKeys } from "../../services/collection/queryKeys";
 import { getCollectionStats } from "../../services/collection/stats";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
+import Ticket from "../../components/ui/Ticket";
 import styles from "../CollectionPage/CollectionPage.module.scss";
+import { gamePath } from "../../seo/canonicalUrl";
 import type { Game } from "../../types/game";
-
-const SECTIONS: { status: GameStatus; label: "section_playing" | "section_completed" | "section_wishlist" }[] = [
-  { status: "Playing", label: "section_playing" },
-  { status: "Completed", label: "section_completed" },
-  { status: "Wishlist", label: "section_wishlist" },
-];
 
 const toCardGame = (game: CollectedGame): Game => ({
   id: game.id,
@@ -72,15 +68,27 @@ const PublicCollectionPage: React.FC = () => {
         description={description}
         image={stats.topGames[0]?.image || settingsQuery.data?.photoURL}
       />
-      <h1 className={styles.title}>{ownerName}</h1>
-
-      {canLoadGames && settingsQuery.data && (
-        <div className={styles.ownerRow}>
-          {settingsQuery.data.photoURL && (
-            <img src={settingsQuery.data.photoURL} alt="" className={styles.ownerAvatar} />
-          )}
-        </div>
-      )}
+      <Ticket
+        heading="h1"
+        kicker={t("collection.public_title")}
+        title={ownerName}
+        meta={canLoadGames ? (
+          <span>
+            {t("collection.public_summary", {
+              done: collection.filter((game) => game.status === "Completed").length,
+              planned: collection.filter((game) => game.status === "Wishlist" || game.status === "Backlog").length,
+              hours: stats.totalHours,
+            })}
+          </span>
+        ) : undefined}
+        foot={
+          <span className={styles.coverRow}>
+            {stats.topGames.slice(0, 3).map((game) => (
+              game.image ? <img key={game.name} src={game.image} alt="" className={styles.coverThumb} /> : null
+            ))}
+          </span>
+        }
+      />
 
       <LoadingErrorMessage
         loading={settingsQuery.isLoading}
@@ -99,23 +107,21 @@ const PublicCollectionPage: React.FC = () => {
 
       {canLoadGames && collectionQuery.isSuccess && collection.length > 0 && (
         <>
-          <div className={styles.statsRow}>
-            <span>{t("collection.avg_rating")}: {stats.avgRating}</span>
-            <span>{t("collection.total_hours")}: {stats.totalHours}</span>
-            {stats.topGenres.length > 0 && (
-              <span>{t("collection.top_genres")}: {stats.topGenres.join(", ")}</span>
-            )}
-          </div>
-          {SECTIONS.map((section) => {
-            const games = collection.filter((game) => game.status === section.status);
+          {([
+            { key: "segment_playing", statuses: ["Playing"] as const },
+            { key: "segment_want", statuses: ["Wishlist", "Backlog"] as const },
+            { key: "segment_done", statuses: ["Completed"] as const },
+            { key: "segment_more", statuses: ["Liked", "Dropped", "Not Interested"] as const },
+          ]).map((section) => {
+            const games = collection.filter((game) => (section.statuses as readonly string[]).includes(game.status));
             if (games.length === 0) return null;
             return (
-              <section key={section.status}>
-                <h2 className={styles.subtitle}>{t(`collection.${section.label}`)}</h2>
+              <section key={section.key}>
+                <h2 className={styles.subtitle}>{t(`collection.${section.key}`)}</h2>
                 <div className={styles.gamesGrid}>
                   {games.map((game) => (
-                    <Link key={game.id} to={`/game/${game.id}`} className={styles.gameCardWrapper}>
-                      <GameCard game={toCardGame(game)} />
+                    <Link key={game.id} to={gamePath(game.id)} className={styles.gameCardWrapper}>
+                      <GameCard game={toCardGame(game)} status={game.status} />
                     </Link>
                   ))}
                 </div>

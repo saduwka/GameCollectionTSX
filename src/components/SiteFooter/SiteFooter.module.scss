@@ -1,0 +1,31 @@
+.footer {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 24px;
+  max-width: var(--container);
+  margin: 48px auto 0;
+  padding: 28px var(--gutter) 64px;
+  border-top: 1px solid var(--faint);
+}
+
+.footer h2 {
+  margin: 0 0 10px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.footer a {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--ink);
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .footer {
+    grid-template-columns: 1fr;
+  }
+}

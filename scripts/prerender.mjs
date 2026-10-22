@@ -3,15 +3,31 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { canonicalPathname } from "./canonicalPath.mjs";
+import { CATALOG_PAGES, GAME_LIMIT, GENRE_PAGES, collectionSlugs, genres, platforms } from "./publicLinks.mjs";
+import { absoluteUrl, sitemapDocuments } from "./sitemap.mjs";
 import { stripShellSeo, validatePrerenderedHtml } from "./prerenderHtml.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE_FILE = path.join(ROOT, "cache/rawg/urls.json");
 const DIST = path.join(ROOT, "dist");
-const SITE_ORIGIN = "https://gamecollection-ff71a.web.app";
 const PREVIEW_ORIGIN = "http://127.0.0.1:4173";
 
-const STATIC_ROUTES = ["/", "/about", "/faq", "/games", "/platforms"];
+const STATIC_ROUTES = [
+  "/",
+  "/about",
+  "/faq",
+  "/games",
+  "/platforms",
+  ...collectionSlugs.map((slug) => `/collections/${slug}/`),
+  ...genres.map((genre) => `/genre/${genre.slug}`),
+  ...platforms.map((platform) => `/platform/${platform.id}`),
+  ...genres.flatMap((genre) =>
+    Array.from({ length: GENRE_PAGES - 1 }, (_, index) => `/genre/${genre.slug}/page/${index + 2}`),
+  ),
+];
+// GAME_LIMIT is 300. The game budget is 9 minutes, and further pages would be thin RAWG copies.
+const GAME_BUDGET_MS = 9 * 60 * 1000;
 
 const readProxyUrl = async () => {
   const fromProcess = process.env.RAWG_PROXY_URL?.trim() || process.env.VITE_RAWG_PROXY_URL?.trim();
@@ -33,10 +49,37 @@ const rawg = async (proxyUrl, pathname) => {
   return response.json();
 };
 
+const toCard = (raw) => ({
+  id: raw.id,
+  name: raw.name,
+  description: "",
+  background_image: raw.background_image || "",
+  rating: raw.rating ?? 0,
+  playtime: raw.playtime || 0,
+  added: raw.added ?? 0,
+  platforms: (raw.platforms || []).map((item) => ({
+    platform: {
+      id: item.platform.id,
+      name: item.platform.name,
+      slug: item.platform.slug || "",
+    },
+  })),
+  released: raw.released || "Unknown",
+  genres: (raw.genres || []).map((genre) => genre.name),
+  coverUrl: raw.background_image || "",
+  screenshots: [],
+  trailers: [],
+  stores: [],
+});
+
 const loadRoutes = async () => {
+  const catalogFile = path.join(ROOT, "cache/rawg/catalog.json");
   try {
     const cached = JSON.parse(await readFile(CACHE_FILE, "utf8"));
-    if (cached.games?.length >= 50 && cached.platforms?.length >= 10 && cached.genres?.length >= 10) {
+    const catalog = JSON.parse(await readFile(catalogFile, "utf8"));
+    const ids = catalog.games?.map((game) => game.id) ?? [];
+    if (cached.games?.length === GAME_LIMIT && ids.length === GAME_LIMIT && ids.every((id, index) => id === cached.games[index])) {
+      await writeFile(path.join(DIST, "catalog.json"), JSON.stringify(catalog));
       return cached;
     }
   } catch {
@@ -44,34 +87,34 @@ const loadRoutes = async () => {
   }
 
   const proxyUrl = await readProxyUrl();
-  const [firstPage, secondPage, platforms, genres] = await Promise.all([
-    rawg(proxyUrl, "/games?ordering=-added&page_size=40&page=1"),
-    rawg(proxyUrl, "/games?ordering=-added&page_size=40&page=2"),
-    rawg(proxyUrl, "/platforms?ordering=-games_count&page_size=10"),
-    rawg(proxyUrl, "/genres?page_size=10"),
-  ]);
-
+  const gamePages = Array.from({ length: CATALOG_PAGES }, (_, index) => index + 1);
+  const lists = await Promise.all(
+    gamePages.map((page) => rawg(proxyUrl, `/games?ordering=-added&page_size=20&page=${page}`)),
+  );
+  const cards = lists.flatMap((page) => page.results ?? []).slice(0, GAME_LIMIT).map(toCard);
   const routes = {
-    games: [...firstPage.results, ...secondPage.results].slice(0, 50).map((game) => game.id),
-    platforms: platforms.results.slice(0, 10).map((platform) => platform.id),
-    genres: genres.results.slice(0, 10).map((genre) => genre.slug).filter(Boolean),
+    games: cards.map((game) => game.id),
+    platforms: platforms.map((platform) => platform.id),
+    genres: genres.map((genre) => genre.slug),
   };
 
   await mkdir(path.dirname(CACHE_FILE), { recursive: true });
   await writeFile(CACHE_FILE, JSON.stringify(routes, null, 2));
+  const catalog = JSON.stringify({ games: cards });
+  await writeFile(catalogFile, catalog);
+  await writeFile(path.join(DIST, "catalog.json"), catalog);
   return routes;
 };
 
-const routeList = (routes) => [
-  ...STATIC_ROUTES,
-  ...routes.genres.map((slug) => `/genre/${slug}`),
-  ...routes.platforms.map((id) => `/platform/${id}`),
-  ...routes.games.map((id) => `/game/${id}`),
-];
+const routeList = (routes) => {
+  const pages = Math.ceil(routes.games.length / 20);
+  const catalogPages = Array.from({ length: Math.max(0, pages - 1) }, (_, index) => `/games/page/${index + 2}`);
+  return [...STATIC_ROUTES, ...catalogPages, ...routes.games.map((id) => `/game/${id}`)].map((route) => canonicalPathname(route));
+};
 
 const outputFile = (route) => {
   if (route === "/") return path.join(DIST, "index.html");
-  return path.join(DIST, route.replace(/^\//, ""), "index.html");
+  return path.join(DIST, route.replace(/^\//, "").replace(/\/$/, ""), "index.html");
 };
 
 const waitForPreview = async () => {
@@ -90,13 +133,6 @@ const waitForPreview = async () => {
   throw new Error(`vite preview did not start: ${lastError}`);
 };
 
-const sitemap = (routes) => {
-  const urls = routes
-    .map((route) => `  <url><loc>${SITE_ORIGIN}${route === "/" ? "/" : route}</loc></url>`)
-    .join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
-};
-
 const preview = spawn("npx", ["vite", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
   cwd: ROOT,
   stdio: "inherit",
@@ -107,10 +143,12 @@ try {
   if (!shell.includes('<div id="root"></div>')) {
     throw new Error("dist/index.html is already prerendered. Run vite build before this script.");
   }
+  await writeFile(path.join(DIST, "spa.html"), shell);
 
   const routes = routeList(await loadRoutes());
   // Keep the Vite shell in place until every other URL is captured.
   const ordered = [...routes.filter((route) => route !== "/"), "/"];
+  const startedAt = Date.now();
   await waitForPreview();
   const browser = await chromium.launch();
   const context = await browser.newContext({ locale: "ru-RU" });
@@ -118,10 +156,15 @@ try {
   const written = [];
 
   for (const route of ordered) {
+    if (route.startsWith("/game/") && Date.now() - startedAt > GAME_BUDGET_MS) {
+      console.log(`skipped ${route}: game budget`);
+      continue;
+    }
     const page = await context.newPage();
     try {
       await page.goto(`${PREVIEW_ORIGIN}${route}`, { waitUntil: "domcontentloaded", timeout: 45000 });
       await page.waitForSelector('[data-seo-ready="true"]', { timeout: 45000 });
+      await page.waitForSelector(`html[data-seo-applied="${absoluteUrl(route)}"]`, { timeout: 10000 });
       await page.waitForSelector("h1", { timeout: 10000 });
       const html = stripShellSeo(await page.content());
       validatePrerenderedHtml(html, route);
@@ -139,7 +182,10 @@ try {
   }
 
   await browser.close();
-  await writeFile(path.join(DIST, "sitemap.xml"), sitemap(written));
+  const documents = sitemapDocuments(written);
+  await Promise.all(
+    Object.entries(documents).map(([name, body]) => writeFile(path.join(DIST, name), body)),
+  );
 
   if (failures.length > 0) {
     console.error(failures.join("\n"));

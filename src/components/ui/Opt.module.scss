@@ -1,0 +1,27 @@
+.opt {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--faint);
+  border-radius: var(--r-s);
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: var(--fs-m);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--dim);
+  }
+
+  &[aria-pressed="true"] {
+    color: var(--paper);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--hot);
+    outline-offset: 2px;
+  }
+}

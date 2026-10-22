@@ -9,19 +9,19 @@
 }
 
 .backButton {
-    background-color: transparent;
-    border: 1px solid #ff4b2b;
-    color: #ff4b2b;
-    padding: 10px 20px;
-    border-radius: 5px;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid $border-color;
+    background: $bg-card;
+    color: $text-main;
     cursor: pointer;
     margin-bottom: 20px;
-    transition: 0.3s;
 }
 
 .backButton:hover {
-    background-color: #ff4b2b;
-    color: #fff;
+    border-color: $primary-color;
+    color: $text-main;
 }
 
 .heroSection {
@@ -252,4 +252,15 @@
     .heading {
         font-size: 1.8rem;
     }
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 12px;
+
+  a {
+    color: var(--dim);
+  }
 }

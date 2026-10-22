@@ -16,6 +16,7 @@ import GameCard from "../../components/GameCard/GameCard";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import styles from "./RecommendationsPage.module.scss";
+import { gamePath } from "../../seo/canonicalUrl";
 import type { Game } from "../../types/game";
 import { toast } from "react-hot-toast";
 
@@ -147,7 +148,7 @@ const RecommendationsPage: React.FC = () => {
         <div className={styles.grid}>
           {recommendations.map((game) => (
             <div key={game.id} className={styles.cardWrapper}>
-              <Link to={`/game/${game.id}`} className={styles.link}>
+              <Link to={gamePath(game.id)} className={styles.link}>
                 <div className={styles.cardContainer}>
                   <GameCard game={game} />
                 </div>

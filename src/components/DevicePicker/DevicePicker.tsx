@@ -47,6 +47,23 @@ const DevicePicker = ({ selected, onChange }: DevicePickerProps) => {
           </button>
         ))}
       </div>
+      {selected.length > 0 && (
+        <div>
+          <p className={styles.label}>{t("devices.selected")}</p>
+          <div className={styles.chips}>
+            {selected.map((device) => (
+              <button
+                key={device.id}
+                type="button"
+                className={`${styles.chip} ${styles.chipActive}`}
+                onClick={() => toggle(device)}
+              >
+                {device.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <input
         className={styles.search}
         value={search}

@@ -43,7 +43,9 @@ export const fetchGames = async (
   };
 
   // Год: отдельные year + yearTo (новый), либо legacy "YYYY,YYYY", либо один год
-  if (year && yearTo) {
+  if (year && /^\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}$/.test(year)) {
+    params.dates = year;
+  } else if (year && yearTo) {
     params.dates = `${year}-01-01,${yearTo}-12-31`;
   } else if (year) {
     params.dates = year.includes(",")

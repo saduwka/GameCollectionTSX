@@ -2,5 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /profile
 Disallow: /me
+Disallow: /compare
+Disallow: /collection$
+Disallow: /spa.html
 
-Sitemap: https://gamecollection-ff71a.web.app/sitemap.xml
+Sitemap: https://gamecollection-ff71a.web.app/sitemap-index.xml

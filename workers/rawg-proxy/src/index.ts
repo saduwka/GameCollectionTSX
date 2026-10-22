@@ -5,6 +5,7 @@ import {
   publicCacheUrl,
   scrubPayload,
 } from "./proxy";
+import { handleTonight } from "./tonight/handleTonight";
 
 export interface Env {
   RAWG_API_KEY: string;
@@ -50,6 +51,9 @@ export default {
     if (request.method !== "GET") return new Response(null, { status: 405, headers: cors });
 
     const incoming = new URL(request.url);
+    if (incoming.pathname === "/tonight") {
+      return withCors(await handleTonight(request, env, ctx), cors);
+    }
     if (!isAllowedPath(incoming.pathname)) return json({ error: "not_found" }, 404, cors);
     if (!env.RAWG_API_KEY) return json({ error: "upstream_unavailable" }, 502, cors);
 

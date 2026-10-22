@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './NotFoundPage.module.scss';
+import { gamesPath, platformsPath } from "../../seo/canonicalUrl";
 import PageMeta from "../../components/PageMeta/PageMeta";
 
 const NotFoundPage: React.FC = () => {
@@ -10,6 +11,7 @@ const NotFoundPage: React.FC = () => {
       <PageMeta
         title={t('not_found.title')}
         description={t('not_found.description')}
+        noindex
       />
       <div className={styles.notFoundContent}>
         <h1 className={styles.notFoundTitle}>404</h1>
@@ -21,10 +23,10 @@ const NotFoundPage: React.FC = () => {
           <a href="/" className={`${styles.notFoundButton} ${styles.primary}`}>
             {t('common.home')}
           </a>
-          <a href="/games" className={`${styles.notFoundButton} ${styles.secondary}`}>
+          <a href={gamesPath()} className={`${styles.notFoundButton} ${styles.secondary}`}>
             {t('common.games')}
           </a>
-          <a href="/platforms" className={`${styles.notFoundButton} ${styles.secondary}`}>
+          <a href={platformsPath()} className={`${styles.notFoundButton} ${styles.secondary}`}>
             {t('common.platforms')}
           </a>
         </div>

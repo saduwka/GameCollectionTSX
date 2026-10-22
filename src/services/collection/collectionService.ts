@@ -26,7 +26,11 @@ export interface CollectedGame {
   hoursPlayed?: number;
   playingOn?: string; // Platform name/ID
   completedAt?: number;
+  tags?: string[];
   playtime?: number;
+  metacritic?: number | null;
+  ratings_count?: number;
+  platforms?: number[];
 }
 
 export interface UserSettings {
@@ -53,6 +57,11 @@ const collectionPayload = (game: {
   hoursPlayed?: number;
   playingOn?: string;
   completedAt?: number;
+  tags?: string[];
+  playtime?: number;
+  metacritic?: number | null;
+  ratings_count?: number;
+  platforms?: number[];
 }) => {
   const payload: Record<string, unknown> = {
     id: game.id,
@@ -68,6 +77,11 @@ const collectionPayload = (game: {
   if (typeof game.rating === "number" && game.rating > 0) {
     payload.rating = game.rating;
   }
+  if (game.tags?.length) payload.tags = game.tags.slice(0, 8);
+  if (typeof game.playtime === "number") payload.playtime = game.playtime;
+  if (game.metacritic !== undefined) payload.metacritic = game.metacritic;
+  if (typeof game.ratings_count === "number") payload.ratings_count = game.ratings_count;
+  if (game.platforms?.length) payload.platforms = game.platforms.slice(0, 12);
   return payload;
 };
 
@@ -101,6 +115,11 @@ export const addToCollection = async (game: {
   hoursPlayed?: number;
   playingOn?: string;
   completedAt?: number;
+  tags?: string[];
+  playtime?: number;
+  metacritic?: number | null;
+  ratings_count?: number;
+  platforms?: number[];
 }) => {
   const user = requireUser();
   await setDoc(gameRefFor(user.uid, game.id), collectionPayload(game));
@@ -141,6 +160,11 @@ export const updateGameMetadata = async (gameId: number, data: {
   hoursPlayed?: number;
   playingOn?: string;
   completedAt?: number | null;
+  tags?: string[];
+  playtime?: number;
+  metacritic?: number | null;
+  ratings_count?: number;
+  platforms?: number[];
 }) => {
   const user = requireUser();
   const { note, ...gameFields } = data;

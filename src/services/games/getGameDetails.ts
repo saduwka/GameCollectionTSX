@@ -48,6 +48,9 @@ export async function getGameDetails(id: string): Promise<Game> {
     })),
     released: gameData.released || "Unknown",
     genres: (gameData.genres || []).map((g) => g.name),
+    primaryGenre: gameData.genres?.[0]?.slug
+      ? { name: gameData.genres[0].name, slug: gameData.genres[0].slug }
+      : undefined,
     website: gameData.website || null,
     screenshots: screenshotsData.results.map((s) => s.image) || [],
     trailers: moviesData.results.map((m) => m.data.max) || [],
@@ -63,7 +66,7 @@ export async function getGameDetails(id: string): Promise<Game> {
     })),
     developers: (gameData.developers || []).map((d) => ({ id: d.id, name: d.name })),
     publishers: (gameData.publishers || []).map((p) => p.name),
-    tags: (gameData.tags || []).map((t) => ({ id: t.id, name: t.name })),
+    tags: (gameData.tags || []).map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
     esrb_rating: gameData.esrb_rating?.name || null,
     game_series: seriesData.results.map((s) => ({
       id: s.id,

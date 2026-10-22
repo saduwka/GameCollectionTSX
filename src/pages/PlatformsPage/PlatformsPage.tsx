@@ -1,75 +1,60 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getParentPlatforms } from "../../services/platforms/getPlatformsList";
+import { getPlatformDetails } from "../../services/platforms/getPlatformsList";
+import { platforms as listedPlatforms } from "../../../scripts/publicLinks.mjs";
 import PlatformCard from "../../components/PlatformCard/PlatformCard";
 import PlatformCardSkeleton from "../../components/Skeleton/PlatformCardSkeleton";
-import Skeleton from "../../components/Skeleton/Skeleton";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
-import styles from './PlatformsPage.module.scss';
+import styles from "./PlatformsPage.module.scss";
+import { platformPath } from "../../seo/canonicalUrl";
 import type { Platform } from "../../types/game";
 
-interface ParentPlatform {
-  id: number;
-  name: string;
-  slug: string;
-  platforms: Platform[];
-}
+const listedIds = listedPlatforms.map((platform) => platform.id);
 
 function PlatformsPage() {
   const { t } = useTranslation();
-  
-  const { data: parentPlatforms = [], isLoading, error, isError } = useQuery<ParentPlatform[]>({
-    queryKey: ["parentPlatforms"],
-    queryFn: getParentPlatforms,
+
+  const { data: shown = [], isLoading, error, isError } = useQuery<Platform[]>({
+    queryKey: ["listed-platforms", listedIds],
+    queryFn: () => Promise.all(listedIds.map((id) => getPlatformDetails(String(id)))),
     staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
+  const ready = !isLoading && !isError && shown.length === listedIds.length;
+
   return (
-    <div className={styles.platformsPage} data-seo-ready={!isLoading && !isError && parentPlatforms.length > 0 ? "true" : "false"}>
-      <PageMeta
-        title={t('platforms_page.title')}
-        description={t('platforms_page.description')}
-      />
+    <div className={styles.platformsPage} data-seo-ready={ready ? "true" : "false"}>
+      <PageMeta title={t("platforms_page.title")} description={t("platforms_page.description")} />
       <div className={styles.content}>
-        <h1 className={styles.heading}>{t('platforms_page.title')}</h1>
+        <h1 className={styles.heading}>{t("platforms_page.title")}</h1>
 
         <LoadingErrorMessage
           loading={false}
           error={isError ? (error as Error).message : null}
-          noResults={!isLoading && !isError && parentPlatforms.length === 0}
+          noResults={!isLoading && !isError && shown.length === 0}
         />
 
         {isLoading && (
-          <>
-            {Array.from({ length: 3 }).map((_, gi) => (
-              <div key={gi} className={styles.platformGroup}>
-                <Skeleton width="180px" height="1.6rem" />
-                <div className={styles.platformList}>
-                  {Array.from({ length: 4 }).map((__, pi) => (
-                    <PlatformCardSkeleton key={pi} />
-                  ))}
-                </div>
-              </div>
+          <div className={styles.platformList}>
+            {listedIds.map((id) => (
+              <PlatformCardSkeleton key={id} />
             ))}
-          </>
+          </div>
         )}
 
-        {!isLoading && !isError && parentPlatforms.map((group) => (
-          <div key={group.id} className={styles.platformGroup}>
-            <h2 className={styles.groupTitle}>{group.name}</h2>
-            <div className={styles.platformList}>
-              {group.platforms.map((platform) => (
-                <Link key={platform.id} to={`/platform/${platform.id}`}>
-                  <PlatformCard platform={platform} />
-                </Link>
-              ))}
-            </div>
+        {ready && (
+          <div className={styles.platformList}>
+            {shown.map((platform) => (
+              <Link key={platform.id} to={platformPath(platform.id)}>
+                <PlatformCard platform={platform} />
+              </Link>
+            ))}
           </div>
-        ))}
+        )}
         <RawgCredit />
       </div>
     </div>

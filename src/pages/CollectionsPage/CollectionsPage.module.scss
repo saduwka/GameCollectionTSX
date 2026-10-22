@@ -1,0 +1,89 @@
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+
+  a {
+    color: inherit;
+  }
+}
+
+.page h1 {
+  margin: 0 0 20px;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.intro {
+  margin: 0 0 16px;
+  line-height: 1.6;
+  color: var(--dim);
+}
+
+.source {
+  margin: 0 0 28px;
+  line-height: 1.5;
+  color: var(--dim);
+  font-size: 0.95rem;
+}
+
+.game {
+  margin: 0 0 22px;
+}
+
+.game h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.facts {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 4px 12px;
+}
+
+.facts dt {
+  margin: 0;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.facts dd {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .facts div {
+    grid-template-columns: 1fr;
+  }
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 28px;
+}
+
+.links a {
+  color: var(--ink);
+}
