@@ -97,12 +97,12 @@ describe("tonight pool", () => {
 
   it("rejects bad params and strips upstream secrets", async () => {
     const bad = await handleTonight(
-      new Request("https://playhub.test/tonight?mood=nope&time=120"),
+      new Request("https://gamevening.test/tonight?mood=nope&time=120"),
       { RAWG_API_KEY: "secret-key" },
       { waitUntil: () => undefined },
     );
     assert.equal(bad.status, 400);
-    const body = JSON.stringify(scrubPayload({ next: "https://api.rawg.io/api/games?key=secret-key" }, "secret-key", "https://playhub.test"));
+    const body = JSON.stringify(scrubPayload({ next: "https://api.rawg.io/api/games?key=secret-key" }, "secret-key", "https://gamevening.test"));
     assert.equal(body.includes("api.rawg.io"), false);
     assert.equal(body.includes("key="), false);
     assert.equal(body.includes("secret-key"), false);

@@ -11,6 +11,7 @@ import {
   getAllSwipes,
   getSwipeCount,
   clearSwipes,
+  STORAGE_KEY as SWIPES_KEY,
   type SwipeRecord,
 } from "../../services/match/swipeStore";
 import { getGuestPicks, saveGuestPick } from "../../services/match/guestPickStore";
@@ -248,7 +249,7 @@ const MatchPage = () => {
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key === "playhub:swipes:v1") setSwipes(getAllSwipes());
+      if (event.key === SWIPES_KEY) setSwipes(getAllSwipes());
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);

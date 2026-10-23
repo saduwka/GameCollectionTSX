@@ -14,6 +14,7 @@ import { ComparisonProvider } from "./context/ComparisonContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.tsx";
+import { migrateLegacyKeys } from "./services/storage/migrateLegacyKeys";
 
 const Analytics = () => {
   const location = useLocation();
@@ -39,6 +40,8 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+migrateLegacyKeys();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -97,7 +97,7 @@ const ProfilePage = () => {
       />
       <Ticket
         heading="h1"
-        kicker={t("profile.on_playhub")}
+        kicker={t("profile.on_site")}
         title={user.displayName || t("profile.title")}
         meta={
           <span>

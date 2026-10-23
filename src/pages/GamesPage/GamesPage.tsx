@@ -20,7 +20,7 @@ import { RAWG_DETAIL_STALE_TIME, RAWG_LIST_STALE_TIME } from "../../services/raw
 import type { Game } from "../../types/game";
 import styles from "./GamesPage.module.scss";
 
-const STORAGE_KEY = "playhub_filters";
+const STORAGE_KEY = "gamevening:filters:v1";
 
 export type SortKey =
   | "popular"

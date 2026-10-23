@@ -38,6 +38,28 @@ const readHtml = (route) => {
   return readFile(file, "utf8");
 };
 
+const walkHtml = async (dir) => {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...(await walkHtml(full)));
+    else if (entry.name === "index.html" || entry.name === "spa.html") files.push(full);
+  }
+  return files;
+};
+
+const checkBrand = (html, file) => {
+  const problems = [];
+  const names = [...html.matchAll(/<meta\b[^>]*\bproperty="og:site_name"[^>]*>/gi)];
+  const value = names[0]?.[0].match(/\bcontent="([^"]*)"/)?.[1] ?? "";
+  if (names.length !== 1 || value !== "Gamevening") problems.push(`og:site_name ${names.length} ${value}`);
+  const about = path.resolve(file) === path.join(DIST, "about", "index.html");
+  if (!about && html.includes("PlayHub")) problems.push("PlayHub");
+  if (about && !html.includes("PlayHub")) problems.push("about missing PlayHub");
+  return problems;
+};
+
 const firstChild = async (dir) => {
   const entries = await readdir(dir);
   for (const entry of entries) {
@@ -66,6 +88,10 @@ const main = async () => {
     const problems = checkSeoHtml(await readHtml(route), { minText });
     if (problems.length) failures.push(`${route}: ${problems.join(", ")}`);
     else console.log(`ok ${route}`);
+  }
+  for (const file of await walkHtml(DIST)) {
+    const problems = checkBrand(await readFile(file, "utf8"), file);
+    if (problems.length) failures.push(`${path.relative(DIST, file)}: ${problems.join(", ")}`);
   }
   if (failures.length) {
     console.error(failures.join("\n"));

@@ -6,6 +6,7 @@ import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { websiteJsonLd } from "../../components/JsonLd/JsonLd";
 import { collections } from "../../data/collections";
 import { aboutPath, collectionPath, faqPath, gamePath, gamesPath, genrePath, platformsPath } from "../../seo/canonicalUrl";
+import { SITE_NAME, SITE_ORIGIN } from "../../site";
 import { genres as listedGenres } from "../../../scripts/publicLinks.mjs";
 import ErrorState from "../../components/ui/ErrorState";
 import { useAuth } from "../../context/AuthContext";
@@ -148,7 +149,7 @@ const HomePage = () => {
 
   const copyTicket = async () => {
     if (!ticket) return;
-    const text = [ticket.name, ...why(ticket), "PlayHub"].join("\n");
+    const text = [ticket.name, ...why(ticket), `${SITE_NAME} · ${SITE_ORIGIN}/`].join("\n");
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);

@@ -17,6 +17,7 @@ const AboutPage = () => {
       <p>{t("info.about_p1")}</p>
       <p>{t("info.about_p2")}</p>
       <p>{t("info.about_p3")}</p>
+      <p>{t("info.about_renamed")}</p>
       <p>
         <Link to={faqPath()}>{t("common.faq")}</Link>
       </p>

@@ -44,7 +44,7 @@
     "sort": "Sort"
   },
   "home": {
-    "meta_description": "PlayHub — a catalog of 500,000+ games. Smart search, comparison, personal collection, and recommendations based on your interests.",
+    "meta_description": "Gamevening picks one game for tonight by time, platform, and mood. Catalog, curated picks, and a personal shelf.",
     "hero_title": "Find your next favorite game",
     "question": "What should we play?",
     "primary_match": "Find a game",
@@ -68,7 +68,7 @@
     "see_all": "See all",
     "top_metacritic_title": "⭐ Top by Metacritic",
     "top_metacritic_subtitle": "Highest ratings from critics",
-    "match_banner_badge": "NEW · PlayHub Match",
+    "match_banner_badge": "NEW · Gamevening Match",
     "match_banner_title": "Find games by swiping",
     "match_banner_text": "Right — like, left — no. The more you swipe, the more accurate the selection.",
     "best_rpg_title": "Best RPGs",
@@ -87,8 +87,8 @@
   "search": {
     "title_with_query": "Search: {{query}}",
     "title_default": "Search Games",
-    "description_with_query": "Search results for \"{{query}}\" in PlayHub catalog — 500,000+ games.",
-    "description_default": "Smart search in PlayHub catalog — find games by title, genre, and platform.",
+    "description_with_query": "Search results for \"{{query}}\": Gamevening picks a game for tonight by title.",
+    "description_default": "Gamevening finds one game for tonight by title, genre, and platform.",
     "clear_search": "Clear search",
     "submit_button": "Search",
     "empty_state_title": "What are you looking for?",
@@ -103,7 +103,7 @@
   },
   "recommendations": {
     "title": "Recommendations",
-    "description": "Personal game recommendations based on your collection, ratings, and devices from PlayHub.",
+    "description": "Personal game recommendations based on your collection, ratings, and devices from Gamevening.",
     "popular_on_hardware": "Popular on your hardware",
     "community_hit": "Community Hit",
     "trending_on_platforms": "Trending on your platforms",
@@ -126,7 +126,7 @@
   },
   "match": {
     "title": "Game Match",
-    "description": "Swipe games right if you like them, and left if you don't. PlayHub learns from your swipes and picks the next cards.",
+    "description": "Swipe games right if you like them, and left if you don't. Gamevening learns from your swipes and picks the next cards.",
     "reset_history_confirm": "Reset all swipe history? This action cannot be undone.",
     "history_cleared": "Swipe history cleared",
     "empty_state": "You swiped through all our picks.",
@@ -155,10 +155,10 @@
   "profile": {
     "title": "Profile",
     "title_with_name": "Profile — {{name}}",
-    "description": "Your PlayHub profile: devices, collection, and settings.",
+    "description": "Your Gamevening profile: devices, collection, and settings.",
     "share": "Share",
     "privacy": "Public collection",
-    "on_playhub": "On PlayHub",
+    "on_site": "On Gamevening",
     "since": "since {{date}} · {{count}} games · {{hours}} h",
     "privacy_on": "Anyone with the link can open it",
     "privacy_off": "Collection is hidden",
@@ -172,7 +172,7 @@
   },
   "compare": {
     "title": "Compare Games",
-    "description": "Compare games by rating, Metacritic, genres, platforms, and playtime on PlayHub.",
+    "description": "Compare games by rating, Metacritic, genres, platforms, and playtime on Gamevening.",
     "removed": "Removed from comparison",
     "added": "Added to comparison",
     "max_limit": "You can compare up to 4 games",
@@ -204,7 +204,7 @@
   },
   "catalog": {
     "title": "Game Catalog",
-    "description": "A large catalog of games with filters by genre, platform, release year, and Metacritic. Find your next game on PlayHub.",
+    "description": "A game for tonight in the Gamevening catalog: filters by genre, platform, release year, and Metacritic.",
     "filters": {
       "any_length": "Any length",
       "short": "Short (< 10h)",
@@ -240,10 +240,11 @@
   },
   "info": {
     "about_title": "About",
-    "about_description": "PlayHub helps you pick a game for tonight by time, platform, and mood: a ticket, a catalog, search, and hand-written collections.",
-    "about_p1": "PlayHub helps you pick one game for today. The evening ticket asks how much time you have, what you play on, and the mood. If your shelf already fits, the ticket takes that.",
+    "about_description": "Gamevening helps you pick a game for tonight by time, platform, and mood: a ticket, a catalog, search, and hand-written collections.",
+    "about_p1": "Gamevening helps you pick one game for today. The evening ticket asks how much time you have, what you play on, and the mood. If your shelf already fits, the ticket takes that.",
     "about_p2": "The catalog is for looking wider than the ticket: it has filters and search by name. Collections are written by hand, and each game has a reason. Swipes use the platforms and likes you chose. That is genre ranking from your ratings, not a separate model.",
-    "about_p3": "An account is optional. The catalog, the ticket, and swipes work without signing in. Registration is for saving the shelf. A guest's platforms and likes stay in the browser. Names, covers, genres, platforms, and community scores come from RAWG. PlayHub text describes how the service works and why a game is in a collection. It does not replace the original game description.",
+    "about_p3": "An account is optional. The catalog, the ticket, and swipes work without signing in. Registration is for saving the shelf. A guest's platforms and likes stay in the browser. Names, covers, genres, platforms, and community scores come from RAWG. Gamevening text describes how the service works and why a game is in a collection. It does not replace the original game description.",
+    "about_renamed": "Until October 2026 the project was called PlayHub.",
     "faq_title": "FAQ",
     "faq_description": "Short answers about the collection, the picker, and RAWG data.",
     "faq_q1": "Do I need an account?",
@@ -251,15 +252,15 @@
     "faq_q2": "Where does game data come from?",
     "faq_a2": "Names, covers, genres, platforms, and the community score come from RAWG. Pages that show this data link back to the source.",
     "faq_q3": "How does the picker work?",
-    "faq_a3": "After a few swipes PlayHub shows games in similar genres on the platforms you chose. Cards you rejected in the same session do not come back.",
+    "faq_a3": "After a few swipes Gamevening shows games in similar genres on the platforms you chose. Cards you rejected in the same session do not come back.",
     "genre_title": "{{name}} — game picks",
-    "genre_description": "{{name}} games in the PlayHub catalog: community scores, platforms, and cards from RAWG."
+    "genre_description": "{{name}} games in the Gamevening catalog: community scores, platforms, and cards from RAWG."
   },
   "collection": {
     "title": "My Collection",
-    "description": "Your personal game collection: completed, in progress, wishlist, and backlog on PlayHub.",
+    "description": "Your personal game collection: completed, in progress, wishlist, and backlog on Gamevening.",
     "public_title": "User Collection",
-    "public_description": "Public game collection of a PlayHub user.",
+    "public_description": "Public game collection of a Gamevening user.",
     "load_error": "Could not load your collection.",
     "unavailable": "This collection is temporarily unavailable.",
     "private": "This collection is private.",
@@ -329,8 +330,8 @@
   },
   "landing": {
     "meta": "One evening ticket, a catalog, and your shelf. Say how long you have and what you play on.",
-    "title": "PlayHub — what to play: games by genre, platform, and mood",
-    "about_1": "PlayHub helps you pick one game for today instead of scrolling a catalog. Start with a ticket: how much time you have, what you play on, and the mood. If your shelf already fits, the ticket takes that.",
+    "title": "Gamevening — what to play: games by genre, platform, and mood",
+    "about_1": "Gamevening helps you pick one game for today instead of scrolling a catalog. Start with a ticket: how much time you have, what you play on, and the mood. If your shelf already fits, the ticket takes that.",
     "about_2": "The catalog is for looking wider than the ticket. Search finds a game by name. The collections below are written by hand: short lists with a reason for each game.",
     "about_3": "The shelf is your games, not someone else's ranking. An account is only for saving it. Scores stay on a scale, and the game data comes from RAWG.",
     "picks": "Collections",
@@ -385,7 +386,7 @@
   },
   "not_found": {
     "title": "Page Not Found",
-    "description": "It seems this page doesn't exist. Go back to the PlayHub catalog."
+    "description": "It seems this page doesn't exist. Go back to the Gamevening catalog."
   },
   "auth": {
     "login_google": "Sign in with Google",

@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { canonicalUrl } from "../../seo/canonicalUrl";
-import { SITE_ORIGIN } from "../../site";
+import { SITE_NAME, SITE_ORIGIN } from "../../site";
 import type { Game } from "../../types/game";
 
 interface JsonLdProps {
@@ -13,11 +13,17 @@ const JsonLd = ({ data }: JsonLdProps) => (
   </Helmet>
 );
 
+const WEBSITE_ID = `${SITE_ORIGIN}/#website`;
+const ORG_ID = `${SITE_ORIGIN}/#org`;
+
 export const websiteJsonLd = (description?: string) => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "PlayHub",
-  url: SITE_ORIGIN,
+  "@id": WEBSITE_ID,
+  name: SITE_NAME,
+  url: `${SITE_ORIGIN}/`,
+  inLanguage: "ru",
+  publisher: { "@id": ORG_ID },
   ...(description ? { description } : {}),
   potentialAction: {
     "@type": "SearchAction",
@@ -29,8 +35,11 @@ export const websiteJsonLd = (description?: string) => ({
 export const organizationJsonLd = (description: string) => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "PlayHub",
-  url: SITE_ORIGIN,
+  "@id": ORG_ID,
+  name: SITE_NAME,
+  url: `${SITE_ORIGIN}/`,
+  logo: `${SITE_ORIGIN}/logo-512.png`,
+  sameAs: ["https://t.me/saduwkaa", "https://github.com/saduwka/GameCollectionTSX"],
   description,
 });
 

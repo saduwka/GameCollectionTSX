@@ -1,11 +1,11 @@
 // FILE: src/components/PageMeta/PageMeta.tsx
 import { useLayoutEffect } from "react";
 import { canonicalUrl } from "../../seo/canonicalUrl";
-import { SITE_ORIGIN } from "../../site";
+import { SITE_NAME, SITE_ORIGIN } from "../../site";
 import { syncDocumentMeta } from "./syncDocumentMeta";
 
 interface PageMetaProps {
-  /** Уникальная часть title. Будет автоматически дополнена " — PlayHub". */
+  /** Уникальная часть title. Будет автоматически дополнена " — Gamevening". */
   title: string;
   /** Meta description (для поиска и OG). */
   description?: string;
@@ -13,7 +13,7 @@ interface PageMetaProps {
   image?: string;
   /** Канонический URL страницы. По умолчанию origin + pathname, без query и hash. */
   url?: string;
-  /** Не дописывать « — PlayHub», если title уже полный. */
+  /** Не дописывать « — Gamevening», если title уже полный. */
   exactTitle?: boolean;
   /** OG type — обычно "website", для страниц игр можно "article". */
   type?: "website" | "article";
@@ -21,9 +21,8 @@ interface PageMetaProps {
   noindex?: boolean;
 }
 
-const SITE_NAME = "PlayHub";
 const DEFAULT_DESCRIPTION =
-  "PlayHub — каталог из 500 000+ игр. Умный поиск, сравнение, личная коллекция и рекомендации, основанные на ваших интересах.";
+  "Gamevening подбирает одну игру на вечер по времени, платформе и настроению. Каталог игр, подборки и личная полка.";
 
 const PageMeta = ({
   title,

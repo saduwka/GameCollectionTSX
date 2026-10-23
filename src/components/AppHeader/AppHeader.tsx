@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import LoginButton from "../LoginButton/LoginButton";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 import { gamesPath } from "../../seo/canonicalUrl";
+import { SITE_NAME } from "../../site";
 import logo from "../../assets/logo/logo.svg";
 import styles from "./AppHeader.module.scss";
 
@@ -33,7 +34,7 @@ const AppHeader = () => {
       <header className={styles.header}>
         <NavLink to="/" className={styles.brand} end>
           <img src={logo} alt="" className={styles.logo} />
-          PlayHub
+          {SITE_NAME}
         </NavLink>
         <nav className={styles.nav} aria-label={t("common.main_menu")}>
           {links.map((link) => (

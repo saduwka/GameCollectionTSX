@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { stripShellSeo, validatePrerenderedHtml } from "../scripts/prerenderHtml.mjs";
 
-const title = "PlayHub — каталог игр, сравнение и рекомендации";
+const title = "Gamevening — во что поиграть сегодня вечером";
 
 const hrefFor = (route = "/") => `https://gamecollection-ff71a.web.app${route === "/" ? "/" : route}`;
 
@@ -15,7 +15,7 @@ const page = (route = "/") => `<!DOCTYPE html><html><head>
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="page description" />
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="PlayHub" />
+<meta property="og:site_name" content="Gamevening" />
 <meta property="og:url" content="${hrefFor(route)}" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="${title}" />

@@ -14,7 +14,7 @@ export interface SwipeRecord {
   background_image?: string;
 }
 
-const STORAGE_KEY = "playhub:swipes:v1";
+export const STORAGE_KEY = "gamevening:swipes:v1";
 const MAX_RECORDS = 500; // защита от безграничного роста
 
 const isBrowser = typeof window !== "undefined";

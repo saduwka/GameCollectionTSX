@@ -6,7 +6,7 @@ export interface GuestPick {
   status: "Wishlist" | "Backlog";
 }
 
-const STORAGE_KEY = "playhub:picks:v1";
+export const STORAGE_KEY = "gamevening:picks:v1";
 const isBrowser = typeof window !== "undefined";
 
 export const getGuestPicks = (): GuestPick[] => {

@@ -40,6 +40,7 @@ const snapshot = () => {
     og: counts(metas.filter((node) => node.getAttribute("property")?.startsWith("og:")), "property"),
     twitter: counts(metas.filter((node) => (node.getAttribute("name") ?? "").startsWith("twitter:")), "name"),
     ogImage: metas.find((node) => node.getAttribute("property") === "og:image")?.getAttribute("content") ?? "",
+    siteName: metas.find((node) => node.getAttribute("property") === "og:site_name")?.getAttribute("content") ?? "",
     applied: document.documentElement.getAttribute("data-seo-applied"),
     shell: document.head.querySelectorAll("[data-seo-shell]").length,
     crumbs: crumbs ?? "",
@@ -59,6 +60,8 @@ const assertSingle = (snap, label) => {
     const group = key.startsWith("og:") ? snap.og : snap.twitter;
     if (group[key] !== 1) problems.push(`missing ${key}`);
   }
+  if (snap.siteName !== "Gamevening") problems.push(`site ${snap.siteName}`);
+  if (label !== "/" && !snap.title.endsWith(" — Gamevening")) problems.push(`title suffix ${snap.title}`);
   if (problems.length) throw new Error(`${label}: ${problems.join(", ")}`);
 };
 

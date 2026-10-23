@@ -14,9 +14,9 @@ export const POPULAR_PLATFORMS: DeviceChoice[] = [
   { id: 21, name: "Android" },
 ];
 
-const DEVICES_KEY = "playhub:devices:v1";
-const NAMES_KEY = "playhub:device-names:v1";
-const CONFIRMED_KEY = "playhub:devices:confirmed:v1";
+export const DEVICES_KEY = "gamevening:devices:v1";
+export const NAMES_KEY = "gamevening:device-names:v1";
+export const CONFIRMED_KEY = "gamevening:devices:confirmed:v1";
 
 const isBrowser = typeof window !== "undefined";
 

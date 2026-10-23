@@ -1,3 +1,5 @@
+import { SITE_NAME } from "../../site";
+
 export interface DocumentMeta {
   title: string;
   description: string;
@@ -6,8 +8,6 @@ export interface DocumentMeta {
   image?: string;
   noindex: boolean;
 }
-
-const SITE_NAME = "PlayHub";
 
 const head = () => document.head;
 
