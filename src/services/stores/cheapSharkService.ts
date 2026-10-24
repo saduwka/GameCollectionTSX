@@ -37,8 +37,15 @@ export const searchGameDeals = async (title: string): Promise<Deal[]> => {
   }
 };
 
-export const getStoreName = (storeID: string): string => {
-  const stores: Record<string, string> = {
+export const fetchCheapSharkStores = async () => {
+  const { data } = await axios.get<{ storeID: string; storeName: string; isActive: number }[]>(`${CHEAPSHARK_API_URL}/stores`);
+  return data.filter((store) => store.isActive === 1);
+};
+
+export const getStoreName = (storeID: string, stores?: { storeID: string; storeName: string }[]): string => {
+  const live = stores?.find((store) => store.storeID === storeID)?.storeName;
+  if (live) return live;
+  const known: Record<string, string> = {
     "1": "Steam",
     "2": "GamersGate",
     "3": "GreenManGaming",
@@ -49,5 +56,5 @@ export const getStoreName = (storeID: string): string => {
     "25": "Epic Games Store",
     "31": "Blizzard Shop",
   };
-  return stores[storeID] || `Store ${storeID}`;
+  return known[storeID] || "";
 };

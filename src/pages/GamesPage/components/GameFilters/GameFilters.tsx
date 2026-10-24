@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { localizedGenre } from "../../../../seo/labels";
 import { gamePath } from "../../../../seo/canonicalUrl";
 import { fetchRandomGame } from "../../../../services/games/fetchGames";
 import { getUserDevices } from "../../../../services/collection/collectionService";
@@ -169,7 +170,8 @@ const GameFilters: React.FC<GameFiltersProps> = ({
         className={`${styles.body} ${isCollapsed ? styles.bodyHidden : ""}`}
       >
         <div className={styles.selectGroup}>
-          <div className={styles.filterItem}>
+          <div className={styles.yearRow}>
+        <div className={styles.filterItem}>
             <label htmlFor="year-from">{t('compare.year_from')}</label>
             <select
               id="year-from"
@@ -198,6 +200,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
               ))}
             </select>
           </div>
+        </div>
 
           <div className={styles.filterItem}>
             <label htmlFor="platform-select">{t('common.platforms')}</label>
@@ -246,7 +249,7 @@ const GameFilters: React.FC<GameFiltersProps> = ({
                 .some((value) => value === genre.id.toString() || (!!genre.slug && value === genre.slug));
               return (
                 <Opt key={genre.id} pressed={isActive} onClick={() => handleGenreToggle(genre.id.toString())}>
-                  {genre.name}
+                  {localizedGenre(genre.name, i18n.language.startsWith("en"), genre.slug) || genre.name}
                 </Opt>
               );
             })}

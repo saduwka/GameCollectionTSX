@@ -8,6 +8,7 @@
 // steam-deck-verified has 0 games and arcade has 0, so Steam Deck is platform 4 only.
 // A 40-game indie sample had 0 missing playtimes, so the time weight stays at 2.
 
+import { isSafeCandidate, MIN_RATINGS, BLOCKED_TAGS } from "./safeCandidate";
 export type Mood = "calm" | "deep" | "finish" | "coop";
 export type TonightTime = 30 | 120 | 300;
 
@@ -66,7 +67,6 @@ export const RECIPES: Record<Mood, Recipe> = {
   },
 };
 
-export const NSFW_TAGS = new Set(["nsfw", "sexual-content", "nudity"]);
 export const SESSION_TAGS = new Set(["roguelike", "roguelite", "arcade", "card-game", "turn-based", "deckbuilder"]);
 
 export type ReasonCode =
@@ -161,10 +161,10 @@ export const dedupeEditions = (games: TonightGame[]) => {
 };
 
 export const filterPool = (games: TonightGame[], recipe: Recipe) => {
-  const excludedTags = new Set([...(recipe.excludeTags ?? []), ...NSFW_TAGS]);
+  const excludedTags = new Set([...(recipe.excludeTags ?? []), ...BLOCKED_TAGS]);
   const excludedGenres = new Set(recipe.excludeGenres ?? []);
   const cleaned = games.filter((game) => {
-    if (game.ratings_count < 50) return false;
+    if (!isSafeCandidate(game, { minRatings: MIN_RATINGS })) return false;
     if (game.tags.some((tag) => excludedTags.has(tag))) return false;
     if (game.genres.some((genre) => excludedGenres.has(genre))) return false;
     if (recipe.playtimeRange && game.playtime > 0) {
@@ -202,10 +202,11 @@ export const dayJitter = (id: number, day = Math.floor(Date.now() / 86_400_000))
 };
 
 const timeReason = (game: TonightGame, minutes: TonightTime, fit: 0 | 1 | 2): ReasonCode => {
-  if ((game.playtime ?? 0) === 0) return "time:unknown";
-  if (minutes === 30 && fit === 2) return "time:sessional";
-  if (minutes === 300 && (game.playtime ?? 0) >= 4) return "time:long";
-  return "time:evening";
+  const hours = game.playtime ?? 0;
+  if (hours === 0) return "time:unknown";
+  if (hours * 60 <= minutes) return "time:evening";
+  if (fit === 2 || minutes === 30) return "time:sessional";
+  return "time:long";
 };
 
 export const scoreCandidate = (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-hot-toast";
@@ -8,7 +9,6 @@ import { collectionKeys } from "../../services/collection/queryKeys";
 import { useMyDevices } from "../../hooks/useMyDevices";
 import type { DeviceChoice } from "../../services/platforms/deviceStore";
 import DevicePicker from "../../components/DevicePicker/DevicePicker";
-import LoginButton from "../../components/LoginButton/LoginButton";
 import LogoutButton from "../../components/LogoutButton/LogoutButton";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import Button from "../../components/ui/Button";
@@ -41,16 +41,7 @@ const ProfilePage = () => {
 
   if (authLoading) return null;
 
-  if (!user) {
-    return (
-      <div className={styles.profilePage}>
-        <PageMeta title={t("profile.title")} description={t("profile.description")} />
-        <h1 className={styles.username}>{t("profile.title")}</h1>
-        <p className={styles.sectionDesc}>{t("common.login_required")}</p>
-        <LoginButton />
-      </div>
-    );
-  }
+  if (!user) return <Navigate to="/collection" replace />;
 
   const persistPrivacy = async (nextPublic: boolean) => {
     setSavingSettings(true);

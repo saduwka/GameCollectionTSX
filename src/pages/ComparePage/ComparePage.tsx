@@ -115,8 +115,11 @@ const ComparePage: React.FC = () => {
       <div className={styles.empty}>
         <PageMeta title={t('compare.title')} description={t('compare.description')} />
         <h1 className={styles.emptyTitle}>{t('compare.empty_none')}</h1>
+        <p className={styles.emptyMessage}>{t('compare.description')}</p>
         <p className={styles.emptyMessage}>
-          {t('compare.description')}
+          <Link to={gamePath(3498)}>Grand Theft Auto V</Link>
+          {" · "}
+          <Link to={gamePath(3328)}>The Witcher 3: Wild Hunt</Link>
         </p>
         <button className={styles.btnPrimary} onClick={() => navigate(gamesPath())}>
           {t('common.games')}

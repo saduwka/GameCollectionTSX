@@ -55,6 +55,7 @@ export interface Game {
   added?: number;
   screenshots: string[];
   trailers: string[];
+  trailerPosters?: string[];
   stores: GameStore[];
   developers?: { id: number; name: string }[];
   publishers?: string[];
@@ -99,7 +100,13 @@ export interface RawGame {
   publishers?: { name: string }[];
   parent_platforms?: { platform: { id: number; name: string; slug?: string } }[];
   tags?: { id: number; name: string; slug?: string; language?: string }[];
-  esrb_rating?: { name: string } | null;
+  esrb_rating?: { name: string; slug?: string } | null;
+  stores?: {
+    id: number;
+    url: string;
+    store_id: number;
+    store?: { id?: number; name?: string; slug?: string; domain?: string };
+  }[];
 }
 
 export interface RawScreenshot {
@@ -107,6 +114,7 @@ export interface RawScreenshot {
 }
 
 export interface RawMovie {
+  preview?: string;
   data: {
     max: string;
   };

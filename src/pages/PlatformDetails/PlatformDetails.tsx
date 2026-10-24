@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import LoadingErrorMessage from "../../components/LoadingErrorMessage/LoadingErrorMessage";
 import GameCard from "../../components/GameCard/GameCard";
-import YouTubeSection from "../../components/YouTubeSection/YouTubeSection";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { itemListJsonLd } from "../../components/JsonLd/JsonLd";
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
@@ -15,11 +14,12 @@ import {
   getGamesForPlatform
 } from "../../services/platforms/getPlatformDetails";
 import { getGenres } from "../../services/games/getGenres";
-import { getPlatformWiki } from "../../services/platforms/wikiService";
-import { searchYouTubeVideos } from "../../services/media/youtubeService";
-import { getConsoleFact } from "../../services/platforms/factService";
-import type { Platform, Game } from "../../types/game";
-import { gamesPath, platformsPath } from "../../seo/canonicalUrl";
+import { normalizeGame } from "../../services/games/normalizeGame";
+import { isSafeCandidate, MIN_RATINGS } from "../../services/recommendations/safeCandidate";
+import type { Game, Platform } from "../../types/game";
+import { gamesCountLabel, localizedGenre } from "../../seo/labels";
+import { collections } from "../../data/collections";
+import { collectionPath, gamesPath, genrePath, platformsPath } from "../../seo/canonicalUrl";
 import styles from "./PlatformDetails.module.scss";
 
 const PlatformPage: FC = () => {
@@ -52,27 +52,6 @@ const PlatformPage: FC = () => {
     staleTime: RAWG_DETAIL_STALE_TIME,
   });
 
-  const funFact = platformDetails ? getConsoleFact(platformDetails.slug) : null;
-
-  const { data: wikiData, isLoading: loadingWiki } = useQuery({
-    queryKey: ["platformWiki", platformDetails?.name],
-    queryFn: () => getPlatformWiki(platformDetails!.name),
-    enabled: !!platformDetails?.name,
-  });
-
-  const { data: platformVideos, isLoading: loadingVideos } = useQuery({
-    queryKey: ["platformVideos", platformDetails?.name, i18n.language],
-    queryFn: async () => {
-      const isRu = i18n.language.startsWith('ru');
-      const lang = isRu ? 'ru' : 'en';
-      const query = isRu
-        ? `${platformDetails!.name} обзор прохождение`
-        : `${platformDetails!.name} review walkthrough`;
-      return await searchYouTubeVideos(query, 6, lang);
-    },
-    enabled: !!platformDetails?.name,
-  });
-
   const { data: genres = [] } = useQuery({
     queryKey: ["genres"],
     queryFn: getGenres,
@@ -86,7 +65,9 @@ const PlatformPage: FC = () => {
     staleTime: RAWG_LIST_STALE_TIME,
   });
 
-  const games = gamesData?.results || [];
+  const games = (gamesData?.results || [])
+    .map((raw: Parameters<typeof normalizeGame>[0]) => normalizeGame(raw))
+    .filter((game: Game) => isSafeCandidate(game, { minRatings: MIN_RATINGS }));
   const hasMore = !!gamesData?.next;
 
   const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -143,9 +124,9 @@ const PlatformPage: FC = () => {
       </button>
 
       <div className={styles.heroSection}>
-        {(platformDetails?.image_background || platformDetails?.image || wikiData?.thumbnail) && (
+        {(platformDetails?.image_background || platformDetails?.image) && (
           <img 
-            src={platformDetails?.image_background || platformDetails?.image || wikiData?.thumbnail} 
+            src={platformDetails.image_background || platformDetails.image || undefined} 
             alt="" 
             className={styles.heroBg}
             width={1280}
@@ -154,58 +135,25 @@ const PlatformPage: FC = () => {
         )}
         <div className={styles.heroOverlay}>
           <div className={styles.heroTitleGroup}>
-            <h1 className={styles.heading}>{platformDetails?.name}</h1>
+            <h1 className={styles.heading}>{t("platform_details.play_on", { name: platformDetails?.name })}</h1>
             <div className={styles.quickStats}>
               {platformDetails?.year_start && <span>{t('platform_details.release', { year: platformDetails.year_start })}</span>}
-              {platformDetails?.games_count && <span>{t('platform_details.library', { count: platformDetails.games_count.toLocaleString() })}</span>}
+              {platformDetails?.games_count ? <span>{gamesCountLabel(platformDetails.games_count, i18n.language)}</span> : null}
             </div>
           </div>
         </div>
       </div>
 
-      <div className={styles.wikiSection}>
-        {loadingWiki ? (
-          <p>{t('common.loading')}</p>
-        ) : wikiData ? (
-          <div className={styles.wikiContent}>
-            <div className={styles.wikiText}>
-              <h2 className={styles.sectionHeading}>{t('platform_details.history')}</h2>
-              <p>{wikiData.extract}</p>
-              {wikiData.content_urls?.desktop.page && (
-                <a 
-                  href={wikiData.content_urls.desktop.page} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={styles.wikiLink}
-                >
-                  {t('platform_details.read_more')}
-                </a>
-              )}
-            </div>
-            {wikiData.thumbnail && (
-              <img src={wikiData.thumbnail} alt={wikiData.title} className={styles.wikiImage} loading="lazy" width={320} height={320} />
-            )}
-          </div>
-        ) : (
-          <p className={styles.platformDescription}>{platformDetails?.description}</p>
-        )}
-      </div>
-
-      {funFact && (
-        <div className={styles.factBox}>
-          <div className={styles.factIcon}>💡</div>
-          <div className={styles.factText}>
-            <h3>{t('platform_details.did_you_know')}</h3>
-            <p>{funFact}</p>
-          </div>
-        </div>
-      )}
-
-      <YouTubeSection 
-        title={`${platformDetails?.name} - ${t('platform_details.reviews_walkthroughs')}`}
-        videos={platformVideos || []}
-        loading={loadingVideos}
-      />
+      <nav className={styles.crumbs}>
+        {collections.slice(0, 5).map((collection) => (
+          <Link key={collection.slug} to={collectionPath(collection.slug)}>
+            {i18n.language.startsWith("en") ? collection.title.en : collection.title.ru}
+          </Link>
+        ))}
+        <Link to={genrePath("action")}>{localizedGenre("Action", i18n.language.startsWith("en"), "action")}</Link>
+        <Link to={genrePath("adventure")}>{localizedGenre("Adventure", i18n.language.startsWith("en"), "adventure")}</Link>
+        <Link to={genrePath("role-playing-games-rpg")}>{localizedGenre("RPG", i18n.language.startsWith("en"), "role-playing-games-rpg")}</Link>
+      </nav>
 
       <div className={styles.gamesHeader}>
         <h2 className={styles.sectionHeading}>{t('platform_details.best_games')}</h2>
@@ -222,7 +170,7 @@ const PlatformPage: FC = () => {
               <option value="">{t('catalog.filters.all_genres')}</option>
               {genres.map((genre) => (
                 <option key={genre.id} value={genre.id}>
-                  {genre.name}
+                  {localizedGenre(genre.name, i18n.language.startsWith("en"), genre.slug) || genre.name}
                 </option>
               ))}
             </select>

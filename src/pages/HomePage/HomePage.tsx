@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { websiteJsonLd } from "../../components/JsonLd/JsonLd";
 import { collections } from "../../data/collections";
-import { aboutPath, collectionPath, faqPath, gamePath, gamesPath, genrePath, platformsPath } from "../../seo/canonicalUrl";
+import { collectionPath, gamePath, gamesPath, genrePath, platformsPath } from "../../seo/canonicalUrl";
 import { SITE_NAME, SITE_ORIGIN } from "../../site";
 import { genres as listedGenres } from "../../../scripts/publicLinks.mjs";
 import ErrorState from "../../components/ui/ErrorState";
@@ -18,6 +18,9 @@ import { fetchTonight } from "../../services/recommendations/fetchTonight";
 import { markSeen, readSeen } from "../../services/recommendations/seenStore";
 import { composeTonight, type Mood, type ReasonCode, type TonightGame, type TonightTime } from "../../services/recommendations/tonightScore";
 import { track } from "../../services/analytics/track";
+import { FAMILY_MODELS, gamesOnPlatform } from "../../services/platforms/deviceModel";
+import { getAllSwipes } from "../../services/match/swipeStore";
+import { useMyDevices } from "../../hooks/useMyDevices";
 import BoardingPass from "./BoardingPass";
 import styles from "./HomePage.module.scss";
 
@@ -40,6 +43,8 @@ const HomePage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const hydrated = useRef(false);
+  const deviceHydrated = useRef(false);
+  const { deviceIds, save } = useMyDevices();
   const { data: collection = [] } = useQuery({
     queryKey: collectionKeys.user(user?.uid ?? "guest"),
     queryFn: () => getUserCollection(),
@@ -47,6 +52,7 @@ const HomePage = () => {
   });
   const [time, setTime] = useState<TonightTime>(120);
   const [plat, setPlat] = useState<(typeof PLATS)[number]>("pc");
+  const [modelId, setModelId] = useState<number | null>(null);
   const [openPlatforms, setOpenPlatforms] = useState(false);
   const [mood, setMood] = useState<Mood>("finish");
   const [index, setIndex] = useState(0);
@@ -74,7 +80,20 @@ const HomePage = () => {
     });
   }, [user, collection, queryClient]);
 
-  const platforms = openPlatforms ? [] : PLATFORMS[plat];
+  useEffect(() => {
+    if (deviceHydrated.current || deviceIds.length === 0) return;
+    deviceHydrated.current = true;
+    const id = deviceIds[0];
+    if (id === 18 || id === 187) setPlat("ps");
+    else if (id === 186 || id === 1) setPlat("xbox");
+    else if (id === 7) setPlat("switch");
+    else if (id === 4) setPlat("pc");
+    setModelId(id);
+  }, [deviceIds]);
+
+  const models = FAMILY_MODELS[plat] ?? [];
+  const concreteId = plat === "deck" || openPlatforms ? null : modelId ?? models[0]?.id ?? PLATFORMS[plat][0];
+  const platforms = useMemo(() => (concreteId ? [concreteId] : []), [concreteId]);
   const exclude = collection.map((game) => game.id).slice(0, 200);
 
   const tonight = useQuery({
@@ -83,10 +102,11 @@ const HomePage = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const composed = useMemo(
-    () => composeTonight(tonight.data?.results ?? [], collection, mood, time, platforms),
-    [tonight.data, collection, mood, time, platforms],
-  );
+  const composed = useMemo(() => {
+    const list = composeTonight(tonight.data?.results ?? [], collection, mood, time, platforms);
+    if (!concreteId) return list;
+    return { ...list, games: gamesOnPlatform(list.games, concreteId) };
+  }, [tonight.data, collection, mood, time, platforms, concreteId]);
   const ticket = composed.games[index];
   const shelfGame = ticket ? collection.find((game) => game.id === ticket.id) : undefined;
 
@@ -129,16 +149,20 @@ const HomePage = () => {
     for (const code of game.reasons) {
       if (lines.length >= 2) break;
       if (code === "shelf:age") continue;
+      if (code === "time:evening" && !(game.playtime > 0 && game.playtime * 60 <= time)) {
+        lines.push(t("landing.len_parts", { count: game.playtime || 1 }));
+        continue;
+      }
       lines.push(reasonText(code, game, months));
     }
     return lines.slice(0, 2);
   };
 
   const lengthLabel = (game: TonightGame) => {
-    if (game.playtime > 0 && game.playtime <= 2) return t("landing.len_min", { count: Math.round(game.playtime * 60) });
-    if (game.playtime > 2 && game.playtime <= 8) return t("landing.len_short", { count: game.playtime });
-    if (game.playtime > 8 && game.playtime <= 20) return t("landing.len_parts", { count: game.playtime });
-    if (game.playtime > 20) return t("landing.len_long", { count: game.playtime });
+    const fits = game.playtime > 0 && game.playtime * 60 <= time;
+    if (fits && game.playtime <= 2) return t("landing.len_min", { count: Math.round(game.playtime * 60) });
+    if (fits) return t("landing.len_short", { count: game.playtime });
+    if (game.playtime > 0) return t("landing.len_parts", { count: game.playtime });
     return t("landing.len_parts", { count: 0 });
   };
 
@@ -233,7 +257,12 @@ const HomePage = () => {
               onClick={() => {
                 setOpenPlatforms(false);
                 setPlat(value);
-                track("ticket_platform_select", { platform_id: PLATFORMS[value][0] });
+                const next = FAMILY_MODELS[value]?.[0]?.id ?? (value === "deck" ? null : PLATFORMS[value][0]);
+                setModelId(next);
+                if (next) {
+                  track("ticket_platform_select", { platform_id: next });
+                  void save([{ id: next, name: t(`landing.plat_${value}`) }]);
+                }
               }}
             >
               {t(`landing.plat_${value}`)}
@@ -241,6 +270,34 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+      {models.length > 1 && (
+        <div className={styles.row}>
+          <span className={styles.key}>{t("landing.platform")}</span>
+          <div className={styles.opts}>
+            {models.map((model) => (
+              <button
+                key={model.id}
+                type="button"
+                className={styles.opt}
+                aria-pressed={concreteId === model.id}
+                onClick={() => {
+                  setModelId(model.id);
+                  track("ticket_platform_select", { platform_id: model.id });
+                  void save([{ id: model.id, name: t(`landing.model_${model.key}`) }]);
+                }}
+              >
+                {t(`landing.model_${model.key}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {plat === "deck" && <p className={styles.rules}>{t("landing.deck_check")}</p>}
+      {(collection.length > 0 || getAllSwipes().some((swipe) => swipe.action === "like")) && (
+        <p className={styles.rules}>
+          <Link to="/me">{t("landing.more_for_you")}</Link>
+        </p>
+      )}
       <div className={styles.row}>
         <span className={styles.key}>{t("landing.mood")}</span>
         <div className={styles.opts}>
@@ -381,12 +438,6 @@ const HomePage = () => {
       </section>
 
       <p className={styles.rules}>{t("landing.rules")}</p>
-      <div className={styles.bottom}>
-        <Link to={gamesPath()}>{t("common.catalog")}</Link>
-        <Link to={aboutPath()}>{t("common.about")}</Link>
-        <Link to={faqPath()}>{t("common.faq")}</Link>
-        <span>RAWG</span>
-      </div>
     </div>
   );
 };

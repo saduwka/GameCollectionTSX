@@ -10,7 +10,7 @@
     "nothing_found": "Ничего не найдено",
     "see_all_results": "Показать все результаты для \"{{query}}\"",
     "home": "Главная",
-    "game_match": "Подбор игр",
+    "game_match": "Узнать мой вкус",
     "recommendations": "Рекомендации",
     "my_collection": "Моя коллекция",
     "close_menu": "Закрыть меню",
@@ -115,18 +115,18 @@
     "refreshing": "Обновление...",
     "refresh_action": "↻ Обновить",
     "add_more_hint": "Добавьте больше игр в коллекцию — рекомендации станут точнее",
-    "ranking_note": "Это жанровое ранжирование по вашим лайкам, оценкам и платформам.",
+    "ranking_note": "Сделай 10 свайпов, и подборка станет точнее.",
     "reason": {
-      "genre": "Жанр: {{name}} — часто среди ваших лайков",
+      "genre": "Жанр: {{name}}",
       "platform": "Есть на ваших платформах",
       "similar_to": "Похоже на {{name}}",
-      "trending": "Сейчас в тренде на ваших платформах",
-      "community": "Хит сообщества"
+      "trending": "Сейчас часто добавляют",
+      "community": ""
     }
   },
   "match": {
-    "title": "Подбор игр",
-    "description": "Оценивайте игры свайпами вправо (нравится) или влево (не нравится). Gamevening изучает Ваши предпочтения и подбирает соответствующие карточки.",
+    "title": "Узнать мой вкус",
+    "description": "Свайп вправо — нравится, влево — нет.",
     "reset_history_confirm": "Сбросить всю историю оценок? Это действие нельзя отменить.",
     "history_cleared": "История оценок очищена",
     "empty_state": "Вы просмотрели все доступные рекомендации.",
@@ -349,6 +349,13 @@
     "plat_xbox": "Xbox",
     "plat_switch": "Switch",
     "plat_deck": "Steam Deck",
+    "deck_check": "Для Steam Deck нет отдельного списка: проверь совместимость.",
+    "more_for_you": "Ещё для тебя",
+    "model_ps5": "PS5",
+    "model_ps4": "PS4",
+    "model_series": "Series",
+    "model_one": "One",
+    "model_switch": "Switch",
     "mood_calm": "Выдохнуть",
     "mood_deep": "Провалиться",
     "mood_finish": "Закрыть что-то",
@@ -384,8 +391,10 @@
     "search": "Найти платформу"
   },
   "not_found": {
-    "title": "Страница не найдена",
-    "description": "Кажется, такой страницы не существует. Возвращайтесь в каталог Gamevening."
+    "title": "Такого билета нет",
+    "description": "Этой страницы нет. Возьмите билет на сегодня или откройте каталог.",
+    "ticket": "Взять билет на сегодня",
+    "catalog": "Каталог"
   },
   "auth": {
     "login_google": "Войти через Google",
@@ -399,6 +408,7 @@
   },
   "platform_details": {
     "release": "Релиз: {{year}}",
+    "play_on": "Во что играть на {{name}}",
     "library": "Библиотека: {{count}} игр",
     "history": "История и обзор",
     "read_more": "Читать далее на Wikipedia →",
@@ -415,11 +425,22 @@
     "title": "Игровые платформы",
     "description": "PC, PlayStation, Xbox, Nintendo, мобильные и ретро-платформы — каталог с историей, играми и фактами."
   },
+  "esrb": {
+    "everyone": "0+",
+    "everyone-10-plus": "10+",
+    "teen": "13+",
+    "mature": "17+",
+    "adults-only": "18+",
+    "rating-pending": "рейтинг ожидается"
+  },
   "game_page": {
     "in_compare": "✓ В сравнении",
     "add_to_collection": "Добавить в коллекцию",
     "my_game": "Моя игра",
     "back": "Назад",
+    "similar": "Похожие игры",
+    "where_to_play": "Где купить или запустить",
+    "prices_note": "Цены в USD, для PC",
     "add_to_compare": "⚖️ Добавить в сравнение",
     "remove_from_compare": "Убрать из сравнения",
     "added_to_compare": "Добавлено в сравнение",
@@ -502,6 +523,11 @@
       "evening_time": "Сколько займёт",
       "evening_hours": "~{{count}} ч на прохождение",
       "evening_unknown": "время не указано",
+      "session_short": "Короткая сессия, около {{count}} ч",
+      "session_evening": "На длинный вечер, около {{count}} ч",
+      "session_long": "Длинная игра на {{count}} ч, лучше сессиями",
+      "more_trailers": "Ещё трейлеры ({{count}})",
+      "wiki_source": "Источник: вики",
       "evening_where": "На чём",
       "evening_genre": "Жанр и теги",
       "evening_mood": "Настроение",

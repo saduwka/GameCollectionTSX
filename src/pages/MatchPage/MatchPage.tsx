@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { gamePath } from "../../seo/canonicalUrl";
 import { useAuth } from "../../context/AuthContext";
 import { fetchGames } from "../../services/games/fetchGames";
+import { isSafeCandidate, MIN_RATINGS } from "../../services/recommendations/safeCandidate";
 import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import {
   recordSwipe,
@@ -55,8 +56,8 @@ const MatchPage = () => {
   const { data: globalPool = [], isLoading: isGlobalLoading } = useQuery({
     queryKey: ["matchPool", "global", platformParam],
     queryFn: async (): Promise<Game[]> => {
-      const page = await fetchGames(1, "-rating", "", "", platformParam);
-      return page.games;
+      const page = await fetchGames(1, "-added", "", "", platformParam);
+      return page.games.filter((game) => isSafeCandidate(game, { minRatings: MIN_RATINGS }));
     },
     enabled: confirmed,
     staleTime: RAWG_LIST_STALE_TIME * 2,
@@ -71,7 +72,7 @@ const MatchPage = () => {
           fetchGames(1, "-added", undefined, genre.toLowerCase().replace(/ /g, "-"), platformParam)
         )
       );
-      return pages.flatMap((page) => page.games);
+      return pages.flatMap((page) => page.games).filter((game) => isSafeCandidate(game, { minRatings: MIN_RATINGS }));
     },
     enabled: confirmed && genresForPool.length > 0,
     staleTime: RAWG_LIST_STALE_TIME,

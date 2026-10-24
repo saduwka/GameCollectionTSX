@@ -53,17 +53,23 @@ export async function getGameDetails(id: string): Promise<Game> {
       : undefined,
     website: gameData.website || null,
     screenshots: screenshotsData.results.map((s) => s.image) || [],
-    trailers: moviesData.results.map((m) => m.data.max) || [],
-    stores: storesData.results.map((s) => ({
-      id: s.id,
-      url: s.url,
-      store: {
-        id: s.store_id, 
-        name: s.store?.name || "",
-        slug: s.store?.slug || "",
-        domain: s.store?.domain || ""
-      }
-    })),
+    trailers: moviesData.results.map((m) => m.data?.max).filter((src): src is string => Boolean(src)),
+    trailerPosters: moviesData.results.map((m) => m.preview || gameData.background_image || ""),
+    stores: storesData.results.flatMap((s) => {
+      const named = (gameData.stores || []).find((item) => item.store_id === s.store_id)?.store;
+      const name = named?.name || s.store?.name || "";
+      if (!name) return [];
+      return [{
+        id: s.id,
+        url: s.url,
+        store: {
+          id: s.store_id,
+          name,
+          slug: named?.slug || s.store?.slug || "",
+          domain: named?.domain || s.store?.domain || "",
+        },
+      }];
+    }),
     developers: (gameData.developers || []).map((d) => ({ id: d.id, name: d.name })),
     publishers: (gameData.publishers || []).map((p) => p.name),
     parentPlatforms: (gameData.parent_platforms || []).map((item) => item.platform?.name).filter((name): name is string => Boolean(name)),

@@ -141,6 +141,12 @@
   to { transform: scale(1.05); }
 }
 
+.yearRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
 .selectGroup {
   display: flex;
   flex-direction: column;

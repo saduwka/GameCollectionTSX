@@ -15,6 +15,7 @@ import ImageWithFallback from "../ImageWithFallback/ImageWithFallback";
 import IconButton from "../ui/IconButton";
 import Rating from "../ui/Rating";
 import StatusBadge from "../ui/StatusBadge";
+import { genreName } from "../../services/games/normalizeGame";
 import styles from "./GameCard.module.scss";
 
 interface GameCardProps {
@@ -143,7 +144,7 @@ const GameCard = ({ game, variant = "default", status, hideCompareButton = false
       <div className={styles.body}>
         <h3 className={styles.name}>{game.name}</h3>
         <p className={styles.meta}>
-          {[game.genres?.[0], hours].filter(Boolean).join(" · ") || "—"}
+          {[genreName(game.genres?.[0]), hours].filter(Boolean).join(" · ") || "—"}
         </p>
         <div className={styles.ratingSlot}>
           <Rating value={game.rating} />

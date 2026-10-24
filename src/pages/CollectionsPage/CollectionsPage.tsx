@@ -56,7 +56,10 @@ const CollectionArticle = ({ collection, language }: { collection: EditorialColl
         <span>{title}</span>
       </nav>
       <h1>{title}</h1>
-      <p className={styles.intro}>{pick(collection.intro, language)}</p>
+      <details className={styles.intro}>
+        <summary>{language.startsWith("en") ? "About this list" : "О подборке"}</summary>
+        <p>{pick(collection.intro, language)}</p>
+      </details>
       <p className={styles.source}>
         {pick(collection.source, language)} {pick(collection.checked, language)}
       </p>
@@ -70,6 +73,13 @@ const CollectionArticle = ({ collection, language }: { collection: EditorialColl
               {game.name}
             </Link>
           </h2>
+          <p>{pick(game.session, language)}</p>
+          <Link
+            to={gamePath(game.id)}
+            onClick={() => track("game_open", { game_id: game.id, from: `collection:${collection.slug}` })}
+          >
+            {language.startsWith("en") ? "Open game" : "Открыть игру"}
+          </Link>
           <dl className={styles.facts}>
             {facts.map((key) => (
               <div key={key}>

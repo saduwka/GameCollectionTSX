@@ -1,28 +1,6 @@
 import apiClient from "../apiClient";
 import type { RawGame, Game, FetchGamesResponse } from "../../types/game";
-
-const mapRawGameToGame = (raw: RawGame): Game => ({
-  id: raw.id,
-  name: raw.name,
-  description: raw.description_raw || "",
-  background_image: raw.background_image || "",
-  rating: raw.rating ?? 0,
-  playtime: raw.playtime || 0,
-  added: raw.added ?? 0,
-  platforms: raw.platforms?.map(p => ({
-    platform: {
-      id: p.platform.id,
-      name: p.platform.name,
-      slug: p.platform.slug || "",
-    }
-  })) || [],
-  released: raw.released || "Unknown",
-  genres: raw.genres?.map(g => g.name) || [],
-  coverUrl: raw.background_image || "",
-  screenshots: [],
-  trailers: [],
-  stores: []
-});
+import { normalizeGame } from "./normalizeGame";
 
 export const fetchGames = async (
   page = 1,
@@ -64,7 +42,7 @@ export const fetchGames = async (
   return {
     games: data.results
       .filter((raw: RawGame) => /[A-Za-zА-Яа-яЁё]/.test(raw.name))
-      .map(mapRawGameToGame),
+      .map(normalizeGame),
     nextPageUrl: data.next,
     prevPageUrl: data.previous,
     count: data.count,

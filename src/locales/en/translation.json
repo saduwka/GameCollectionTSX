@@ -10,7 +10,7 @@
     "nothing_found": "Nothing found",
     "see_all_results": "Show all results for \"{{query}}\"",
     "home": "Home",
-    "game_match": "Game Match",
+    "game_match": "Find my taste",
     "recommendations": "Recommendations",
     "my_collection": "My Collection",
     "close_menu": "Close menu",
@@ -115,18 +115,18 @@
     "refreshing": "Refreshing...",
     "refresh_action": "↻ Refresh",
     "add_more_hint": "Add more games to your collection — recommendations will become more accurate",
-    "ranking_note": "This is genre ranking based on your likes, ratings, and platforms.",
+    "ranking_note": "Make 10 swipes and the list gets sharper.",
     "reason": {
       "genre": "Genre: {{name}} — common among your likes",
       "platform": "Available on your platforms",
       "similar_to": "Similar to {{name}}",
       "trending": "Trending on your platforms",
-      "community": "Community hit"
+      "community": ""
     }
   },
   "match": {
-    "title": "Game Match",
-    "description": "Swipe games right if you like them, and left if you don't. Gamevening learns from your swipes and picks the next cards.",
+    "title": "Find my taste",
+    "description": "Swipe right if you like it, left if you don't.",
     "reset_history_confirm": "Reset all swipe history? This action cannot be undone.",
     "history_cleared": "Swipe history cleared",
     "empty_state": "You swiped through all our picks.",
@@ -350,6 +350,13 @@
     "plat_xbox": "Xbox",
     "plat_switch": "Switch",
     "plat_deck": "Steam Deck",
+    "deck_check": "There is no separate Steam Deck list: check compatibility.",
+    "more_for_you": "More for you",
+    "model_ps5": "PS5",
+    "model_ps4": "PS4",
+    "model_series": "Series",
+    "model_one": "One",
+    "model_switch": "Switch",
     "mood_calm": "Unwind",
     "mood_deep": "Fall in",
     "mood_finish": "Finish something",
@@ -385,8 +392,10 @@
     "search": "Find a platform"
   },
   "not_found": {
-    "title": "Page Not Found",
-    "description": "It seems this page doesn't exist. Go back to the Gamevening catalog."
+    "title": "No ticket for this page",
+    "description": "This page is not here. Take today's ticket or open the catalog.",
+    "ticket": "Take today's ticket",
+    "catalog": "Catalog"
   },
   "auth": {
     "login_google": "Sign in with Google",
@@ -400,6 +409,7 @@
   },
   "platform_details": {
     "release": "Release: {{year}}",
+    "play_on": "What to play on {{name}}",
     "library": "Library: {{count}} games",
     "history": "History & Overview",
     "read_more": "Read more on Wikipedia →",
@@ -416,11 +426,22 @@
     "title": "Game Platforms",
     "description": "PC, PlayStation, Xbox, Nintendo, mobile and retro platforms — a catalog with history, games, and facts."
   },
+  "esrb": {
+    "everyone": "Everyone",
+    "everyone-10-plus": "Everyone 10+",
+    "teen": "Teen",
+    "mature": "Mature 17+",
+    "adults-only": "Adults Only",
+    "rating-pending": "Rating pending"
+  },
   "game_page": {
     "in_compare": "In compare",
     "add_to_collection": "Add to collection",
     "my_game": "My game",
     "back": "Back",
+    "similar": "Similar games",
+    "where_to_play": "Where to buy or play",
+    "prices_note": "Prices in USD, for PC",
     "add_to_compare": "⚖️ Add to compare",
     "remove_from_compare": "Remove from comparison",
     "added_to_compare": "Added to comparison",
@@ -503,6 +524,11 @@
       "evening_time": "How long",
       "evening_hours": "~{{count}} h to finish",
       "evening_unknown": "time not listed",
+      "session_short": "A short session, about {{count}} h",
+      "session_evening": "A long evening, about {{count}} h",
+      "session_long": "A long game of {{count}} h, better in sessions",
+      "more_trailers": "More trailers ({{count}})",
+      "wiki_source": "Source: wiki",
       "evening_where": "Where",
       "evening_genre": "Genre and tags",
       "evening_mood": "Mood",

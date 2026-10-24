@@ -8,6 +8,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import type { Game } from "../../types/game";
+import { genreName } from "../../services/games/normalizeGame";
 import styles from "./SwipeCard.module.scss";
 
 interface SwipeCardProps {
@@ -140,7 +141,7 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         {/* Контент карточки */}
         <div className={styles.content}>
           <h2 className={styles.title}>{game.name}</h2>
-          {game.genres?.[0] && <p className={styles.description}>{game.genres[0]}</p>}
+          {genreName(game.genres?.[0]) && <p className={styles.description}>{genreName(game.genres?.[0])}</p>}
           {game.platforms?.length > 0 && (
             <p className={styles.description}>
               {game.platforms.slice(0, 3).map((item) => item.platform.name).join(", ")}

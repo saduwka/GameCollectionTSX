@@ -4,7 +4,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap");
 
 :root {
-  --primary-color: #e63946;
+  --primary-color: var(--ink, #f4f1ea);
   --secondary-color: #457b9d;
   --dark-background: #1a1a1a;
   --light-text: #f1faee;

@@ -7,7 +7,7 @@ import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
 import { collections } from "../../data/collections";
-import { CATALOG_PAGE_SIZE, GENRE_PAGES, genres as listedGenres, platforms as listedPlatforms } from "../../../scripts/publicLinks.mjs";
+import { CATALOG_PAGE_SIZE, CATALOG_PAGES, GENRE_PAGES, genres as listedGenres, platforms as listedPlatforms } from "../../../scripts/publicLinks.mjs";
 import { collectionPath, gamePath, gamesPagePath, gamesPath, genrePagePath, genrePath, platformPath, platformsPath, canonicalUrl } from "../../seo/canonicalUrl";
 import { track } from "../../services/analytics/track";
 import { SITE_ORIGIN } from "../../site";
@@ -358,7 +358,15 @@ const GamesPage: React.FC = () => {
                 {t("catalog.filters.previous")}
               </span>
             )}
-            <span className={styles.pageNumber}>{currentPage}</span>
+            <span className={styles.pageNumber}>
+              {Array.from({ length: slug ? GENRE_PAGES : CATALOG_PAGES }, (_, index) => index + 1).map((page) =>
+                page === currentPage ? (
+                  <span key={page} aria-current="page">{page}</span>
+                ) : (
+                  <Link key={page} to={pageHref(page)}>{page}</Link>
+                ),
+              )}
+            </span>
             {hasMore && (
               <Link to={pageHref(currentPage + 1)} className={styles.paginationButton}>
                 {t("catalog.filters.next")}

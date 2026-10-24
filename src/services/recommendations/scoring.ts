@@ -1,6 +1,7 @@
 import type { Game } from "../../types/game";
 import type { CollectedGame } from "../collection/collectionService";
 import { fetchGames } from "../games/fetchGames";
+import { isSafeCandidate, MIN_RATINGS } from "./safeCandidate";
 import type { SwipeRecord } from "../match/swipeStore";
 
 export const PICKS_AFTER_SWIPES = 10;
@@ -65,7 +66,7 @@ export async function fetchScoredRecommendations(options: {
     reasonKey: ReasonKey,
     reasonParams: { name?: string } = {}
   ) => {
-    if (excluded(game.id)) return;
+    if (excluded(game.id) || !isSafeCandidate(game, { minRatings: MIN_RATINGS })) return;
     const existing = candidates.get(game.id);
     if (existing) {
       existing.score += addedScore;
@@ -91,8 +92,7 @@ export async function fetchScoredRecommendations(options: {
   ];
 
   if (meaningfulGames.length === 0) {
-    const ordering = options.refreshOrdering ? "-added" : "-rating";
-    const data = await fetchGames(1, ordering, "", "", platformParam);
+    const data = await fetchGames(1, "-added", "", "", platformParam);
     data.games.forEach((game, index) => {
       addCandidate(game, 1 - index * 0.02, platformParam ? "platform" : "community");
     });

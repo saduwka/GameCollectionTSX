@@ -95,6 +95,11 @@ const CollectionPage = () => {
       <div className={styles.collectionPage}>
         <PageMeta title={t("collection.title")} description={t("collection.description")} />
         <h1 className={styles.title}>{t("collection.title")}</h1>
+        <ul>
+          <li>{t("collection.segment_playing")}</li>
+          <li>{t("collection.segment_want")}</li>
+          <li>{t("collection.segment_done")}</li>
+        </ul>
         <EmptyState
           title={t("collection.guest_title")}
           text={t("collection.guest_body")}
@@ -120,6 +125,7 @@ const CollectionPage = () => {
 
       <div className={styles.toolbar}>
         <div className={styles.statusFilters}>
+          <Link to="/me">{t("landing.more_for_you")}</Link>
           {(["playing", "want", "done", "more"] as Segment[]).map((item) => (
             <button
               key={item}

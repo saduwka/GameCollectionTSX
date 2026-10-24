@@ -32,10 +32,15 @@ import { gameMetaDescription } from "../../seo/gameMetaDescription";
 import { SITE_ORIGIN } from "../../site";
 import { collectionsByGameId } from "../../data/collections";
 import { track } from "../../services/analytics/track";
+import { useMyDevices } from "../../hooks/useMyDevices";
 import EveningFacts from "./EveningFacts";
 
-import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
+import { searchGameDeals, getStoreName, fetchCheapSharkStores } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
+import { fetchGames } from "../../services/games/fetchGames";
+import { isSafeCandidate, MIN_RATINGS } from "../../services/recommendations/safeCandidate";
+import { esrbKey, formatRelease, localizedGenre, localizedTag } from "../../seo/labels";
+import LoginButton from "../../components/LoginButton/LoginButton";
 import styles from './GamePage.module.scss';
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Liked", "Not Interested"];
@@ -45,11 +50,13 @@ const GamePage: React.FC = () => {
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(platformId || null);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [extraTrailers, setExtraTrailers] = useState(false);
   const [wideLayout, setWideLayout] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
   );
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { deviceIds } = useMyDevices();
   const queryClient = useQueryClient();
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
   const { t, i18n } = useTranslation();
@@ -100,6 +107,34 @@ const GamePage: React.FC = () => {
     enabled: !!gameDetails?.name,
   });
 
+  const { data: storeCatalog = [] } = useQuery({
+    queryKey: ["cheapshark-stores"],
+    queryFn: fetchCheapSharkStores,
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+
+  const namedDeals = deals.flatMap((deal) => {
+    const name = getStoreName(deal.storeID, storeCatalog);
+    return name ? [{ ...deal, name }] : [];
+  });
+
+  const { data: similarGames = [], isFetched: similarFetched, isError: similarFailed } = useQuery({
+    queryKey: ["similar", gameDetails?.id, gameDetails?.primaryGenre?.slug],
+    queryFn: async () => {
+      const page = await fetchGames(1, "-added", undefined, gameDetails!.primaryGenre!.slug);
+      return page.games
+        .filter((game) => game.id !== gameDetails!.id && isSafeCandidate(game, { minRatings: MIN_RATINGS }))
+        .slice(0, 8);
+    },
+    enabled: Boolean(gameDetails?.primaryGenre?.slug),
+    retry: false,
+  });
+  const [similarWaited, setSimilarWaited] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSimilarWaited(true), 8000);
+    return () => window.clearTimeout(timer);
+  }, [id]);
+
   const { data: youtubeMedia = { ost: [], reviews: [] }, isLoading: youtubeLoading } = useQuery({
     queryKey: ["youtube", gameDetails?.name, platformName, i18n.language],
     queryFn: () => getGameMedia(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name, i18n.language.startsWith('ru') ? 'ru' : 'en'),
@@ -111,6 +146,12 @@ const GamePage: React.FC = () => {
     queryFn: () => getWiki(platformName ? `${gameDetails!.name} ${platformName}` : gameDetails!.name, i18n.language.startsWith('ru') ? 'ru' : 'en'),
     enabled: !!gameDetails?.name,
   });
+
+  useEffect(() => {
+    if (platformId || !deviceIds[0] || !gameDetails) return;
+    const match = gameDetails.platforms.some((item) => item.platform.id === deviceIds[0]);
+    if (match) setSelectedPlatformId(String(deviceIds[0]));
+  }, [deviceIds, gameDetails, platformId]);
 
   const collectionStatus = collectionData?.status || null;
 
@@ -344,11 +385,87 @@ const GamePage: React.FC = () => {
       />
 
       {!loading && !isError && gameDetails && (
-        <div className={styles.gamePageContainer} data-seo-ready="true">
-          <div className={styles.topActions}>
-            <button onClick={() => navigate(-1)} className={styles.backButton}>
+        <div className={styles.gamePageContainer} data-seo-ready={!gameDetails.primaryGenre?.slug || similarFetched || similarFailed || similarWaited ? "true" : undefined}>
+          <nav className={styles.crumbs} aria-label="breadcrumb">
+            <button type="button" onClick={() => navigate(-1)} className={styles.backButton}>
               {t("game_page.back")}
             </button>
+            <Link to="/">{t("common.home")}</Link>
+            <span aria-hidden="true">/</span>
+            <Link to={gamesPath()}>{t("common.games")}</Link>
+            {gameDetails.primaryGenre ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <Link to={genrePath(gameDetails.primaryGenre.slug)}>
+                  {localizedGenre(gameDetails.primaryGenre.name, i18n.language.startsWith("en"), gameDetails.primaryGenre.slug) || gameDetails.primaryGenre.name}
+                </Link>
+              </>
+            ) : null}
+            <span aria-hidden="true">/</span>
+            <span>{gameDetails.name}</span>
+          </nav>
+
+          <div className={styles.hero}>
+            {gameDetails.background_image ? (
+              <img
+                className={styles.cover}
+                src={gameDetails.background_image}
+                alt=""
+                width={640}
+                height={360}
+                fetchPriority="high"
+              />
+            ) : null}
+            <div>
+              <h1 className={styles.gamePageHeader}>{gameDetails.name}</h1>
+              <p className={styles.kicker}>
+                {[
+                  gameDetails.released?.slice(0, 4),
+                  localizedGenre(gameDetails.genres[0] || "", i18n.language.startsWith("en"), gameDetails.primaryGenre?.slug) || (i18n.language.startsWith("en") ? gameDetails.genres[0] : ""),
+                  gameDetails.developers?.[0]?.name,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+              <EveningFacts game={gameDetails} />
+            </div>
+          </div>
+
+          {gameDetails.platforms.length > 0 && (
+            <div className={styles.platformChips}>
+              <Link
+                to={gamePath(gameDetails.id)}
+                className={!selectedPlatformId ? styles.platformChipActive : styles.platformChip}
+                onClick={() => setSelectedPlatformId(null)}
+              >
+                {t("game_page.general_info")}
+              </Link>
+              {gameDetails.platforms.map((platform) => (
+                <Link
+                  key={platform.platform.id}
+                  to={`/game/${gameDetails.id}/${platform.platform.id}`}
+                  className={String(platform.platform.id) === selectedPlatformId ? styles.platformChipActive : styles.platformChip}
+                  onClick={() => setSelectedPlatformId(String(platform.platform.id))}
+                >
+                  {platform.platform.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.topActions}>
+            {user ? (
+              <button
+                type="button"
+                className={styles.primaryAction}
+                onClick={() => setStatusMenuOpen((open) => !open)}
+                disabled={isCollectionActionLoading}
+              >
+                {collectionStatus ? t(`game_page.status.${collectionStatus}`) : t("game_page.add_to_collection")}
+              </button>
+            ) : (
+              <LoginButton />
+            )}
             <button
               onClick={() => handleToggleCompare(gameDetails)}
               className={`${styles.compareButton} ${isInComparison(gameDetails.id) ? styles.compareButtonActive : ""}`}
@@ -357,69 +474,22 @@ const GamePage: React.FC = () => {
               {isInComparison(gameDetails.id) ? t("game_page.in_compare") : t("compare.add_hint")}
             </button>
           </div>
-
-          <nav className={styles.crumbs} aria-label="breadcrumb">
-            <Link to="/">{t("common.home")}</Link>
-            <span aria-hidden="true">/</span>
-            <Link to={gamesPath()}>{t("common.games")}</Link>
-            {gameDetails.primaryGenre ? (
-              <>
-                <span aria-hidden="true">/</span>
-                <Link to={genrePath(gameDetails.primaryGenre.slug)}>{gameDetails.primaryGenre.name}</Link>
-              </>
-            ) : null}
-            <span aria-hidden="true">/</span>
-            <span>{gameDetails.name}</span>
-          </nav>
-          <h1 className={styles.gamePageHeader}>{gameDetails.name}</h1>
-          {gameDetails.platforms.length > 0 && (
-            <div className={styles.platformChips}>
-              <button
-                type="button"
-                className={!selectedPlatformId ? styles.platformChipActive : styles.platformChip}
-                onClick={() => setSelectedPlatformId(null)}
-              >
-                {t("game_page.general_info")}
-              </button>
-              {gameDetails.platforms.map((platform) => (
+          {user && statusMenuOpen && (
+            <div className={styles.statusMenu}>
+              {STATUS_OPTIONS.map((status) => (
                 <button
-                  key={platform.platform.id}
+                  key={status}
                   type="button"
-                  className={String(platform.platform.id) === selectedPlatformId ? styles.platformChipActive : styles.platformChip}
-                  onClick={() => setSelectedPlatformId(String(platform.platform.id))}
+                  onClick={() => {
+                    setStatusMenuOpen(false);
+                    handleStatusChange(status);
+                  }}
                 >
-                  {platform.platform.name}
+                  {t(`game_page.status.${status}`)}
                 </button>
               ))}
             </div>
           )}
-
-          <div className={styles.statusSection}>
-            <button
-              type="button"
-              className={styles.primaryAction}
-              onClick={() => setStatusMenuOpen((open) => !open)}
-              disabled={isCollectionActionLoading}
-            >
-              {collectionStatus ? t(`game_page.status.${collectionStatus}`) : t("game_page.add_to_collection")}
-            </button>
-            {statusMenuOpen && (
-              <div className={styles.statusMenu}>
-                {STATUS_OPTIONS.map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => {
-                      setStatusMenuOpen(false);
-                      handleStatusChange(status);
-                    }}
-                  >
-                    {t(`game_page.status.${status}`)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <div className={styles.gameWrapper}>
             <div className={styles.gamePageDetails}>
@@ -514,7 +584,7 @@ const GamePage: React.FC = () => {
 
               <p>
                 <strong>{t('game_page.details.release_date')}</strong>{" "}
-                {currentPlatformInfo?.released_at || gameDetails.released}
+                {formatRelease(currentPlatformInfo?.released_at || gameDetails.released, i18n.language)}
               </p>
               <p>
                 <strong>{t('game_page.details.rawg_rating')}</strong> {gameDetails.rating} / 5
@@ -530,9 +600,9 @@ const GamePage: React.FC = () => {
                 </p>
               )}
 
-              {gameDetails.esrb_rating && (
+              {gameDetails.esrb_rating && esrbKey(gameDetails.esrb_rating) && (
                 <p>
-                  <strong>{t('game_page.details.esrb')}</strong> {gameDetails.esrb_rating}
+                  <strong>{t('game_page.details.esrb')}</strong> {t(`esrb.${esrbKey(gameDetails.esrb_rating)}`)}
                 </p>
               )}
 
@@ -556,25 +626,27 @@ const GamePage: React.FC = () => {
                 </p>
               )}
 
-              {gameDetails.tags && gameDetails.tags.length > 0 && (
+              {gameDetails.tags && gameDetails.tags.some((tag) => localizedTag(tag.slug, tag.name, i18n.language.startsWith("en"))) && (
                 <div className={styles.tagsSection}>
                   <strong>{t('game_page.details.tags')}</strong>
                   <div className={styles.tags}>
-                    {gameDetails.tags.slice(0, 15).map((tag) => (
+                    {gameDetails.tags.slice(0, 15).flatMap((tag) => {
+                      const label = localizedTag(tag.slug, tag.name, i18n.language.startsWith("en"));
+                      if (!label) return [];
+                      return [(
                       <Link 
                         key={tag.id} 
                         to={`${gamesPath()}?tag=${tag.id}`} 
                         className={styles.tagBadge}
                         style={{ textDecoration: "none" }}
                       >
-                        {tag.name}
+                        {label}
                       </Link>
-                    ))}
+                      )];
+                    })}
                   </div>
                 </div>
               )}
-
-              <EveningFacts game={gameDetails} />
 
               <div className={styles.descriptionSection}>
                 <strong>{t('game_page.details.description')}</strong>
@@ -596,30 +668,9 @@ const GamePage: React.FC = () => {
                   {descriptionOpen ? t("common.collapse") : t("common.read_more")}
                 </button>
                 {gameWiki?.content_urls?.desktop.page && (
-                  <a href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">{t('game_page.details.read_more_wiki')}</a>
+                  <a className={styles.sourceLink} href={gameWiki.content_urls.desktop.page} target="_blank" rel="noopener noreferrer">{t('game_page.details.wiki_source')}</a>
                 )}
               </div>
-
-              <p>
-                <strong>{t('game_page.details.platforms')}</strong>{" "}
-                {gameDetails.platforms?.length
-                  ? gameDetails.platforms.map((p, i, arr) => (
-                      <span key={p.platform.id}>
-                        <Link
-                          to={`/game/${gameDetails.id}/${p.platform.id}`}
-                          className={`${styles.platformLink} ${
-                            parseInt(platformId || "0") === p.platform.id
-                              ? styles.activePlatform
-                              : ""
-                          }`}
-                        >
-                          {p.platform.name}
-                        </Link>
-                        {i < arr.length - 1 && ", "}
-                      </span>
-                    ))
-                  : "N/A"}
-              </p>
 
               {gameDetails.website && (
                 <p>
@@ -651,25 +702,27 @@ const GamePage: React.FC = () => {
                 </div>
               )}
 
+              <div id="where-to-play" />
               {/* Price Comparison */}
-              {(dealsLoading || deals.length > 0) && (
+              {(dealsLoading || namedDeals.length > 0) && (
                 <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
                   <summary>{t('game_page.details.best_deals')}</summary>
                 <div className={styles.dealsSection}>
+                  <p className={styles.rawgNote}>{t("game_page.prices_note")}</p>
                   {dealsLoading ? (
                     <p className={styles.dealsLoader}>{t('game_page.details.searching_deals')}</p>
                   ) : (
                     <div className={styles.dealsList}>
-                      {deals.map((deal) => (
+                      {namedDeals.map((deal) => (
                         <a
                           key={deal.dealID}
                           href={`https://www.cheapshark.com/redirect?dealID=${deal.dealID}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.dealItem}
-                          onClick={() => track("store_click", { game_id: gameDetails.id, store: getStoreName(deal.storeID) })}
+                          onClick={() => track("store_click", { game_id: gameDetails.id, store: deal.name })}
                         >
-                          <span className={styles.storeName}>{getStoreName(deal.storeID)}</span>
+                          <span className={styles.storeName}>{deal.name}</span>
                           <span className={styles.dealPrice}>${deal.price}</span>
                           {parseFloat(deal.savings) > 0 && (
                             <span className={styles.dealSavings}>-{Math.round(parseFloat(deal.savings))}%</span>
@@ -687,16 +740,16 @@ const GamePage: React.FC = () => {
                   <summary>{t('game_page.details.official_stores')}</summary>
                 <div className={styles.storesSection}>
                   <div className={styles.storesList}>
-                    {gameDetails.stores.map((s) => (
+                    {gameDetails.stores.filter((store) => store.store.name).map((s) => (
                       <a
                         key={s.id}
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.storeBadge}
-                        onClick={() => track("store_click", { game_id: gameDetails.id, store: s.store.name || "store" })}
+                        onClick={() => track("store_click", { game_id: gameDetails.id, store: s.store.name })}
                       >
-                        {s.store.name || t('game_page.details.visit_store')}
+                        {s.store.name}
                       </a>
                     ))}
                   </div>
@@ -735,11 +788,12 @@ const GamePage: React.FC = () => {
               <summary>{t('game_page.details.trailers')}</summary>
             <div className={styles.trailersSection}>
               <div className={styles.trailersGallery}>
-                {trailers.map((src, index) => (
-                  <div key={index} className={styles.trailerItem}>
+                {(extraTrailers ? trailers : trailers.slice(0, 1)).map((src, index) => (
+                  <div key={src} className={styles.trailerItem}>
                     <video
                       controls
                       width="100%"
+                      poster={gameDetails.trailerPosters?.[index] || gameDetails.background_image}
                       src={src}
                       title={`${gameDetails.name} trailer ${index + 1}`}
                     >
@@ -748,10 +802,16 @@ const GamePage: React.FC = () => {
                   </div>
                 ))}
               </div>
+              {trailers.length > 1 && !extraTrailers && (
+                <button type="button" className={styles.textButton} onClick={() => setExtraTrailers(true)}>
+                  {t("game_page.details.more_trailers", { count: trailers.length - 1 })}
+                </button>
+              )}
             </div>
             </details>
           )}
 
+          {youtubeMedia.ost.length > 0 && (
           <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
             <summary>{t('game_page.details.soundtracks')}</summary>
           <YouTubeSection 
@@ -760,7 +820,9 @@ const GamePage: React.FC = () => {
             loading={youtubeLoading} 
           />
           </details>
+          )}
 
+          {youtubeMedia.reviews.length > 0 && (
           <details className={styles.fold} {...(wideLayout ? { open: true } : {})}>
             <summary>{t('game_page.details.reviews')}</summary>
           <YouTubeSection 
@@ -769,6 +831,25 @@ const GamePage: React.FC = () => {
             loading={youtubeLoading} 
           />
           </details>
+          )}
+
+          {similarGames.length > 0 && (
+            <div className={styles.relatedSection}>
+              <h2 className={styles.sectionHeading}>{t("game_page.similar")}</h2>
+              <div className={styles.relatedGrid}>
+                {similarGames.map((game) => (
+                  <Link to={gamePath(game.id)} key={game.id} className={styles.relatedItem}>
+                    {game.background_image ? (
+                      <img src={game.background_image} alt="" className={styles.relatedImage} loading="lazy" width={320} height={180} />
+                    ) : (
+                      <span className={styles.relatedFallback} aria-hidden="true" />
+                    )}
+                    <span className={styles.relatedName}>{game.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {gameDetails.additions && gameDetails.additions.length > 0 && (
             <div className={styles.relatedSection}>
@@ -780,14 +861,18 @@ const GamePage: React.FC = () => {
                     key={addition.id} 
                     className={styles.relatedItem}
                   >
+                    {addition.background_image ? (
                     <img 
                       src={addition.background_image} 
-                      alt={addition.name} 
+                      alt="" 
                       className={styles.relatedImage}
                       loading="lazy"
                       width={320}
                       height={180}
                     />
+                    ) : (
+                      <span className={styles.relatedFallback} aria-hidden="true" />
+                    )}
                     <span className={styles.relatedName}>{addition.name}</span>
                   </Link>
                 ))}

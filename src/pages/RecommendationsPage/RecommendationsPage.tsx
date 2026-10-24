@@ -146,22 +146,24 @@ const RecommendationsPage: React.FC = () => {
 
       {!isLoading && !authLoading && recommendations.length > 0 && (
         <div className={styles.grid}>
-          {recommendations.map((game) => (
+          {recommendations.slice(0, swipes.some((swipe) => swipe.action === "like") ? recommendations.length : 6).map((game) => (
             <div key={game.id} className={styles.cardWrapper}>
               <Link to={gamePath(game.id)} className={styles.link}>
                 <div className={styles.cardContainer}>
                   <GameCard game={game} />
                 </div>
+                {t(`recommendations.reason.${game.reasonKey}`, game.reasonParams) ? (
                 <div className={styles.reasonBadge}>
                   {t(`recommendations.reason.${game.reasonKey}`, game.reasonParams)}
                 </div>
+                ) : null}
               </Link>
               <button
                 className={styles.notInterestedButton}
                 onClick={(event) => handleNotInterested(event, game)}
                 aria-label={`${t("match.dislike")} ${game.name}`}
               >
-                {t("match.dislike")}
+                ✕
               </button>
             </div>
           ))}

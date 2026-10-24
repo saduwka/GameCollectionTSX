@@ -11,14 +11,15 @@ import { fetchGames } from "../../services/search/searchServices";
 import { RAWG_LIST_STALE_TIME } from "../../services/rawgCache";
 import PageMeta from "../../components/PageMeta/PageMeta";
 import EmptyState from "../../components/ui/EmptyState";
-import { gamePath } from "../../seo/canonicalUrl";
+import { collectionPath, gamePath } from "../../seo/canonicalUrl";
+import { collections } from "../../data/collections";
 import type { Game } from "../../types/game";
 import styles from "./SearchPage.module.scss";
 
 type SortOption = "relevance" | "name" | "rating";
 
 const SearchPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [params, setParams] = useSearchParams();
   const searchContext = useContext(SearchContext);
   const setSearchQuery = searchContext?.setSearchQuery;
@@ -63,7 +64,12 @@ const SearchPage: React.FC = () => {
     if (sortOption === "rating") {
       return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
-    return list; // relevance is default order
+    return list.sort((a, b) => {
+      const thinA = (a.ratings_count ?? 0) < 5 ? 1 : 0;
+      const thinB = (b.ratings_count ?? 0) < 5 ? 1 : 0;
+      if (thinA !== thinB) return thinA - thinB;
+      return (b.ratings_count ?? 0) - (a.ratings_count ?? 0);
+    });
   }, [games, sortOption]);
 
   return (
@@ -103,7 +109,19 @@ const SearchPage: React.FC = () => {
       {isError && <LoadingErrorMessage loading={false} error={(error as Error).message} noResults={false} />}
 
       {!urlQuery ? (
-        <EmptyState title={t("landing.empty_title")} text={t("search.empty_state_hint")} />
+        <div className={styles.gameGrid}>
+          <EmptyState title={t("search.empty_state_hint")} text={t("landing.empty_title")} />
+          {["zelda", "hades", "stardew", "portal", "celeste"].map((query) => (
+            <button key={query} type="button" className={styles.sortBtn} onClick={() => setParams({ query })}>
+              {query}
+            </button>
+          ))}
+          {collections.map((collection) => (
+            <Link key={collection.slug} to={collectionPath(collection.slug)}>
+              {i18n.language.startsWith("en") ? collection.title.en : collection.title.ru}
+            </Link>
+          ))}
+        </div>
       ) : (
         <>
           <div className={styles.headerRow}>

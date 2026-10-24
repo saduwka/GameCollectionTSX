@@ -1,9 +1,11 @@
 import apiClient from "../apiClient";
-import type { RawGame } from "../../types/game";
+import type { Game, RawGame } from "../../types/game";
+import { normalizeGame } from "../games/normalizeGame";
+import { isSafeCandidate } from "../recommendations/safeCandidate";
 
-const searchCache: Record<string, RawGame[]> = {};
+const searchCache: Record<string, Game[]> = {};
 
-export const fetchGames = async (searchQuery: string = ""): Promise<RawGame[]> => {
+export const fetchGames = async (searchQuery: string = ""): Promise<Game[]> => {
   if (!searchQuery.trim()) return [];
 
   if (searchCache[searchQuery]) {
@@ -18,9 +20,10 @@ export const fetchGames = async (searchQuery: string = ""): Promise<RawGame[]> =
     throw new Error("API response does not contain a list of games");
   }
 
-  const filteredResults = data.results.filter((game) =>
-    game.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredResults = data.results
+    .filter((game) => game.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .map(normalizeGame)
+    .filter((game) => isSafeCandidate(game));
 
   searchCache[searchQuery] = filteredResults;
   return filteredResults;

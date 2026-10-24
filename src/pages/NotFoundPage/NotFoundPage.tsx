@@ -1,7 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './NotFoundPage.module.scss';
-import { gamesPath, platformsPath } from "../../seo/canonicalUrl";
 import PageMeta from "../../components/PageMeta/PageMeta";
 
 const NotFoundPage: React.FC = () => {
@@ -14,21 +14,15 @@ const NotFoundPage: React.FC = () => {
         noindex
       />
       <div className={styles.notFoundContent}>
-        <h1 className={styles.notFoundTitle}>404</h1>
-        <h2 className={styles.notFoundSubtitle}>Game Over!</h2>
-        <p className={styles.notFoundMessage}>
-          {t('not_found.description')}
-        </p>
+        <h1 className={styles.notFoundTitle}>{t('not_found.title')}</h1>
+        <p className={styles.notFoundMessage}>{t('not_found.description')}</p>
         <div className={styles.notFoundActions}>
-          <a href="/" className={`${styles.notFoundButton} ${styles.primary}`}>
-            {t('common.home')}
-          </a>
-          <a href={gamesPath()} className={`${styles.notFoundButton} ${styles.secondary}`}>
-            {t('common.games')}
-          </a>
-          <a href={platformsPath()} className={`${styles.notFoundButton} ${styles.secondary}`}>
-            {t('common.platforms')}
-          </a>
+          <Link to="/" className={`${styles.notFoundButton} ${styles.primary}`}>
+            {t('not_found.ticket')}
+          </Link>
+          <Link to="/games/" className={`${styles.notFoundButton} ${styles.secondary}`}>
+            {t('not_found.catalog')}
+          </Link>
         </div>
       </div>
     </div>

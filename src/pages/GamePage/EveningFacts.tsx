@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { collectionsByGameId } from "../../data/collections";
 import { collectionPath } from "../../seo/canonicalUrl";
-import { eveningMoods, type Mood } from "../../services/recommendations/tonightScore";
+import { localizedGenre, localizedTag } from "../../seo/labels";
+import { moodMatch, RECIPES, type Mood } from "../../services/recommendations/tonightScore";
 import type { Game } from "../../types/game";
 import styles from "./GamePage.module.scss";
 
@@ -16,16 +17,33 @@ const moodKey: Record<Mood, string> = {
 const EveningFacts = ({ game }: { game: Game }) => {
   const { t, i18n } = useTranslation();
   const english = i18n.language.startsWith("en");
-  const platforms = (game.parentPlatforms?.length ? game.parentPlatforms : game.platforms.map((item) => item.platform.name)).filter(
-    (name, index, all) => name && all.indexOf(name) === index,
-  );
-  const genres = game.genres.slice(0, 3);
+  const platforms = game.platforms
+    .map((item) => item.platform.name)
+    .filter((name, index, all) => name && all.indexOf(name) === index);
+  const genres = game.genres
+    .map((name) => localizedGenre(name, english))
+    .filter(Boolean)
+    .slice(0, 2);
   const tags = (game.tags ?? [])
-    .filter((tag) => !tag.language || tag.language === "rus" || tag.language === "eng")
-    .slice(0, 4);
-  const moods = eveningMoods((game.tags ?? []).map((tag) => tag.slug).filter((slug): slug is string => Boolean(slug)));
+    .map((tag) => localizedTag(tag.slug, tag.name, english))
+    .filter(Boolean)
+    .slice(0, 3);
+  const slugs = (game.tags ?? []).map((tag) => tag.slug).filter((slug): slug is string => Boolean(slug));
+  const moods = (Object.keys(RECIPES) as Mood[])
+    .map((mood) => ({ mood, score: moodMatch({ tags: slugs }, RECIPES[mood]) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2)
+    .map((item) => item.mood);
   const listed = collectionsByGameId(game.id);
-  const genreLine = [...genres, ...tags.map((tag) => tag.name)].join(", ");
+  const session =
+    game.playtime && game.playtime > 0
+      ? game.playtime <= 3
+        ? t("game_page.details.session_short", { count: game.playtime })
+        : game.playtime <= 12
+          ? t("game_page.details.session_evening", { count: game.playtime })
+          : t("game_page.details.session_long", { count: game.playtime })
+      : t("game_page.details.evening_unknown");
 
   return (
     <section className={styles.evening} aria-label={t("game_page.details.evening_title")}>
@@ -33,22 +51,18 @@ const EveningFacts = ({ game }: { game: Game }) => {
       <dl>
         <div>
           <dt>{t("game_page.details.evening_time")}</dt>
-          <dd>
-            {game.playtime && game.playtime > 0
-              ? t("game_page.details.evening_hours", { count: game.playtime })
-              : t("game_page.details.evening_unknown")}
-          </dd>
+          <dd>{session}</dd>
         </div>
         {platforms.length > 0 && (
           <div>
             <dt>{t("game_page.details.evening_where")}</dt>
-            <dd>{platforms.join(", ")}</dd>
+            <dd>{platforms.slice(0, 4).join(", ")}</dd>
           </div>
         )}
-        {genreLine && (
+        {(genres.length > 0 || tags.length > 0) && (
           <div>
             <dt>{t("game_page.details.evening_genre")}</dt>
-            <dd>{genreLine}</dd>
+            <dd>{[...genres, ...tags].join(", ")}</dd>
           </div>
         )}
         {moods.length > 0 && (
@@ -70,6 +84,9 @@ const EveningFacts = ({ game }: { game: Game }) => {
           </div>
         )}
       </dl>
+      <a className={styles.whereLink} href="#where-to-play">
+        {t("game_page.where_to_play")}
+      </a>
     </section>
   );
 };
