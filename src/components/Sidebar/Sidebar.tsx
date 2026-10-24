@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className={styles.sidebarHeader}>
           <Link to="/" className={styles.logoWrapper} onClick={onClose}>
             <img src={logo} alt="" className={styles.logo} />
-            <span className={styles.brandName}>PlayHub</span>
+            <span className={styles.brandName}>gameevening</span>
           </Link>
           <button
             ref={closeBtnRef}

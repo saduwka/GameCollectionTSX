@@ -148,7 +148,7 @@ const HomePage = () => {
 
   const copyTicket = async () => {
     if (!ticket) return;
-    const text = [ticket.name, ...why(ticket), "PlayHub"].join("\n");
+    const text = [ticket.name, ...why(ticket), "gameevening"].join("\n");
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);

@@ -296,7 +296,7 @@ const GamePage: React.FC = () => {
   const game = gameDetails as Game | undefined;
   const metaDescription = firstSentence(
     game?.description || "",
-    `${game?.name ?? "Игра"} — обзор, платформы и похожие игры на PlayHub.`,
+    `${game?.name ?? "Игра"} — обзор, платформы и похожие игры на gameevening.`,
   );
 
   return (
@@ -304,7 +304,7 @@ const GamePage: React.FC = () => {
       {game && (
         <>
           <PageMeta
-            title={`${game.name} — обзор, платформы, похожие игры | PlayHub`}
+            title={`${game.name} — обзор, платформы, похожие игры | gameevening`}
             description={metaDescription}
             image={game.background_image}
             type="article"

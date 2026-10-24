@@ -5,7 +5,7 @@ import { SITE_ORIGIN } from "../../site";
 import { syncDocumentMeta } from "./syncDocumentMeta";
 
 interface PageMetaProps {
-  /** Уникальная часть title. Будет автоматически дополнена " — PlayHub". */
+  /** Уникальная часть title. Будет автоматически дополнена " — gameevening". */
   title: string;
   /** Meta description (для поиска и OG). */
   description?: string;
@@ -13,7 +13,7 @@ interface PageMetaProps {
   image?: string;
   /** Канонический URL страницы. По умолчанию origin + pathname, без query и hash. */
   url?: string;
-  /** Не дописывать « — PlayHub», если title уже полный. */
+  /** Не дописывать « — gameevening», если title уже полный. */
   exactTitle?: boolean;
   /** OG type — обычно "website", для страниц игр можно "article". */
   type?: "website" | "article";
@@ -21,9 +21,9 @@ interface PageMetaProps {
   noindex?: boolean;
 }
 
-const SITE_NAME = "PlayHub";
+const SITE_NAME = "gameevening";
 const DEFAULT_DESCRIPTION =
-  "PlayHub — каталог из 500 000+ игр. Умный поиск, сравнение, личная коллекция и рекомендации, основанные на ваших интересах.";
+  "gameevening — каталог из 500 000+ игр. Умный поиск, сравнение, личная коллекция и рекомендации, основанные на ваших интересах.";
 
 const PageMeta = ({
   title,

@@ -27,8 +27,8 @@ export interface EditorialCollection {
 const text = (ru: string, en: string): LocalizedText => ({ ru, en });
 
 const source = text(
-  "Названия, обложки и оценки сообщества берутся из RAWG. Время сессии — редакционная оценка PlayHub, не поле playtime из RAWG.",
-  "Names, covers, and community scores come from RAWG. Session length is a PlayHub editorial estimate, not the RAWG playtime field.",
+  "Названия, обложки и оценки сообщества берутся из RAWG. Время сессии — редакционная оценка gameevening, не поле playtime из RAWG.",
+  "Names, covers, and community scores come from RAWG. Session length is a gameevening editorial estimate, not the RAWG playtime field.",
 );
 
 const checked = text("Проверено 21 октября 2026.", "Checked on 21 October 2026.");

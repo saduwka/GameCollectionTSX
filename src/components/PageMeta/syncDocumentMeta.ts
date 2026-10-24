@@ -7,7 +7,7 @@ export interface DocumentMeta {
   noindex: boolean;
 }
 
-const SITE_NAME = "PlayHub";
+const SITE_NAME = "gameevening";
 
 const head = () => document.head;
 

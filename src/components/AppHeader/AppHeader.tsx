@@ -33,7 +33,7 @@ const AppHeader = () => {
       <header className={styles.header}>
         <NavLink to="/" className={styles.brand} end>
           <img src={logo} alt="" className={styles.logo} />
-          PlayHub
+          gameevening
         </NavLink>
         <nav className={styles.nav} aria-label={t("common.main_menu")}>
           {links.map((link) => (

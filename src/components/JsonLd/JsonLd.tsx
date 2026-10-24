@@ -16,7 +16,7 @@ const JsonLd = ({ data }: JsonLdProps) => (
 export const websiteJsonLd = (description?: string) => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "PlayHub",
+  name: "gameevening",
   url: SITE_ORIGIN,
   ...(description ? { description } : {}),
   potentialAction: {
@@ -29,7 +29,7 @@ export const websiteJsonLd = (description?: string) => ({
 export const organizationJsonLd = (description: string) => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "PlayHub",
+  name: "gameevening",
   url: SITE_ORIGIN,
   description,
 });
