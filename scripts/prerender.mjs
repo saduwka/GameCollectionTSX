@@ -4,7 +4,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { canonicalPathname } from "./canonicalPath.mjs";
-import { CATALOG_PAGES, GAME_LIMIT, GENRE_PAGES, collectionSlugs, genres, platforms } from "./publicLinks.mjs";
+import { collectionSlugs, pinnedGameIds } from "./collectionIndex.mjs";
+import { CATALOG_PAGES, GAME_LIMIT, GENRE_PAGES, genres, platforms } from "./publicLinks.mjs";
 import { absoluteUrl, sitemapDocuments } from "./sitemap.mjs";
 import { stripShellSeo, validatePrerenderedHtml } from "./prerenderHtml.mjs";
 
@@ -70,7 +71,23 @@ const toCard = (raw) => ({
   screenshots: [],
   trailers: [],
   stores: [],
+  parentPlatforms: [],
+  tags: [],
 });
+
+const pinCards = async (cards, proxyUrl) => {
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  const missing = pinnedGameIds.filter((id) => !byId.has(id));
+  if (missing.length) {
+    const details = await Promise.all(missing.map((id) => rawg(proxyUrl, `/games/${id}`).catch(() => null)));
+    for (const raw of details) {
+      if (raw?.id) byId.set(raw.id, toCard(raw));
+    }
+  }
+  const pinned = pinnedGameIds.map((id) => byId.get(id)).filter(Boolean);
+  const rest = cards.filter((card) => !pinnedGameIds.includes(card.id));
+  return [...pinned, ...rest].slice(0, GAME_LIMIT);
+};
 
 const loadRoutes = async () => {
   const catalogFile = path.join(ROOT, "cache/rawg/catalog.json");
@@ -78,7 +95,13 @@ const loadRoutes = async () => {
     const cached = JSON.parse(await readFile(CACHE_FILE, "utf8"));
     const catalog = JSON.parse(await readFile(catalogFile, "utf8"));
     const ids = catalog.games?.map((game) => game.id) ?? [];
-    if (cached.games?.length === GAME_LIMIT && ids.length === GAME_LIMIT && ids.every((id, index) => id === cached.games[index])) {
+    const coversPins = pinnedGameIds.every((id) => ids.includes(id));
+    if (
+      cached.games?.length === GAME_LIMIT &&
+      ids.length === GAME_LIMIT &&
+      ids.every((id, index) => id === cached.games[index]) &&
+      coversPins
+    ) {
       await writeFile(path.join(DIST, "catalog.json"), JSON.stringify(catalog));
       return cached;
     }
@@ -91,7 +114,7 @@ const loadRoutes = async () => {
   const lists = await Promise.all(
     gamePages.map((page) => rawg(proxyUrl, `/games?ordering=-added&page_size=20&page=${page}`)),
   );
-  const cards = lists.flatMap((page) => page.results ?? []).slice(0, GAME_LIMIT).map(toCard);
+  const cards = await pinCards(lists.flatMap((page) => page.results ?? []).map(toCard), proxyUrl);
   const routes = {
     games: cards.map((game) => game.id),
     platforms: platforms.map((platform) => platform.id),

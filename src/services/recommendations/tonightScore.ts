@@ -188,6 +188,9 @@ export const fitsTime = (game: Pick<TonightGame, "playtime" | "tags">, minutes: 
 export const moodMatch = (game: Pick<TonightGame, "tags">, recipe: Recipe) =>
   Math.min(3, includeTags(recipe).filter((tag) => game.tags.includes(tag)).length);
 
+export const eveningMoods = (tags: string[]): Mood[] =>
+  (Object.keys(RECIPES) as Mood[]).filter((mood) => moodMatch({ tags }, RECIPES[mood]) > 0);
+
 const qualityScore = (game: Pick<TonightGame, "metacritic" | "rating">) => {
   const metacritic = game.metacritic ?? Math.round((game.rating || 0) * 20);
   return Math.max(0, Math.min(1, (metacritic - 70) / 30));

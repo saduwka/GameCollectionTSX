@@ -20,6 +20,7 @@ describe("canonical urls", () => {
     assert.equal(canonicalPathname("/game/1/4"), "/game/1/4");
     assert.equal(canonicalPathname("/search"), "/search");
     assert.equal(canonicalPathname("/collection"), "/collection");
+    assert.equal(canonicalPathname("/collections/relax/?utm_source=telegram"), "/collections/relax/");
     assert.equal(canonicalUrl(origin, "/collections/coop-pc"), `${origin}/collections/coop-pc/`);
     assert.equal(canonicalUrl(origin, "/"), `${origin}/`);
   });

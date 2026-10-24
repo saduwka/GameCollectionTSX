@@ -17,6 +17,7 @@ import { collectionKeys } from "../../services/collection/queryKeys";
 import { fetchTonight } from "../../services/recommendations/fetchTonight";
 import { markSeen, readSeen } from "../../services/recommendations/seenStore";
 import { composeTonight, type Mood, type ReasonCode, type TonightGame, type TonightTime } from "../../services/recommendations/tonightScore";
+import { track } from "../../services/analytics/track";
 import BoardingPass from "./BoardingPass";
 import styles from "./HomePage.module.scss";
 
@@ -90,8 +91,16 @@ const HomePage = () => {
   const shelfGame = ticket ? collection.find((game) => game.id === ticket.id) : undefined;
 
   useEffect(() => {
-    if (ticket) markSeen(ticket.id);
-  }, [ticket]);
+    if (!ticket) return;
+    markSeen(ticket.id);
+    track("ticket_shown", {
+      game_id: ticket.id,
+      time,
+      mood,
+      platform_id: openPlatforms ? 0 : PLATFORMS[plat][0],
+      source: composed.fromShelf ? "backlog" : "tonight",
+    });
+  }, [ticket, time, mood, plat, openPlatforms, composed.fromShelf]);
 
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -134,6 +143,7 @@ const HomePage = () => {
   };
 
   const next = () => {
+    if (ticket) track("ticket_next", { game_id: ticket.id });
     if (index + 1 >= composed.games.length) {
       setExhausted(true);
       return;
@@ -142,6 +152,7 @@ const HomePage = () => {
   };
 
   const widen = () => {
+    if (ticket) track("ticket_widen", { game_id: ticket.id });
     setTime(300);
     setOpenPlatforms(true);
     setExhausted(false);
@@ -149,6 +160,7 @@ const HomePage = () => {
 
   const copyTicket = async () => {
     if (!ticket) return;
+    track("ticket_copy", { game_id: ticket.id });
     const text = [ticket.name, ...why(ticket), `${SITE_NAME} · ${SITE_ORIGIN}/`].join("\n");
     try {
       await navigator.clipboard.writeText(text);
@@ -194,7 +206,16 @@ const HomePage = () => {
         <span className={styles.key}>{t("landing.time")}</span>
         <div className={styles.opts}>
           {TIMES.map((value) => (
-            <button key={value} type="button" className={styles.opt} aria-pressed={time === value} onClick={() => setTime(value)}>
+            <button
+              key={value}
+              type="button"
+              className={styles.opt}
+              aria-pressed={time === value}
+              onClick={() => {
+                setTime(value);
+                track("ticket_time_select", { value });
+              }}
+            >
               {t(`landing.time_${value}`)}
             </button>
           ))}
@@ -212,6 +233,7 @@ const HomePage = () => {
               onClick={() => {
                 setOpenPlatforms(false);
                 setPlat(value);
+                track("ticket_platform_select", { platform_id: PLATFORMS[value][0] });
               }}
             >
               {t(`landing.plat_${value}`)}
@@ -223,7 +245,16 @@ const HomePage = () => {
         <span className={styles.key}>{t("landing.mood")}</span>
         <div className={styles.opts}>
           {MOODS.map((value) => (
-            <button key={value} type="button" className={styles.opt} aria-pressed={mood === value} onClick={() => setMood(value)}>
+            <button
+              key={value}
+              type="button"
+              className={styles.opt}
+              aria-pressed={mood === value}
+              onClick={() => {
+                setMood(value);
+                track("ticket_mood_select", { value });
+              }}
+            >
               {t(`landing.mood_${value}`)}
             </button>
           ))}
@@ -266,7 +297,11 @@ const HomePage = () => {
             </footer>
           </article>
           <div className={styles.side}>
-            <Link className={styles.go} to={gamePath(ticket.id)}>
+            <Link
+              className={styles.go}
+              to={gamePath(ticket.id)}
+              onClick={() => track("game_open", { game_id: ticket.id, from: "ticket" })}
+            >
               {t("landing.take")}
               <span>{t("landing.open")}</span>
             </Link>
@@ -292,7 +327,12 @@ const HomePage = () => {
           <h2 className={styles.moreTitle}>{t("landing.more")}</h2>
           <div className={styles.moreRow}>
             {more.map((game) => (
-              <Link key={game.id} to={gamePath(game.id)} className={styles.moreCard}>
+              <Link
+                key={game.id}
+                to={gamePath(game.id)}
+                className={styles.moreCard}
+                onClick={() => track("game_open", { game_id: game.id, from: "ticket" })}
+              >
                 <span>{game.name}</span>
                 <span>{lengthLabel(game)}</span>
               </Link>
@@ -329,7 +369,11 @@ const HomePage = () => {
         <h2 className={styles.moreTitle}>{t("landing.picks")}</h2>
         <div className={styles.paths}>
           {collections.map((collection) => (
-            <Link key={collection.slug} to={collectionPath(collection.slug)}>
+            <Link
+              key={collection.slug}
+              to={collectionPath(collection.slug)}
+              onClick={() => track("collection_open", { slug: collection.slug, from: "home" })}
+            >
               {i18n.language.startsWith("en") ? collection.title.en : collection.title.ru}
             </Link>
           ))}

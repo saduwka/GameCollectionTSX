@@ -6,8 +6,10 @@ import { useTranslation } from "react-i18next";
 import { fetchGames } from "../../services/games/fetchGames";
 import { getGenres } from "../../services/games/getGenres";
 import { getPlatforms } from "../../services/platforms/getPlatformsList";
+import { collections } from "../../data/collections";
 import { CATALOG_PAGE_SIZE, GENRE_PAGES, genres as listedGenres, platforms as listedPlatforms } from "../../../scripts/publicLinks.mjs";
-import { gamePath, gamesPagePath, gamesPath, genrePagePath, genrePath, platformPath, platformsPath, canonicalUrl } from "../../seo/canonicalUrl";
+import { collectionPath, gamePath, gamesPagePath, gamesPath, genrePagePath, genrePath, platformPath, platformsPath, canonicalUrl } from "../../seo/canonicalUrl";
+import { track } from "../../services/analytics/track";
 import { SITE_ORIGIN } from "../../site";
 import GameCard from "../../components/GameCard/GameCard";
 import GameCardSkeleton from "../../components/GameCard/GameCardSkeleton";
@@ -293,6 +295,20 @@ const GamesPage: React.FC = () => {
           activeFilterCount={activeFilterCount}
         />
 
+        {!slug && currentPage === 1 && (
+          <nav className={styles.directory} aria-label={t("landing.picks")}>
+            {collections.map((collection) => (
+              <Link
+                key={collection.slug}
+                to={collectionPath(collection.slug)}
+                onClick={() => track("collection_open", { slug: collection.slug, from: "games" })}
+              >
+                {i18n.language.startsWith("en") ? collection.title.en : collection.title.ru}
+              </Link>
+            ))}
+          </nav>
+        )}
+
         {resultCount !== undefined && (
           <p className={styles.resultLine}>
             {t("collection.found_line", {
@@ -324,6 +340,7 @@ const GamesPage: React.FC = () => {
                 key={game.id}
                 to={selectedPlatformId ? `/game/${game.id}/${selectedPlatformId}` : gamePath(game.id)}
                 className={styles.gameCardContainer}
+                onClick={() => track("game_open", { game_id: game.id, from: slug ? `genre:${slug}` : "catalog" })}
               >
                 <GameCard game={game} />
               </Link>

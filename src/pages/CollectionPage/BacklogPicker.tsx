@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { updateGameMetadata, type CollectedGame } from "../../services/collection/collectionService";
 import { invalidateUserLibrary } from "../../services/collection/queryKeys";
+import { track } from "../../services/analytics/track";
 import { rankBacklog } from "../../services/collection/stats";
 import { useMyDevices } from "../../hooks/useMyDevices";
 import Button from "../../components/ui/Button";
@@ -39,6 +40,7 @@ const BacklogPicker = ({ collection, topGenres }: BacklogPickerProps) => {
     try {
       await updateGameMetadata(item.id, { status: "Playing" });
       await invalidateUserLibrary(queryClient, user.uid);
+      track("collection_add", { game_id: item.id, status: "Playing" });
       toast.success(t("collection.now_playing", { name: item.name }));
     } catch {
       toast.error(t("common.update_error"));

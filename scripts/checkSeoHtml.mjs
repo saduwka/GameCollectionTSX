@@ -68,6 +68,32 @@ const firstChild = async (dir) => {
   return null;
 };
 
+const descriptionOf = (html) =>
+  html.match(/<meta\b[^>]*\bname="description"[^>]*\bcontent="([^"]*)"/i)?.[1] ??
+  html.match(/<meta\b[^>]*\bcontent="([^"]*)"[^>]*\bname="description"/i)?.[1] ??
+  "";
+
+const assertGameDescriptions = async () => {
+  const dir = path.join(DIST, "game");
+  const ids = (await readdir(dir)).filter((entry) => /^\d+$/.test(entry));
+  const rows = [];
+  for (const id of ids) {
+    const html = await readFile(path.join(dir, id, "index.html"), "utf8");
+    rows.push({ id, description: descriptionOf(html) });
+  }
+  const counts = new Map();
+  for (const row of rows) counts.set(row.description, (counts.get(row.description) ?? 0) + 1);
+  const collisions = rows.filter((row) => counts.get(row.description) > 1);
+  if (rows.length !== 300) throw new Error(`game descriptions ${rows.length}, expected 300`);
+  if (collisions.length) {
+    throw new Error(`duplicate game descriptions: ${collisions.map((row) => row.id).join(", ")}`);
+  }
+  const gta = rows.find((row) => row.id === "3498");
+  if (!gta?.description.includes("Платформы:")) throw new Error("GTA V description has no platforms");
+  const takesTwo = await readFile(path.join(dir, "455597", "index.html"), "utf8");
+  if (!takesTwo.includes('href="/collections/coop-pc/"')) throw new Error("It Takes Two has no coop collection link");
+};
+
 const main = async () => {
   const gameId = await firstChild(path.join(DIST, "game"));
   const platformId = await firstChild(path.join(DIST, "platform"));
@@ -93,6 +119,7 @@ const main = async () => {
     const problems = checkBrand(await readFile(file, "utf8"), file);
     if (problems.length) failures.push(`${path.relative(DIST, file)}: ${problems.join(", ")}`);
   }
+  await assertGameDescriptions();
   if (failures.length) {
     console.error(failures.join("\n"));
     process.exitCode = 1;

@@ -4,6 +4,7 @@ import PageMeta from "../../components/PageMeta/PageMeta";
 import JsonLd, { breadcrumbJsonLd, itemListJsonLd } from "../../components/JsonLd/JsonLd";
 import { collectionBySlug, collections, type EditorialCollection } from "../../data/collections";
 import { collectionPath, gamePath } from "../../seo/canonicalUrl";
+import { track } from "../../services/analytics/track";
 import { SITE_ORIGIN } from "../../site";
 import styles from "./CollectionsPage.module.scss";
 
@@ -32,7 +33,8 @@ const factLabels = (language: string) =>
 const CollectionArticle = ({ collection, language }: { collection: EditorialCollection; language: string }) => {
   const title = pick(collection.title, language);
   const description = pick(collection.description, language);
-  const others = collections.filter((item) => item.slug !== collection.slug);
+  const index = collections.findIndex((item) => item.slug === collection.slug);
+  const neighbors = [1, 2, 3].map((step) => collections[(index + step) % collections.length]);
   const labels = factLabels(language);
   const facts = ["fit", "session", "evening", "platforms", "why", "notFor"] as const;
   const crumbs = [
@@ -61,7 +63,12 @@ const CollectionArticle = ({ collection, language }: { collection: EditorialColl
       {collection.games.map((game) => (
         <section key={game.id} className={styles.game}>
           <h2>
-            <Link to={gamePath(game.id)}>{game.name}</Link>
+            <Link
+              to={gamePath(game.id)}
+              onClick={() => track("game_open", { game_id: game.id, from: `collection:${collection.slug}` })}
+            >
+              {game.name}
+            </Link>
           </h2>
           <dl className={styles.facts}>
             {facts.map((key) => (
@@ -75,8 +82,12 @@ const CollectionArticle = ({ collection, language }: { collection: EditorialColl
       ))}
       <nav className={styles.links} aria-label={language.startsWith("en") ? "Other collections" : "Другие подборки"}>
         <Link to="/">{language.startsWith("en") ? "Tonight" : "Сегодня"}</Link>
-        {others.map((item) => (
-          <Link key={item.slug} to={collectionPath(item.slug)}>
+        {neighbors.map((item) => (
+          <Link
+            key={item.slug}
+            to={collectionPath(item.slug)}
+            onClick={() => track("collection_open", { slug: item.slug, from: "other" })}
+          >
             {pick(item.title, language)}
           </Link>
         ))}

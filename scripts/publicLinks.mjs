@@ -32,11 +32,3 @@ export const platforms = [
   { id: 1, name: "Xbox One" },
   { id: 16, name: "PlayStation 3" },
 ];
-
-export const collectionSlugs = [
-  "coop-pc",
-  "short-evening",
-  "relax",
-  "like-hades",
-  "story-driven",
-];

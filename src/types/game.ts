@@ -58,7 +58,8 @@ export interface Game {
   stores: GameStore[];
   developers?: { id: number; name: string }[];
   publishers?: string[];
-  tags?: { id: number; name: string; slug?: string }[];
+  parentPlatforms?: string[];
+  tags?: { id: number; name: string; slug?: string; language?: string }[];
   esrb_rating?: string | null;
   game_series?: { id: number; name: string; background_image: string }[];
   additions?: { id: number; name: string; background_image: string }[];
@@ -96,7 +97,8 @@ export interface RawGame {
   website?: string | null;
   developers?: { id: number; name: string }[];
   publishers?: { name: string }[];
-  tags?: { id: number; name: string; slug?: string }[];
+  parent_platforms?: { platform: { id: number; name: string; slug?: string } }[];
+  tags?: { id: number; name: string; slug?: string; language?: string }[];
   esrb_rating?: { name: string } | null;
 }
 

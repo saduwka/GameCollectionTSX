@@ -66,7 +66,8 @@ export async function getGameDetails(id: string): Promise<Game> {
     })),
     developers: (gameData.developers || []).map((d) => ({ id: d.id, name: d.name })),
     publishers: (gameData.publishers || []).map((p) => p.name),
-    tags: (gameData.tags || []).map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
+    parentPlatforms: (gameData.parent_platforms || []).map((item) => item.platform?.name).filter((name): name is string => Boolean(name)),
+    tags: (gameData.tags || []).map((tag) => ({ id: tag.id, name: tag.name, slug: tag.slug, language: tag.language })),
     esrb_rating: gameData.esrb_rating?.name || null,
     game_series: seriesData.results.map((s) => ({
       id: s.id,

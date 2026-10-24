@@ -617,6 +617,45 @@
   display: block;
 }
 
+.evening {
+  margin: 8px 0 20px;
+
+  h2 {
+    margin: 0 0 10px;
+    font-size: 1.15rem;
+  }
+
+  dl {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+  }
+
+  div {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 12px;
+  }
+
+  dt {
+    color: var(--text-secondary, #9aa0a6);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  a {
+    margin-right: 12px;
+  }
+}
+
+.rawgNote {
+  margin: 0 0 8px;
+  color: var(--text-secondary, #9aa0a6);
+  font-size: 0.9rem;
+}
+
 .platformChips {
   display: flex;
   flex-wrap: wrap;

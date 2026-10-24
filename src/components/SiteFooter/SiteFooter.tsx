@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { collections } from "../../data/collections";
-import { collectionSlugs, genres } from "../../../scripts/publicLinks.mjs";
+import { genres } from "../../../scripts/publicLinks.mjs";
 import {
   aboutPath,
   collectionPath,
@@ -11,8 +11,6 @@ import {
   platformsPath,
 } from "../../seo/canonicalUrl";
 import styles from "./SiteFooter.module.scss";
-
-const bySlug = new Map(collections.map((collection) => [collection.slug, collection]));
 
 const SiteFooter = () => {
   const { t, i18n } = useTranslation();
@@ -37,15 +35,11 @@ const SiteFooter = () => {
       </nav>
       <nav aria-label={t("landing.picks")}>
         <h2>{t("landing.picks")}</h2>
-        {collectionSlugs.map((slug) => {
-          const collection = bySlug.get(slug);
-          if (!collection) return null;
-          return (
-            <Link key={slug} to={collectionPath(slug)}>
-              {english ? collection.title.en : collection.title.ru}
-            </Link>
-          );
-        })}
+        {collections.map((collection) => (
+          <Link key={collection.slug} to={collectionPath(collection.slug)}>
+            {english ? collection.title.en : collection.title.ru}
+          </Link>
+        ))}
         <Link to={aboutPath()}>{t("common.about")}</Link>
         <Link to={faqPath()}>{t("common.faq")}</Link>
       </nav>

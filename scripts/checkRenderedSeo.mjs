@@ -88,7 +88,11 @@ try {
   const gameId = (await readdir(path.join(DIST, "game"))).find((entry) => /^\d+$/.test(entry));
   if (!gameId) throw new Error("dist has no prerendered game");
   const routes = ["/", "/collections/short-evening/", `/game/${gameId}`];
-  for (const route of routes) validatePrerenderedHtml(await readFile(fileFor(route), "utf8"), route);
+  for (const route of routes) {
+    const html = await readFile(fileFor(route), "utf8");
+    if (html.includes('gtag("event"')) throw new Error(`${route} contains a gtag event`);
+    validatePrerenderedHtml(html, route);
+  }
   const collectionHtml = await readFile(fileFor("/collections/short-evening/"), "utf8");
   const head = collectionHtml.match(/<head[\s\S]*?<\/head>/i)?.[0] ?? "";
   console.log("\n--- saved collection head ---");

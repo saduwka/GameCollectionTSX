@@ -28,19 +28,17 @@ import JsonLd, { breadcrumbJsonLd, videoGameJsonLd } from "../../components/Json
 import RawgCredit from "../../components/RawgCredit/RawgCredit";
 import { RAWG_DETAIL_STALE_TIME } from "../../services/rawgCache";
 import { canonicalUrl, gamePath, gamesPath, genrePath } from "../../seo/canonicalUrl";
+import { gameMetaDescription } from "../../seo/gameMetaDescription";
 import { SITE_ORIGIN } from "../../site";
+import { collectionsByGameId } from "../../data/collections";
+import { track } from "../../services/analytics/track";
+import EveningFacts from "./EveningFacts";
 
 import { searchGameDeals, getStoreName } from "../../services/stores/cheapSharkService";
 import { getGameMedia } from "../../services/media/youtubeService";
 import styles from './GamePage.module.scss';
 
 const STATUS_OPTIONS: GameStatus[] = ["Backlog", "Playing", "Completed", "Dropped", "Wishlist", "Liked", "Not Interested"];
-
-const firstSentence = (raw: string, fallback: string) => {
-  const text = raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  const match = text.match(/^[^.!?]+[.!?]/);
-  return match ? match[0].trim() : fallback;
-};
 
 const GamePage: React.FC = () => {
   const { id, platformId } = useParams<{ id: string; platformId?: string }>();
@@ -185,6 +183,7 @@ const GamePage: React.FC = () => {
         });
         await invalidateUserLibrary(queryClient, user.uid);
         toast.success(t('game_page.toasts.added_to_collection', { name: gameDetails.name }));
+        track("collection_add", { game_id: gameDetails.id, status: newStatus });
         if (newStatus === "Completed") setCompletedAt(new Date(now).toISOString().split('T')[0]);
       }
       refetchCollection();
@@ -294,10 +293,25 @@ const GamePage: React.FC = () => {
   if (loading) return <GamePageSkeleton />;
 
   const game = gameDetails as Game | undefined;
-  const metaDescription = firstSentence(
-    game?.description || "",
-    `${game?.name ?? "Игра"} — обзор, платформы и похожие игры на Gamevening.`,
-  );
+  const listed = game ? collectionsByGameId(game.id) : [];
+  const platformNames = game
+    ? (game.parentPlatforms?.length ? game.parentPlatforms : game.platforms.map((item) => item.platform.name))
+    : [];
+  const metaDescription = game
+    ? gameMetaDescription(
+        {
+          id: game.id,
+          name: game.name,
+          released: game.released,
+          genres: game.genres,
+          platforms: platformNames,
+          metacritic: game.metacritic,
+          playtime: game.playtime,
+          collectionTitle: listed[0] ? (i18n.language.startsWith("en") ? listed[0].title.en : listed[0].title.ru) : undefined,
+        },
+        i18n.language.startsWith("en"),
+      )
+    : t("catalog.description");
 
   return (
     <>
@@ -560,8 +574,13 @@ const GamePage: React.FC = () => {
                 </div>
               )}
 
+              <EveningFacts game={gameDetails} />
+
               <div className={styles.descriptionSection}>
                 <strong>{t('game_page.details.description')}</strong>
+                {!loadingWiki && !gameWiki && gameDetails.description && (
+                  <p className={styles.rawgNote}>{t("game_page.details.rawg_note")}</p>
+                )}
                 {loadingWiki ? (
                   <p>{t('game_page.details.loading_wiki')}</p>
                 ) : (
@@ -648,6 +667,7 @@ const GamePage: React.FC = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.dealItem}
+                          onClick={() => track("store_click", { game_id: gameDetails.id, store: getStoreName(deal.storeID) })}
                         >
                           <span className={styles.storeName}>{getStoreName(deal.storeID)}</span>
                           <span className={styles.dealPrice}>${deal.price}</span>
@@ -674,6 +694,7 @@ const GamePage: React.FC = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.storeBadge}
+                        onClick={() => track("store_click", { game_id: gameDetails.id, store: s.store.name || "store" })}
                       >
                         {s.store.name || t('game_page.details.visit_store')}
                       </a>

@@ -340,3 +340,6 @@ export const collections: EditorialCollection[] = [
 ];
 
 export const collectionBySlug = (slug: string) => collections.find((collection) => collection.slug === slug);
+
+export const collectionsByGameId = (gameId: number) =>
+  collections.filter((collection) => collection.games.some((game) => game.id === gameId));
